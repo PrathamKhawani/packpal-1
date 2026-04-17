@@ -20,31 +20,35 @@ export default async function handler(req, res) {
   }
 
   const prompt = `
-You are a professional travel planner. Generate a detailed ${days}-day travel itinerary for ${destination}.
-STRICT Budget Limit: ₹${budget} Indian Rupees (total for the whole trip, excluding flights). 
-You MUST stay under this budget.
-Trip vibe: ${vibe || 'balanced'}.
+Generate a minimalist ${days}-day travel itinerary for ${destination}.
+Budget: ₹${budget} (MUST stay under). Vibe: ${vibe || 'balanced'}.
 
-Return ONLY valid JSON (no markdown, no explanation) in this exact format:
+CRITICAL VERCEL TIMEOUT CONSTRAINT:
+You have less than 5 seconds to respond. 
+- Include EXACTLY 2 events per day.
+- Event descriptions MUST be 3 to 6 words maximum.
+- Do not output markdown, comments, or extra text.
+
+Return ONLY minified JSON perfectly matching this schema:
 {
   "destination": "${destination}",
   "totalEstimatedCost": "₹...", 
   "days": [
     {
       "day": 1,
-      "label": "Day 1 - Arrival & Explore",
+      "label": "Brief Day Label",
       "events": [
         {
           "time": "9:00 AM",
-          "title": "Breakfast at local cafe",
-          "description": "Start your day with authentic local cuisine",
+          "title": "Breakfast",
+          "description": "Eat local food.",
           "type": "food",
           "estimatedCost": "₹..."
         },
         {
-          "time": "11:00 AM",
+          "time": "2:00 PM",
           "title": "Visit Museum",
-          "description": "Explore the local history",
+          "description": "See historical artifacts.",
           "type": "sightseeing",
           "estimatedCost": "₹..."
         }
@@ -52,9 +56,6 @@ Return ONLY valid JSON (no markdown, no explanation) in this exact format:
     }
   ]
 }
-
-Event types MUST be one of: "food", "sightseeing", "transport", "activity", "accommodation", "shopping".
-Include 3-4 events per day. Keep event descriptions extremely short and punchy (1 sentence max). All currency must be in Indian Rupees using the symbol ₹.
 `;
 
   try {
