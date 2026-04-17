@@ -99,8 +99,7 @@ Include 4-6 events per day. All currency must be in Indian Rupees using the symb
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.4,
-            maxOutputTokens: 4096,
-            responseMimeType: "application/json"
+            maxOutputTokens: 4096
           }
         })
       }
@@ -128,13 +127,13 @@ Include 4-6 events per day. All currency must be in Indian Rupees using the symb
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawText) {
-      return res.status(502).json({ error: 'AI returned empty response.' });
+      return res.status(502).json({ error: 'AI returned empty response (possibly blocked by safety filters).' });
     }
 
     // Extra text stripping: find the exact JSON object bracket bounds
     const match = rawText.match(/\{[\s\S]*\}/);
     if (!match) {
-        return res.status(502).json({ error: 'AI output format was invalid. Please try again.' });
+        return res.status(502).json({ error: 'AI output format was invalid. Please try again.\\n\\nRAW DUMP: ' + rawText });
     }
     
     let itinerary;
