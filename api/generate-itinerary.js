@@ -54,7 +54,7 @@ Return ONLY valid JSON (no markdown, no explanation) in this exact format:
 }
 
 Event types MUST be one of: "food", "sightseeing", "transport", "activity", "accommodation", "shopping".
-Include 4-6 events per day. All currency must be in Indian Rupees using the symbol ₹.
+Include 3-4 events per day. Keep event descriptions extremely short and punchy (1 sentence max). All currency must be in Indian Rupees using the symbol ₹.
 `;
 
   try {
