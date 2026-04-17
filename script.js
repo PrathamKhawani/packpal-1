@@ -1446,12 +1446,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const days = document.getElementById('ai-days').value;
         const budget = document.getElementById('ai-budget').value;
         const vibe = document.getElementById('ai-vibe').value;
+        const apikeyInput = document.getElementById('ai-apikey');
         const errorMsg = document.getElementById('ai-error-msg');
 
         errorMsg.style.display = 'none';
 
+        // Load or save API key from localStorage
+        let apiKey = apikeyInput ? apikeyInput.value.trim() : '';
+        if (!apiKey) apiKey = localStorage.getItem('packpal_gemini_key') || '';
+        if (apikeyInput && apikeyInput.value.trim()) {
+            localStorage.setItem('packpal_gemini_key', apikeyInput.value.trim());
+        }
+
         if (!destination || !days) {
             errorMsg.textContent = 'Please enter a destination and number of days.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+        if (!apiKey) {
+            errorMsg.textContent = 'Please paste your Gemini API key above. Get one free at aistudio.google.com/app/apikey';
             errorMsg.style.display = 'block';
             return;
         }
@@ -1459,26 +1472,52 @@ document.addEventListener('DOMContentLoaded', function() {
         aiSubmitBtn.disabled = true;
         aiSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
 
+        const prompt = `Generate a ${days}-day travel itinerary for ${destination}. Budget: ₹${budget} Indian Rupees total (MUST stay under). Vibe: ${vibe || 'balanced'}.
+Return ONLY minified JSON (no markdown, no extra text) matching exactly:
+{"destination":"...","totalEstimatedCost":"₹...","days":[{"day":1,"label":"Day 1 - Brief Label","events":[{"time":"9:00 AM","title":"Short Title","description":"One short sentence.","type":"food","estimatedCost":"₹..."},{"time":"2:00 PM","title":"Short Title","description":"One short sentence.","type":"sightseeing","estimatedCost":"₹..."}]}]}
+Rules: 3 events per day max. type must be one of: food,sightseeing,transport,activity,accommodation,shopping. All costs in ₹.`;
+
         try {
-            const response = await fetch('/api/generate-itinerary', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ destination, days: parseInt(days), budget, vibe })
-            });
+            // Call Gemini directly from browser - no Vercel timeout applies
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
+                    })
+                }
+            );
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to generate itinerary');
+                const errMsg = data?.error?.message || 'API error. Check your key.';
+                const errStatus = data?.error?.status || '';
+                if (errStatus === 'UNAUTHENTICATED') throw new Error('Invalid API key — please double-check it.');
+                if (errStatus === 'RESOURCE_EXHAUSTED') throw new Error('Daily API quota exceeded. Try again tomorrow.');
+                throw new Error('AI Error: ' + errMsg);
             }
 
-            // Store and render
-            window._sampleItinerary = data;
-            localStorage.setItem('packpal_itinerary', JSON.stringify(data));
-            closeAllModals();
-            renderItinerary(data);
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!rawText) throw new Error('AI returned empty response. Please try again.');
 
-            // Show success toast
+            // Extract JSON from response (even if AI wraps it in markdown)
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error('AI response was not valid JSON. Please try again.');
+
+            // Auto-repair missing commas between adjacent objects
+            const repaired = jsonMatch[0].replace(/\}\s*(?=\{)/g, '},');
+            const itinerary = JSON.parse(repaired);
+
+            // Store and render
+            window._sampleItinerary = itinerary;
+            localStorage.setItem('packpal_itinerary', JSON.stringify(itinerary));
+            closeAllModals();
+            renderItinerary(itinerary);
+
             const toast = document.getElementById('notification-toast');
             if (toast) {
                 toast.querySelector('.toast-message').textContent = `✨ AI generated a ${days}-day itinerary for ${destination}!`;
