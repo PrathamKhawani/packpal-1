@@ -40,6 +40,13 @@ Return ONLY valid JSON (no markdown, no explanation) in this exact format:
           "description": "Start your day with authentic local cuisine",
           "type": "food",
           "estimatedCost": "₹..."
+        },
+        {
+          "time": "11:00 AM",
+          "title": "Visit Museum",
+          "description": "Explore the local history",
+          "type": "sightseeing",
+          "estimatedCost": "₹..."
         }
       ]
     }
@@ -132,10 +139,12 @@ Include 4-6 events per day. All currency must be in Indian Rupees using the symb
     
     let itinerary;
     try {
-        itinerary = JSON.parse(match[0]);
+        // Auto-repair missing trailing commas between objects (a common LLM JSON bug)
+        let repairedJson = match[0].replace(/\}\s*(?=\{)/g, '},');
+        itinerary = JSON.parse(repairedJson);
     } catch (parseErr) {
         console.error('JSON Parse Error:', parseErr, 'Raw Text:', rawText);
-        return res.status(502).json({ error: 'AI returned malformed data. Details: ' + parseErr.message });
+        return res.status(502).json({ error: 'AI returned malformed data. Details: ' + parseErr.message + '\\n\\nRAW DUMP: ' + rawText });
     }
 
     return res.status(200).json(itinerary);
