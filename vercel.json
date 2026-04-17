@@ -1,25 +1,10 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "rewrites": [
-    {
-      "source": "/api/generate-itinerary",
-      "destination": "/api/generate-itinerary"
-    },
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
-    },
-    {
-      "source": "/",
-      "destination": "/DAIICT"
-    },
-    {
-      "source": "/index.html",
-      "destination": "/DAIICT/Index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/DAIICT/$1"
     }
   ]
 }
