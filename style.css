@@ -824,7 +824,7 @@ nav li span {
 .member-card {
     background-color: var(--white);
     border-radius: 8px;
-    padding: 20px;
+    padding: 12px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
@@ -918,7 +918,7 @@ nav li span {
 }
 
 .template-info {
-    padding: 15px;
+    padding: 10px;
 }
 
 .template-info h3 {
@@ -948,13 +948,13 @@ nav li span {
 .settings-form {
     background-color: var(--white);
     border-radius: 8px;
-    padding: 20px;
+    padding: 12px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     max-width: 600px;
 }
 
 .settings-form .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .settings-form label {
@@ -1072,7 +1072,7 @@ nav li span {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--gray-light);
 }
 
@@ -1090,11 +1090,11 @@ nav li span {
 }
 
 .modal-body {
-    padding: 20px;
+    padding: 12px 16px;
 }
 
 .modal-footer {
-    padding: 15px 20px;
+    padding: 10px 16px;
     border-top: 1px solid var(--gray-light);
     display: flex;
     justify-content: flex-end;
@@ -1409,7 +1409,7 @@ body.dark-mode .stats-container .stat-card {
     color: #ffffff; /* White text for visibility */
     border: 1px solid #444444; /* Add a border for better contrast */
     border-radius: 8px; /* Keep the rounded corners */
-    padding: 15px;
+    padding: 12px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
 }
 
@@ -1711,7 +1711,7 @@ body.dark-mode #tour-title, body.dark-mode #tour-text {
 .balances-panel, .expenses-list-panel {
     background: var(--white);
     border-radius: 8px;
-    padding: 20px;
+    padding: 14px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
@@ -1752,10 +1752,10 @@ body.dark-mode .balance-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    padding: 10px 14px;
     border-radius: 8px;
     background: var(--gray-light);
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 body.dark-mode .expense-item {
@@ -1791,8 +1791,8 @@ body.dark-mode .expense-item {
 .weather-widget {
     background: var(--white);
     border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
@@ -1929,7 +1929,7 @@ body.dark-mode .itinerary-day-btn {
 .itinerary-timeline-panel {
     background: var(--white);
     border-radius: 8px;
-    padding: 20px;
+    padding: 16px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 body.dark-mode .itinerary-timeline-panel {
@@ -1958,8 +1958,8 @@ body.dark-mode .itinerary-timeline-panel {
 
 .timeline-event {
     position: relative;
-    margin-bottom: 24px;
-    padding: 14px 16px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
     background: var(--gray-light);
     border-radius: 8px;
     transition: all 0.2s ease;

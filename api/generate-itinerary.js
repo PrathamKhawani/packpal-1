@@ -68,8 +68,20 @@ Include 4-6 events per day. All currency must be in Indian Rupees using the symb
 
     if (!response.ok) {
       const err = await response.json();
-      console.error('Gemini API error:', err);
-      return res.status(502).json({ error: 'AI service returned an error. Check your API key.' });
+      console.error('Gemini API error details:', JSON.stringify(err, null, 2));
+      
+      let errorMessage = 'AI service returned an error. Check your API key.';
+      if (err.error) {
+        if (err.error.status === 'UNAUTHENTICATED') {
+          errorMessage = 'Invalid API Key. Please verify your GEMINI_API_KEY in Vercel settings.';
+        } else if (err.error.status === 'RESOURCE_EXHAUSTED') {
+          errorMessage = 'Daily AI quota exceeded. Try again tomorrow or use a different key.';
+        } else if (err.error.message) {
+          errorMessage = `AI Error: ${err.error.message}`;
+        }
+      }
+      
+      return res.status(response.status).json({ error: errorMessage });
     }
 
     const data = await response.json();
