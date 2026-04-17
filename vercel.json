@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "DAIICT/Index.html",
+      "src": "DAIICT/**",
       "use": "@vercel/static"
     },
     {
@@ -16,8 +16,16 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/(.*)",
+      "src": "/",
+      "dest": "/DAIICT/Index.html"
+    },
+    {
+      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf))",
       "dest": "/DAIICT/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/DAIICT/Index.html"
     }
   ]
 }
