@@ -91,8 +91,9 @@ Include 4-6 events per day. All currency must be in Indian Rupees using the symb
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 4096
+            temperature: 0.4,
+            maxOutputTokens: 4096,
+            responseMimeType: "application/json"
           }
         })
       }
