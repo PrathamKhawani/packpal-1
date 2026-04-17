@@ -478,11 +478,11 @@
                         <div class="stats-container">
                             <div class="stat-card">
                                 <h3>Total Trip Cost</h3>
-                                <p id="total-trip-cost">$0.00</p>
+                                <p id="total-trip-cost">₹0.00</p>
                             </div>
                             <div class="stat-card">
                                 <h3>Cost Per Person</h3>
-                                <p id="cost-per-person">$0.00</p>
+                                <p id="cost-per-person">₹0.00</p>
                             </div>
                         </div>
 
@@ -774,7 +774,7 @@
                         <input type="text" id="expense-desc" placeholder="e.g. Dinner, Airbnb, Gas">
                     </div>
                     <div class="form-group">
-                        <label for="expense-amount">Amount paid ($)</label>
+                        <label for="expense-amount">Amount paid (₹)</label>
                         <input type="number" id="expense-amount" placeholder="0.00" min="0" step="0.01">
                     </div>
                     <div class="form-group">
@@ -815,12 +815,8 @@
                         <input type="number" id="ai-days" placeholder="e.g., 5" min="1" max="14">
                     </div>
                     <div class="form-group">
-                        <label for="ai-budget">Budget Level</label>
-                        <select id="ai-budget">
-                            <option value="budget">Budget (Backpacker) 🎒</option>
-                            <option value="moderate" selected>Moderate (Comfortable) 🏨</option>
-                            <option value="luxury">Luxury (5-Star) ⭐</option>
-                        </select>
+                        <label for="ai-budget">Trip Budget (INR ₹)</label>
+                        <input type="number" id="ai-budget" placeholder="e.g., 50000" min="1">
                     </div>
                     <div class="form-group">
                         <label for="ai-vibe">Trip Vibe</label>

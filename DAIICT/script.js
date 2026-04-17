@@ -791,7 +791,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="expense-meta">Paid by ${payerName} on ${exp.date} • Split by ${involvedText}</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <div class="expense-amount-display">$${parseFloat(exp.amount).toFixed(2)}</div>
+                        <div class="expense-amount-display">₹${parseFloat(exp.amount).toFixed(2)}</div>
                         <button class="btn-icon delete-expense-btn" title="Delete Expense" style="color: var(--danger-color); cursor: pointer;">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -813,11 +813,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Removed generic costPerPerson since it varies now
-        document.getElementById('total-trip-cost').textContent = `$${totalCost.toFixed(2)}`;
+        document.getElementById('total-trip-cost').textContent = `₹${totalCost.toFixed(2)}`;
         
         // If we want to show average, we can, but let's hide or update Cost Per Person generic info
         const avgPerPerson = members.length > 0 ? (totalCost / members.length) : 0;
-        document.getElementById('cost-per-person').textContent = `~$${avgPerPerson.toFixed(2)} avg`;
+        document.getElementById('cost-per-person').textContent = `~₹${avgPerPerson.toFixed(2)} avg`;
         
         const balancesListEl = document.getElementById('balances-list');
         balancesListEl.innerHTML = '';
@@ -831,9 +831,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let balanceText = '';
             
             if (balance > 0.01) {
-                balanceText = `Gets back $${balance.toFixed(2)}`;
+                balanceText = `Gets back ₹${balance.toFixed(2)}`;
             } else if (balance < -0.01) {
-                balanceText = `Owes $${Math.abs(balance).toFixed(2)}`;
+                balanceText = `Owes ₹${Math.abs(balance).toFixed(2)}`;
             } else {
                 balanceText = `Settled Up`;
                 amountClass = '';

@@ -21,12 +21,14 @@ export default async function handler(req, res) {
 
   const prompt = `
 You are a professional travel planner. Generate a detailed ${days}-day travel itinerary for ${destination}.
-Budget level: ${budget || 'moderate'}.
+STRICT Budget Limit: ₹${budget} Indian Rupees (total for the whole trip, excluding flights). 
+You MUST stay under this budget.
 Trip vibe: ${vibe || 'balanced'}.
 
 Return ONLY valid JSON (no markdown, no explanation) in this exact format:
 {
   "destination": "${destination}",
+  "totalEstimatedCost": "₹...", 
   "days": [
     {
       "day": 1,
@@ -37,7 +39,7 @@ Return ONLY valid JSON (no markdown, no explanation) in this exact format:
           "title": "Breakfast at local cafe",
           "description": "Start your day with authentic local cuisine",
           "type": "food",
-          "estimatedCost": "$15"
+          "estimatedCost": "₹..."
         }
       ]
     }
@@ -45,7 +47,7 @@ Return ONLY valid JSON (no markdown, no explanation) in this exact format:
 }
 
 Event types MUST be one of: "food", "sightseeing", "transport", "activity", "accommodation", "shopping".
-Include 4-6 events per day. Make it realistic and practical for the given budget.
+Include 4-6 events per day. All currency must be in Indian Rupees using the symbol ₹.
 `;
 
   try {

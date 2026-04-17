@@ -1,31 +1,25 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "DAIICT/**",
-      "use": "@vercel/static"
+      "source": "/api/generate-itinerary",
+      "destination": "/api/generate-itinerary"
     },
     {
-      "src": "api/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     },
     {
-      "src": "/",
-      "dest": "/DAIICT/Index.html"
+      "source": "/",
+      "destination": "/DAIICT"
     },
     {
-      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf))",
-      "dest": "/DAIICT/$1"
+      "source": "/index.html",
+      "destination": "/DAIICT/Index.html"
     },
     {
-      "src": "/(.*)",
-      "dest": "/DAIICT/Index.html"
+      "source": "/(.*)",
+      "destination": "/DAIICT/$1"
     }
   ]
 }
