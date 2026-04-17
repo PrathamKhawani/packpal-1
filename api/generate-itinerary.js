@@ -123,14 +123,25 @@ Include 4-6 events per day. All currency must be in Indian Rupees using the symb
       return res.status(502).json({ error: 'AI returned empty response.' });
     }
 
-    // Strip any markdown code fences if Gemini wraps it
-    const cleanJson = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const itinerary = JSON.parse(cleanJson);
+    // Extra text stripping: find the exact JSON object bracket bounds
+    const match = rawText.match(/\{[\s\S]*\}/);
+    if (!match) {
+        return res.status(502).json({ error: 'AI output format was invalid. Please try again.' });
+    }
+    
+    let itinerary;
+    try {
+        itinerary = JSON.parse(match[0]);
+    } catch (parseErr) {
+        console.error('JSON Parse Error:', parseErr, 'Raw Text:', rawText);
+        return res.status(502).json({ error: 'AI returned malformed data. Details: ' + parseErr.message });
+    }
 
     return res.status(200).json(itinerary);
 
   } catch (err) {
     console.error('Server error:', err);
-    return res.status(500).json({ error: 'Failed to generate itinerary. Please try again.' });
+    return res.status(500).json({ error: 'System Error: ' + err.message });
   }
 }
+
