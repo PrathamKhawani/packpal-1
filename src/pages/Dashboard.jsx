@@ -43,6 +43,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [tempDest, setTempDest] = useState(tripConfig.destination);
+  const [tempDate, setTempDate] = useState(new Date(tripConfig.startDate).toISOString().split('T')[0]);
   const [weather, setWeather] = useState({ temp: 24, desc: 'Fetching...', icon: <CloudSun size={24} />, forecast: [] });
   const [heroImg, setHeroImg] = useState('');
   const [localTime, setLocalTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -221,11 +222,19 @@ export default function Dashboard() {
         {isEditing && (
           <div className="modal-backdrop" onClick={() => setIsEditing(false)}>
             <motion.div className="modal-panel glass" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} onClick={e => e.stopPropagation()}>
-              <div className="m-head"><h3>Update Destination</h3><button onClick={() => setIsEditing(false)}><X size={16} /></button></div>
-              <form onSubmit={e => { e.preventDefault(); setTripConfig({...tripConfig, destination: tempDest}); setIsEditing(false); }}>
+              <div className="m-head"><h3>Trip Settings</h3><button onClick={() => setIsEditing(false)}><X size={16} /></button></div>
+              <form onSubmit={e => { 
+                  e.preventDefault(); 
+                  setTripConfig({...tripConfig, destination: tempDest, startDate: new Date(tempDate).toISOString()}); 
+                  setIsEditing(false); 
+              }}>
                 <div className="input-field">
                     <MapPin size={16} />
                     <input autoFocus value={tempDest} onChange={e => setTempDest(e.target.value)} placeholder="Enter city or country..." />
+                </div>
+                <div className="input-field">
+                    <Calendar size={16} />
+                    <input type="date" value={tempDate} onChange={e => setTempDate(e.target.value)} />
                 </div>
                 <button type="submit" className="m-submit-btn">REDEPLOY MISSION</button>
               </form>
