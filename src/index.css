@@ -2,48 +2,46 @@
 @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 
 :root {
-  /* HSL Colors for easier theme manipulation */
-  --p: 174 88% 31%;    /* Primary: #0d9488 */
-  --p-light: 174 72% 41%;
-  --p-dark: 174 77% 25%;
-  
-  --bg: 210 40% 98%;
+  /* Premium Light Theme */
+  --bg: 210 20% 98%;
   --bg-card: 0 0% 100%;
-  --text: 222 47% 11%;
-  --text-muted: 215 16% 47%;
+  --text: 220 20% 10%;
+  --text-muted: 215 15% 45%;
   --border: 214 32% 91%;
-  
-  --success: 142 71% 45%;
-  --danger: 0 84% 60%;
+  --p: 222 100% 55%;
+  --p-light: 222 100% 65%;
+  --p-dark: 222 100% 45%;
+  --success: 142 70% 45%;
+  --danger: 0 84% 55%;
   --warning: 38 92% 50%;
   
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
   
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
 
-  /* Compact Sidebar */
-  --sidebar-width: 230px;
-  --sidebar-collapsed-width: 64px;
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 68px;
   --header-height: 56px;
-
-  /* Compact Spacing Density */
-  --space-xs: 0.25rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
 }
 
 [data-theme='dark'] {
-  --bg: 222 47% 7%;
-  --bg-card: 222 47% 11%;
+  --bg: 222 47% 4%;
+  --bg-card: 222 47% 6%;
   --text: 210 40% 98%;
   --text-muted: 215 20% 65%;
-  --border: 222 47% 15%;
+  --border: 217 32% 12%;
+  --p: 217 91% 60%;
+  --p-light: 213 94% 68%;
+  --p-dark: 221 83% 53%;
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
   
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
@@ -121,6 +119,9 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   border: 1px solid hsl(var(--border));
+  button, input, select, textarea {
+  font-family: inherit;
+}
 }
 
 .btn {
@@ -129,25 +130,23 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 0.875rem;
-  font-family: inherit;
+  border: 1px solid transparent;
 }
 
 .btn-primary {
-  background-color: hsl(var(--p));
+  background: hsl(var(--p));
   color: white;
-  box-shadow: 0 4px 14px 0 hsla(var(--p) / 0.39);
+  box-shadow: 0 4px 12px hsla(var(--p) / 0.25);
 }
-
 .btn-primary:hover {
-  background-color: hsl(var(--p-dark));
+  background: hsl(var(--p-dark));
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.23);
+  box-shadow: 0 6px 15px hsla(var(--p) / 0.3);
 }
 
 .btn-secondary {
