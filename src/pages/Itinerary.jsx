@@ -7,7 +7,8 @@ import {
   Hotel, Utensils, Star, Info, TrendingUp,
   Globe, Zap, Heart, MapPin as PinIcon, ArrowRight,
   MessageSquare, Send, X, Bot, User, RefreshCw, Layers,
-  AlertTriangle, Navigation, Coffee, Camera, Music, ShoppingBag
+  AlertTriangle, Navigation, Coffee, Camera, Music, ShoppingBag,
+  ExternalLink, CreditCard, Image as ImageIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TripMap from '../components/TripMap';
@@ -21,7 +22,7 @@ export default function Itinerary() {
   const [chatLoading, setChatLoading] = useState(false);
   const [errorDetails, setErrorDetails] = useState(null);
   const [messages, setMessages] = useState([
-    { role: 'bot', content: "I'm your AI Travel Architect. Want to swap a museum for a beach, or find the best local coffee? Just ask." }
+    { role: 'bot', content: "I'm your AI Concierge. I can help you find booking links, swap places, or answer questions about your stay. How can I help?" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const chatEndRef = useRef(null);
@@ -37,37 +38,22 @@ export default function Itinerary() {
 
   useEffect(() => {
     if (itinerary?.destination) {
-      setHeroImg(`https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1600`); // Realistic default
-      const q = encodeURIComponent(itinerary.destination);
-      setHeroImg(`https://source.unsplash.com/featured/1600x900?${q},travel,city&t=${Date.now()}`);
+      setHeroImg(`https://source.unsplash.com/featured/1600x900?${encodeURIComponent(itinerary.destination)},travel&t=${Date.now()}`);
     }
   }, [itinerary]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (showChat) {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, showChat]);
 
   const generateAI = async () => {
     setLoading(true);
     setErrorDetails(null);
     try {
-      // Priority 1: Vercel Serverless Function
-      const res = await fetch('/api/generate-itinerary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setItinerary(data);
-        return;
-      }
-      
-      // Priority 2: Direct Frontend Fallback (Retry 3 times with different models)
-      console.warn("Server route failed, switching to high-reliability frontend engine...");
+      // Direct Frontend Fallback (Retry Engine)
       await generateDirectlyWithRetry();
-      
     } catch (err) {
       console.error("Critical Generation Error:", err);
       setErrorDetails(err.message);
@@ -78,42 +64,30 @@ export default function Itinerary() {
 
   const generateDirectlyWithRetry = async () => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("API Key missing. Please check your .env file.");
+    if (!apiKey) throw new Error("API Key missing.");
 
-    let availableModels = ["gemini-1.5-flash", "gemini-1.5-pro"]; // Default safe list
-    
-    try {
-        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const listData = await listRes.json();
-        if (listData.models) {
-            // Get all models that support generateContent and have 'gemini' in name
-            availableModels = listData.models
-                .filter(m => m.supportedGenerationMethods.includes("generateContent"))
-                .map(m => m.name.split("/").pop());
-            
-            // Re-order to prioritize Flash for speed
-            availableModels.sort((a, b) => a.includes("flash") ? -1 : 1);
-        }
-    } catch (e) {
-        console.warn("Model discovery failed, using default list.", e);
-    }
-
+    const availableModels = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"];
     let lastError = null;
 
     for (const model of availableModels) {
         try {
-            console.log(`Attempting generation with ${model}...`);
-            const prompt = `Generate a travel itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. Return ONLY a JSON object: {"destination": "${form.destination}", "summary": "...", "lodgingSuggestions": [{"name": "...", "type": "...", "priceRange": "...", "why": "..."}], "mustTryFoods": [{"dish": "...", "description": "..."}], "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "sightseeing", "cost": 0, "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "..."}]}]}. Use real GPS coordinates.`;
+            const prompt = `Generate a high-end itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. 
+            CRITICAL: Return ONLY JSON. Every activity and hotel MUST have: "website", "bookingUrl", and "imageUrl" (use realistic unsplash links if unknown). 
+            Schema: {
+              "destination": "...", "summary": "...",
+              "lodgingSuggestions": [{"name": "...", "type": "...", "price": "₹...", "website": "...", "bookingUrl": "...", "imageUrl": "...", "why": "..."}],
+              "mustTryFoods": [{"dish": "...", "description": "...", "imageUrl": "..."}],
+              "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "...", "cost": 0, "website": "...", "imageUrl": "...", "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "...", "website": "..."}]}]
+            }`;
             
             const result = await callGeminiAPI(model, apiKey, prompt);
             setItinerary(result);
-            return; // Success!
+            return;
         } catch (e) {
-            console.warn(`${model} failed:`, e);
             lastError = e;
         }
     }
-    throw lastError || new Error("All AI models failed. Please verify your internet connection and API key.");
+    throw lastError;
   };
 
   const callGeminiAPI = async (model, key, prompt) => {
@@ -122,24 +96,18 @@ export default function Itinerary() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
+            generationConfig: { temperature: 0.3, response_mime_type: "application/json" }
         })
     });
-    
     const data = await response.json();
-    if (data.error) throw new Error(`${model}: ${data.error.message}`);
-    
+    if (data.error) throw new Error(data.error.message);
     let raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!raw) throw new Error(`${model}: Empty content`);
-
     raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error(`${model}: No JSON structure found`);
-    return JSON.parse(match[0]);
+    return JSON.parse(raw);
   };
 
   const handleChat = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || chatLoading) return;
     const userMsg = inputValue;
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setInputValue('');
@@ -147,7 +115,7 @@ export default function Itinerary() {
 
     try {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-        const prompt = `Itinerary: ${JSON.stringify(itinerary)}. Request: "${userMsg}". Reply as Travel Concierge. If changing itinerary, return FULL JSON in <json>...</json>.`;
+        const prompt = `Context Itinerary: ${JSON.stringify(itinerary)}. User: "${userMsg}". Reply as Concierge. If changing, wrap FULL JSON in <json>...</json>.`;
         
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
@@ -155,291 +123,288 @@ export default function Itinerary() {
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const data = await response.json();
-        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process that.";
 
         const jsonMatch = raw.match(/<json>([\s\S]*?)<\/json>/);
         let textResponse = raw.replace(/<json>[\s\S]*?<\/json>/g, '').trim();
 
         if (jsonMatch) {
-            setItinerary(JSON.parse(jsonMatch[1]));
-            textResponse = textResponse || "Itinerary updated!";
+            try {
+                const updated = JSON.parse(jsonMatch[1]);
+                setItinerary(updated);
+                textResponse = textResponse || "Itinerary updated!";
+            } catch(e) { console.error("Chat JSON error", e); }
         }
         setMessages(prev => [...prev, { role: 'bot', content: textResponse }]);
     } catch (err) {
-        setMessages(prev => [...prev, { role: 'bot', content: "Sorry, I'm having trouble with the connection." }]);
+        setMessages(prev => [...prev, { role: 'bot', content: "Connection error. Please check your API key." }]);
     } finally {
         setChatLoading(false);
     }
   };
 
   return (
-    <div className="wander-container">
-      {/* Real-World App Header */}
+    <div className="wander-root">
+      {/* Editorial Hero */}
       <header className="wander-hero" style={{ backgroundImage: `url(${heroImg})` }}>
-        <div className="hero-gradient" />
-        <div className="hero-content">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="location-chip">
-            <MapPin size={12} /> {form.destination.toUpperCase() || 'PLANNING TRIP'}
+        <div className="hero-overlay" />
+        <div className="hero-body">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="hero-loc-badge">
+             <MapPin size={12} /> {form.destination.toUpperCase() || 'WORLD'}
           </motion.div>
-          <h1>{itinerary?.destination || 'Your Next Adventure'}</h1>
-          <p>{itinerary?.summary || 'Experience the world like never before with AI-curated journeys.'}</p>
-          <div className="hero-badges">
-             <div className="h-badge"><span>{form.days}</span> Days</div>
-             <div className="h-badge"><span>{form.vibe}</span> Trip</div>
-          </div>
+          <h1>{itinerary?.destination || 'Plan Your Story'}</h1>
+          <p>{itinerary?.summary || 'Tailored AI journeys with integrated booking and culinary guides.'}</p>
         </div>
       </header>
 
       <div className="wander-grid">
         {/* Architect Sidebar */}
-        <aside className="wander-sidebar">
-          <div className="architect-card glass">
-            <div className="card-label">ARCHITECT CONTROLS</div>
-            <div className="w-field">
-              <label>DESTINATION</label>
-              <div className="w-input"><Globe size={14} /><input value={form.destination} onChange={e => setForm({...form, destination: e.target.value})} placeholder="Paris, France" /></div>
-            </div>
-            <div className="w-field">
-              <label>DURATION</label>
-              <div className="w-input"><Calendar size={14} /><input type="number" value={form.days} onChange={e => setForm({...form, days: e.target.value})} /></div>
-            </div>
-            <div className="w-field">
-              <label>VIBE</label>
-              <div className="w-input"><TrendingUp size={14} />
-                <select value={form.vibe} onChange={e => setForm({...form, vibe: e.target.value})}>
-                  <option value="balanced">Balanced</option>
-                  <option value="adventure">Hardcore Adventure</option>
-                  <option value="relaxed">Slow Travel</option>
-                  <option value="luxury">Ultra Luxury</option>
-                  <option value="budget">Backpacker Style</option>
-                </select>
-              </div>
-            </div>
-            <button className={`w-btn-primary ${loading ? 'loading' : ''}`} onClick={generateAI}>
-              {loading ? <RefreshCw className="spin" size={16} /> : <><Sparkles size={16} /> BUILD ITINERARY</>}
-            </button>
-
-            {errorDetails && (
-              <div className="error-box">
-                <AlertTriangle size={14} />
-                <p>{errorDetails}</p>
-              </div>
-            )}
+        <aside className="wander-sidebar no-print">
+          <div className="glass-card architect-box">
+             <div className="box-label">ARCHITECT CONTROLS</div>
+             <div className="w-field">
+                <label>DESTINATION</label>
+                <div className="w-input-v6"><Globe size={14} /><input value={form.destination} onChange={e => setForm({...form, destination: e.target.value})} /></div>
+             </div>
+             <div className="w-field">
+                <label>DAYS</label>
+                <div className="w-input-v6"><Calendar size={14} /><input type="number" value={form.days} onChange={e => setForm({...form, days: e.target.value})} /></div>
+             </div>
+             <div className="w-field">
+                <label>VIBE</label>
+                <div className="w-input-v6"><TrendingUp size={14} />
+                    <select value={form.vibe} onChange={e => setForm({...form, vibe: e.target.value})}>
+                        <option value="balanced">Balanced</option>
+                        <option value="luxury">Luxury</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="budget">Reasonable</option>
+                    </select>
+                </div>
+             </div>
+             <button className={`btn-primary-v6 ${loading ? 'loading' : ''}`} onClick={generateAI}>
+                {loading ? <RefreshCw className="spin" size={16} /> : <><Sparkles size={16} /> BUILD JOURNEY</>}
+             </button>
+             {errorDetails && <div className="error-alert"><AlertTriangle size={14} /> {errorDetails}</div>}
           </div>
 
           {itinerary && (
-            <motion.div className="lodging-card glass" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="card-label"><Hotel size={12} /> WHERE TO STAY</div>
-              {itinerary.lodgingSuggestions?.map((l, i) => (
-                <div key={i} className="l-item">
-                  <strong>{l.name}</strong>
-                  <span>{l.type} • {l.priceRange}</span>
-                </div>
-              ))}
+            <motion.div className="glass-card lodging-box" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+               <div className="box-label"><Hotel size={12} /> BEST STAYS</div>
+               {itinerary.lodgingSuggestions?.map((h, i) => (
+                   <div key={i} className="h-card-v6">
+                      {h.imageUrl && <img src={h.imageUrl} alt={h.name} className="h-img" />}
+                      <div className="h-info-v6">
+                         <strong>{h.name}</strong>
+                         <div className="h-price">{h.price} / night</div>
+                         <p>{h.why}</p>
+                         <div className="h-links">
+                            <a href={h.website} target="_blank" rel="noreferrer"><ExternalLink size={10} /> Official</a>
+                            <a href={h.bookingUrl} target="_blank" rel="noreferrer" className="book-link"><CreditCard size={10} /> Book Now</a>
+                         </div>
+                      </div>
+                   </div>
+               ))}
             </motion.div>
           )}
         </aside>
 
-        {/* Timeline Feed */}
-        <main className="wander-feed">
-          {!itinerary && !loading && (
-            <div className="wander-empty glass">
-              <Navigation size={48} className="float-anim" />
-              <h2>No Itinerary Found</h2>
-              <p>Configure your Architect Controls on the left to start planning your perfect getaway.</p>
-            </div>
-          )}
-
-          {itinerary && itinerary.days.map((day, dIdx) => (
-            <div key={dIdx} className={`wander-day ${expandedDay === dIdx ? 'open' : ''}`}>
-              <div className="day-bar" onClick={() => setExpandedDay(expandedDay === dIdx ? -1 : dIdx)}>
-                <div className="day-num">DAY {day.day}</div>
-                <div className="day-title">
-                   <h4>{day.theme}</h4>
-                   <div className="day-stats">{day.activities.length} Stops • Local Dining</div>
+        {/* Narrative Feed */}
+        <main className="wander-main">
+            {!itinerary && !loading && (
+                <div className="empty-state-v6 glass">
+                    <Navigation size={48} className="float-anim" />
+                    <h2>The Atlas Awaits</h2>
+                    <p>Enter a destination and duration to generate a connected itinerary.</p>
                 </div>
-                <div className="day-arrow">{expandedDay === dIdx ? <ChevronDown /> : <ChevronRight />}</div>
-              </div>
+            )}
 
-              <AnimatePresence>
-                {expandedDay === dIdx && (
-                  <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="day-body">
-                    <div className="timeline-v5">
-                      {day.activities.map((act, aIdx) => (
-                        <div key={aIdx} className="t-row">
-                          <div className="t-time">{act.time}</div>
-                          <div className="t-line"><div className="t-dot" /></div>
-                          <div className="t-content">
-                             <div className="t-header">
-                                <h5>{act.activity}</h5>
-                                <div className="t-type">{act.type}</div>
-                             </div>
-                             <p>{act.description}</p>
-                             <div className="t-footer">
-                                {act.cost > 0 && <span className="t-cost">Estimated ₹{act.cost}</span>}
-                                <span className="t-action"><PinIcon size={10} /> View Map</span>
-                             </div>
-                          </div>
+            {itinerary && itinerary.days.map((day, dIdx) => (
+                <div key={dIdx} className={`day-v6 ${expandedDay === dIdx ? 'expanded' : ''}`}>
+                    <div className="day-head-v6" onClick={() => setExpandedDay(expandedDay === dIdx ? -1 : dIdx)}>
+                        <div className="day-num-v6">D{day.day}</div>
+                        <div className="day-text-v6">
+                            <h4>{day.theme}</h4>
+                            <span>{day.activities.length} Activities • Dining</span>
                         </div>
-                      ))}
+                        <div className="day-arr-v6">{expandedDay === dIdx ? <ChevronDown /> : <ChevronRight />}</div>
                     </div>
 
-                    <div className="gastronomy-box">
-                       <div className="g-title"><Utensils size={10} /> DINING SELECTIONS</div>
-                       <div className="g-grid">
-                          {day.diningHighlights?.map((dn, di) => (
-                            <div key={di} className="g-card glass">
-                               <strong>{dn.name}</strong>
-                               <p>{dn.specialty} • {dn.cuisine}</p>
-                            </div>
-                          ))}
-                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
+                    <AnimatePresence>
+                        {expandedDay === dIdx && (
+                            <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="day-body-v6">
+                                <div className="timeline-v6">
+                                    {day.activities.map((act, aIdx) => (
+                                        <div key={aIdx} className="a-row-v6">
+                                            <div className="a-time-v6">{act.time}</div>
+                                            <div className="a-connector-v6"><div className="a-dot-v6" /></div>
+                                            <div className="a-main-v6">
+                                                <div className="a-head-v6">
+                                                    <h5>{act.activity}</h5>
+                                                    <a href={act.website} target="_blank" rel="noreferrer"><ExternalLink size={12} /></a>
+                                                </div>
+                                                {act.imageUrl && <img src={act.imageUrl} alt={act.activity} className="a-img-v6" />}
+                                                <p>{act.description}</p>
+                                                <div className="a-meta-v6">
+                                                    <span className="a-tag">{act.type}</span>
+                                                    {act.cost > 0 && <span className="a-cost">₹{act.cost}</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="dining-box-v6">
+                                    <div className="box-label"><Utensils size={10} /> DINING HIGHLIGHTS</div>
+                                    <div className="d-grid-v6">
+                                        {day.diningHighlights?.map((dn, di) => (
+                                            <div key={di} className="d-card-v6 glass">
+                                                <strong>{dn.name}</strong>
+                                                <span>{dn.cuisine} • {dn.specialty}</span>
+                                                <a href={dn.website} target="_blank" rel="noreferrer" className="d-link">Website <ArrowRight size={10} /></a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            ))}
         </main>
 
-        {/* Live Map Sidebar */}
-        <aside className="wander-map-aside">
-          <div className="sticky-map glass">
-            <div className="map-label"><MapIcon size={12} /> REAL-TIME NAVIGATION</div>
-            <div className="map-view-it">
-               <TripMap activities={itinerary?.days?.flatMap(d => d.activities) || []} />
+        {/* Geographic Sidebar */}
+        <aside className="wander-map no-print">
+            <div className="sticky-map-v6 glass">
+                <div className="box-label"><MapIcon size={12} /> LIVE ROUTE</div>
+                <div className="map-wrapper-v6">
+                    <TripMap activities={itinerary?.days?.flatMap(d => d.activities) || []} />
+                </div>
             </div>
-          </div>
         </aside>
       </div>
 
-      {/* Floating Concierge Assistant */}
-      <div className="bot-trigger no-print">
-        <button className="bot-btn" onClick={() => setShowChat(true)}>
-           <div className="bot-avatar"><Bot size={28} /></div>
-           <div className="bot-pulse" />
-        </button>
+      {/* Floating Concierge Chat */}
+      <div className="concierge-box no-print">
+         <button className="concierge-trigger-v6" onClick={() => setShowChat(!showChat)}>
+            <div className="bot-ico-v6"><Bot size={28} /></div>
+            <div className="bot-status-v6" />
+         </button>
       </div>
 
       <AnimatePresence>
         {showChat && (
-          <motion.div className="bot-panel glass" initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}>
-            <div className="bot-header">
-               <div className="bh-user">
-                  <div className="avatar-mini"><Bot size={16} /></div>
-                  <div>
-                    <h4>Trip Concierge</h4>
-                    <span>Active Now</span>
-                  </div>
-               </div>
-               <button className="close-bot" onClick={() => setShowChat(false)}><X size={20} /></button>
-            </div>
-            
-            <div className="bot-chat">
-               {messages.map((m, i) => (
-                 <div key={i} className={`chat-bubble ${m.role}`}>
-                    {m.content}
-                 </div>
-               ))}
-               {chatLoading && <div className="chat-bubble bot typing">...</div>}
-               <div ref={chatEndRef} />
-            </div>
+            <motion.div className="chat-ui-v6 glass" initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}>
+                <div className="chat-head-v6">
+                    <div className="h-bot">
+                        <div className="bot-min"><Bot size={16} /></div>
+                        <div><h4>Travel Concierge</h4><span>Always Active</span></div>
+                    </div>
+                    <button onClick={() => setShowChat(false)}><X size={20} /></button>
+                </div>
+                
+                <div className="chat-body-v6">
+                    {messages.map((m, i) => (
+                        <div key={i} className={`msg-v6 ${m.role}`}>
+                            <div className="msg-content-v6">{m.content}</div>
+                        </div>
+                    ))}
+                    {chatLoading && <div className="msg-v6 bot"><div className="typing-v6">...</div></div>}
+                    <div ref={chatEndRef} />
+                </div>
 
-            <div className="bot-footer">
-               <input placeholder="Ask me to swap a place..." value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleChat()} />
-               <button onClick={handleChat} disabled={chatLoading}><Send size={18} /></button>
-            </div>
-          </motion.div>
+                <div className="chat-foot-v6">
+                    <input 
+                        placeholder="Ask for booking links..." 
+                        value={inputValue}
+                        onChange={e => setInputValue(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleChat()}
+                    />
+                    <button onClick={handleChat} disabled={chatLoading}><Send size={18} /></button>
+                </div>
+            </motion.div>
         )}
       </AnimatePresence>
 
       <style>{`
-        .wander-container { display: flex; flex-direction: column; gap: 2rem; background: hsl(var(--bg)); padding-bottom: 5rem; }
+        .wander-root { display: flex; flex-direction: column; gap: 2rem; padding-bottom: 5rem; }
         
-        .wander-hero { height: 450px; background-size: cover; background-position: center; position: relative; border-radius: 40px; margin: 0 1rem; overflow: hidden; display: flex; align-items: center; padding: 0 4rem; }
-        .hero-gradient { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, transparent 60%); }
-        .hero-content { position: relative; z-index: 2; color: #fff; max-width: 700px; }
-        .location-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; background: hsl(var(--p)); color: #fff; padding: 5px 15px; border-radius: 100px; margin-bottom: 1.5rem; letter-spacing: 0.1em; }
-        .hero-content h1 { font-size: 5rem; font-weight: 950; letter-spacing: -0.05em; line-height: 0.9; margin-bottom: 1.5rem; }
-        .hero-content p { font-size: 1.1rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 2rem; }
-        .hero-badges { display: flex; gap: 1rem; }
-        .h-badge { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); }
-        .h-badge span { color: hsl(var(--p-light)); }
+        .wander-hero { height: 400px; background-size: cover; background-position: center; border-radius: 40px; margin: 0 1rem; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 4rem; }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 60%); }
+        .hero-body { position: relative; z-index: 2; color: #fff; }
+        .hero-loc-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; background: hsl(var(--p)); padding: 4px 12px; border-radius: 100px; margin-bottom: 1rem; }
+        .hero-body h1 { font-size: 4rem; font-weight: 950; letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.5rem; }
+        .hero-body p { font-size: 1rem; color: rgba(255,255,255,0.7); }
 
-        .wander-grid { display: grid; grid-template-columns: 300px 1fr 340px; gap: 1.5rem; padding: 0 1rem; align-items: start; }
-        .card-label { font-size: 0.65rem; font-weight: 950; color: hsl(var(--p)); letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+        .wander-grid { display: grid; grid-template-columns: 320px 1fr 350px; gap: 1.5rem; padding: 0 1rem; align-items: start; }
+        .box-label { font-size: 0.6rem; font-weight: 950; color: hsl(var(--p)); letter-spacing: 0.1em; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
         
-        .architect-card { padding: 1.5rem; border-radius: 24px; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 28px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        
         .w-field { margin-bottom: 1rem; }
-        .w-field label { font-size: 0.6rem; font-weight: 900; color: hsl(var(--text-muted)); margin-bottom: 6px; display: block; }
-        .w-input { display: flex; align-items: center; gap: 10px; background: hsla(var(--text) / 0.04); border: 1px solid hsl(var(--border)); padding: 0.7rem 1rem; border-radius: 12px; color: inherit; }
-        .w-input input, .w-input select { background: none; border: none; outline: none; font-size: 0.85rem; font-weight: 600; width: 100%; color: inherit; }
+        .w-field label { font-size: 0.6rem; font-weight: 900; color: hsl(var(--text-muted)); margin-bottom: 4px; display: block; }
+        .w-input-v6 { display: flex; align-items: center; gap: 10px; background: hsla(var(--text) / 0.04); border: 1px solid hsl(var(--border)); padding: 0.6rem 1rem; border-radius: 14px; }
+        .w-input-v6 input, .w-input-v6 select { background: none; border: none; outline: none; font-size: 0.85rem; font-weight: 600; width: 100%; color: inherit; }
         
-        .w-btn-primary { width: 100%; padding: 1rem; border-radius: 16px; background: hsl(var(--p)); color: #fff; border: none; font-weight: 900; font-size: 0.8rem; cursor: pointer; transition: 0.3s; margin-top: 1rem; box-shadow: 0 10px 25px hsla(var(--p) / 0.4); }
-        .error-box { margin-top: 1rem; padding: 0.75rem; border-radius: 12px; background: hsla(var(--danger) / 0.1); color: hsl(var(--danger)); font-size: 0.65rem; display: flex; gap: 8px; align-items: center; }
+        .btn-primary-v6 { width: 100%; padding: 1rem; border-radius: 15px; background: hsl(var(--p)); color: #fff; font-weight: 900; border: none; cursor: pointer; box-shadow: 0 10px 25px hsla(var(--p) / 0.4); }
 
-        .lodging-card { padding: 1.5rem; border-radius: 24px; margin-top: 1.5rem; }
-        .l-item { margin-bottom: 1rem; }
-        .l-item strong { display: block; font-size: 0.85rem; font-weight: 800; }
-        .l-item span { font-size: 0.7rem; color: hsl(var(--text-muted)); }
+        .h-card-v6 { margin-bottom: 1.5rem; border-radius: 20px; overflow: hidden; background: hsla(var(--text) / 0.03); border: 1px solid var(--glass-border); }
+        .h-img { width: 100%; height: 120px; object-fit: cover; }
+        .h-info-v6 { padding: 1rem; }
+        .h-info-v6 strong { font-size: 0.85rem; display: block; }
+        .h-price { font-size: 0.7rem; color: hsl(var(--p)); font-weight: 800; margin-bottom: 4px; }
+        .h-info-v6 p { font-size: 0.65rem; color: hsl(var(--text-muted)); line-height: 1.4; margin-bottom: 1rem; }
+        .h-links { display: flex; gap: 8px; }
+        .h-links a { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--glass-border); display: flex; align-items: center; gap: 4px; color: inherit; text-decoration: none; }
+        .book-link { background: hsla(var(--p) / 0.1); border-color: hsla(var(--p) / 0.2) !important; color: hsl(var(--p)) !important; }
 
-        .wander-day { border-radius: 30px; background: var(--glass-bg); border: 1px solid var(--glass-border); margin-bottom: 1rem; overflow: hidden; transition: 0.3s; }
-        .day-bar { padding: 1.5rem 2rem; display: flex; align-items: center; gap: 2rem; cursor: pointer; }
-        .day-num { font-size: 0.75rem; font-weight: 950; background: hsl(var(--p)); color: #fff; padding: 4px 12px; border-radius: 8px; }
-        .day-title h4 { font-size: 1.5rem; font-weight: 900; line-height: 1.2; }
-        .day-stats { font-size: 0.8rem; color: hsl(var(--text-muted)); font-weight: 600; margin-top: 2px; }
+        .day-v6 { background: var(--glass-bg); border-radius: 30px; border: 1px solid var(--glass-border); margin-bottom: 1rem; overflow: hidden; }
+        .day-head-v6 { padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1.5rem; cursor: pointer; }
+        .day-num-v6 { font-size: 0.8rem; font-weight: 950; background: hsl(var(--p)); color: #fff; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .day-text-v6 h4 { font-size: 1.25rem; font-weight: 900; }
+        .day-text-v6 span { font-size: 0.75rem; color: hsl(var(--text-muted)); font-weight: 600; }
         
-        .day-body { padding: 0 2rem 2.5rem; }
-        .timeline-v5 { border-left: 1px dashed hsla(var(--border) / 0.8); margin-left: 5px; padding-left: 2rem; }
-        .t-row { position: relative; padding-bottom: 2rem; }
-        .t-dot { position: absolute; left: -36px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--p)); box-shadow: 0 0 0 4px hsla(var(--p) / 0.1); }
-        .t-time { font-size: 0.7rem; font-weight: 900; color: hsl(var(--p)); margin-bottom: 4px; }
-        .t-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .t-header h5 { font-size: 1.1rem; font-weight: 850; }
-        .t-type { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; background: hsla(var(--text) / 0.05); padding: 3px 10px; border-radius: 6px; }
-        .t-content p { font-size: 0.95rem; color: hsl(var(--text-muted)); line-height: 1.6; }
-        .t-footer { display: flex; gap: 15px; margin-top: 10px; font-size: 0.75rem; font-weight: 800; }
-        .t-cost { color: hsl(var(--success)); }
-        .t-action { color: hsl(var(--p)); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .day-body-v6 { padding: 0 2rem 2rem; }
+        .timeline-v6 { padding-left: 20px; border-left: 1px dashed var(--glass-border); margin-left: 5px; }
+        .a-row-v6 { position: relative; padding-bottom: 2rem; }
+        .a-dot-v6 { position: absolute; left: -34px; top: 12px; width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--p)); }
+        .a-time-v6 { font-size: 0.7rem; font-weight: 900; color: hsl(var(--p)); margin-bottom: 6px; }
+        .a-head-v6 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .a-head-v6 h5 { font-size: 1.1rem; font-weight: 850; }
+        .a-img-v6 { width: 100%; height: 180px; object-fit: cover; border-radius: 16px; margin-bottom: 1rem; }
+        .a-main-v6 p { font-size: 0.9rem; color: hsl(var(--text-muted)); line-height: 1.5; }
+        .a-meta-v6 { display: flex; gap: 10px; margin-top: 10px; font-size: 0.75rem; font-weight: 800; }
+        
+        .dining-box-v6 { margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 2rem; }
+        .d-grid-v6 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .d-card-v6 { padding: 1rem; border-radius: 16px; display: flex; flex-direction: column; }
+        .d-link { font-size: 0.65rem; font-weight: 900; color: hsl(var(--p)); text-decoration: none; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
 
-        .gastronomy-box { margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 2rem; }
-        .g-title { font-size: 0.65rem; font-weight: 950; color: hsl(var(--p)); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
-        .g-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .g-card { padding: 1.25rem; border-radius: 20px; }
+        .sticky-map-v6 { position: sticky; top: 1.5rem; height: 600px; display: flex; flex-direction: column; overflow: hidden; border-radius: 40px; }
+        .map-wrapper-v6 { flex: 1; }
 
-        .sticky-map { position: sticky; top: 1.5rem; height: 600px; border-radius: 40px; overflow: hidden; display: flex; flex-direction: column; }
-        .map-label { padding: 1.25rem; font-size: 0.7rem; font-weight: 950; border-bottom: 1px solid var(--glass-border); }
-        .map-view-it { flex: 1; }
+        /* Chat Concierge v6 */
+        .concierge-box { position: fixed; bottom: 3rem; right: 3rem; z-index: 1000; }
+        .concierge-trigger-v6 { width: 72px; height: 72px; border-radius: 50%; background: #fff; border: none; box-shadow: 0 15px 40px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
+        .bot-ico-v6 { color: hsl(var(--p)); }
+        .bot-status-v6 { position: absolute; top: 0; right: 0; width: 16px; height: 16px; background: hsl(var(--success)); border: 3px solid #fff; border-radius: 50%; }
 
-        /* Bot Realism */
-        .bot-trigger { position: fixed; bottom: 3rem; right: 3rem; z-index: 1000; }
-        .bot-btn { width: 72px; height: 72px; border-radius: 50%; border: none; background: #fff; box-shadow: 0 15px 40px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
-        .bot-avatar { color: hsl(var(--p)); z-index: 2; position: relative; }
-        .bot-pulse { position: absolute; inset: 0; border-radius: 50%; border: 4px solid hsla(var(--p) / 0.3); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        .chat-ui-v6 { position: fixed; right: 3rem; bottom: 8.5rem; width: 380px; height: 500px; border-radius: 35px; overflow: hidden; display: flex; flex-direction: column; z-index: 1001; box-shadow: 0 40px 100px rgba(0,0,0,0.3); }
+        .chat-head-v6 { padding: 1.25rem 1.5rem; background: hsla(var(--p) / 0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .h-bot { display: flex; align-items: center; gap: 10px; }
+        .bot-min { width: 32px; height: 32px; background: hsl(var(--p)); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .h-bot h4 { font-size: 0.9rem; font-weight: 900; }
+        .h-bot span { font-size: 0.65rem; color: hsl(var(--success)); font-weight: 800; }
 
-        .bot-panel { position: fixed; right: 3rem; bottom: 8.5rem; width: 400px; height: 550px; border-radius: 35px; overflow: hidden; z-index: 1001; display: flex; flex-direction: column; box-shadow: 0 40px 100px rgba(0,0,0,0.3); }
-        .bot-header { padding: 1.5rem; background: hsla(var(--p) / 0.1); border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
-        .bh-user { display: flex; align-items: center; gap: 12px; }
-        .avatar-mini { width: 32px; height: 32px; background: hsl(var(--p)); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .bh-user h4 { font-size: 1rem; font-weight: 900; }
-        .bh-user span { font-size: 0.7rem; color: hsl(var(--success)); font-weight: 800; display: flex; align-items: center; gap: 4px; }
-        .bh-user span::before { content: ''; width: 6px; height: 6px; background: currentColor; border-radius: 50%; }
+        .chat-body-v6 { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+        .msg-v6 { max-width: 85%; padding: 0.8rem 1.1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; line-height: 1.5; }
+        .msg-v6.user { align-self: flex-end; background: hsl(var(--p)); color: #fff; border-bottom-right-radius: 4px; }
+        .msg-v6.bot { align-self: flex-start; background: hsla(var(--text) / 0.05); border-bottom-left-radius: 4px; border: 1px solid var(--glass-border); }
+        
+        .chat-foot-v6 { padding: 1rem; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
+        .chat-foot-v6 input { flex: 1; background: hsla(var(--text) / 0.05); border: 1px solid var(--glass-border); padding: 0.75rem 1.25rem; border-radius: 15px; outline: none; font-size: 0.85rem; }
+        .chat-foot-v6 button { width: 44px; height: 44px; background: hsl(var(--p)); color: #fff; border: none; border-radius: 12px; cursor: pointer; }
 
-        .bot-chat { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
-        .chat-bubble { max-width: 85%; padding: 1rem 1.25rem; border-radius: 20px; font-size: 0.9rem; font-weight: 500; line-height: 1.5; }
-        .chat-bubble.user { align-self: flex-end; background: hsl(var(--p)); color: #fff; border-bottom-right-radius: 4px; }
-        .chat-bubble.bot { align-self: flex-start; background: hsla(var(--text) / 0.05); border-bottom-left-radius: 4px; }
-
-        .bot-footer { padding: 1.25rem; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
-        .bot-footer input { flex: 1; background: hsla(var(--text) / 0.05); border: 1px solid var(--glass-border); padding: 0.8rem 1.25rem; border-radius: 15px; font-size: 0.9rem; outline: none; }
-        .bot-footer button { width: 48px; height: 48px; background: hsl(var(--p)); color: #fff; border: none; border-radius: 15px; cursor: pointer; }
-
-        @media (max-width: 1400px) {
-            .wander-grid { grid-template-columns: 280px 1fr; }
-            .wander-map-aside { display: none; }
-            .hero-content h1 { font-size: 3.5rem; }
-        }
+        @media (max-width: 1400px) { .wander-grid { grid-template-columns: 280px 1fr; } .wander-map { display: none; } }
+        @media (max-width: 768px) { .chat-ui-v6 { width: calc(100% - 2rem); right: 1rem; } .wander-hero { padding: 2rem; } .hero-body h1 { font-size: 3rem; } }
       `}</style>
     </div>
   );
