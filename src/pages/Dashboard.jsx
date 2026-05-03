@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -38,7 +39,8 @@ const RadarChart = ({ data, theme }) => {
 };
 
 export default function Dashboard() {
-  const { items, members, expenses, tripConfig, setTripConfig, theme } = useApp();
+  const { items, members, expenses, tripConfig, setTripConfig, theme, currentUser } = useApp();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [tempDest, setTempDest] = useState(tripConfig.destination);
   const [weather, setWeather] = useState({ temp: 24, desc: 'Fetching...', icon: <CloudSun size={24} />, forecast: [] });
@@ -202,10 +204,10 @@ export default function Dashboard() {
 
         {/* Activity Quick Access */}
         <div className="quick-access-grid">
-            <button className="qa-item glass"><Compass /> <span>Explore</span></button>
-            <button className="qa-item glass"><IndianRupee /> <span>Wallet</span></button>
-            <button className="qa-item glass"><Users /> <span>Social</span></button>
-            <button className="qa-item glass"><Briefcase /> <span>Vault</span></button>
+            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/itinerary`)}><Compass /> <span>Explore</span></button>
+            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/expenses`)}><IndianRupee /> <span>Wallet</span></button>
+            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/members`)}><Users /> <span>Social</span></button>
+            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/vault`)}><Briefcase /> <span>Vault</span></button>
         </div>
       </div>
 
