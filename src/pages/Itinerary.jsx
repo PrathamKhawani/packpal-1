@@ -64,26 +64,63 @@ export default function Itinerary() {
 
   const generateDirectlyWithRetry = async () => {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("API Key missing.");
+    if (!apiKey) throw new Error("API Key missing. Add VITE_GEMINI_API_KEY to your .env file.");
 
-    // Only testing the absolute standard model.
-    const model = "gemini-1.5-flash"; 
+    let modelsToTry = ["gemini-pro", "gemini-1.5-flash", "gemini-1.0-pro"]; 
 
     try {
-        const prompt = `Generate a high-end itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. 
-        CRITICAL: Return ONLY JSON. Every activity and hotel MUST have: "website", "bookingUrl", and "imageUrl" (use realistic unsplash links if unknown). 
-        Schema: {
-          "destination": "...", "summary": "...",
-          "lodgingSuggestions": [{"name": "...", "type": "...", "price": "₹...", "website": "...", "bookingUrl": "...", "imageUrl": "...", "why": "..."}],
-          "mustTryFoods": [{"dish": "...", "description": "...", "imageUrl": "..."}],
-          "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "...", "cost": 0, "website": "...", "imageUrl": "...", "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "...", "website": "..."}]}]
-        }`;
-        const result = await callGeminiAPI(model, apiKey, prompt);
-        setItinerary(result);
+        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        if (listRes.ok) {
+            const listData = await listRes.json();
+            if (listData.models) {
+                // Get EVERY model that supports text generation
+                const allValid = listData.models
+                    .filter(m => m.supportedGenerationMethods?.includes("generateContent") && !m.name.includes("vision"))
+                    .map(m => m.name.split("/").pop());
+                
+                if (allValid.length > 0) {
+                    modelsToTry = allValid;
+                    // Sort to prioritize known good ones if they exist
+                    modelsToTry.sort((a, b) => {
+                        if (a === "gemini-pro") return -1;
+                        if (b === "gemini-pro") return 1;
+                        if (a.includes("flash")) return -1;
+                        if (b.includes("flash")) return 1;
+                        return 0;
+                    });
+                }
+            }
+        }
     } catch (e) {
-        console.error(`Attempt with ${model} failed:`, e);
-        throw e; // Throw the EXACT error so the user sees it, not a masked fallback error
+        console.warn("Discovery failed, using aggressive defaults.");
     }
+
+    let lastError = null;
+    let successfulModel = null;
+
+    for (const model of modelsToTry) {
+        try {
+            console.log(`Testing model: ${model}`);
+            const prompt = `Generate a high-end itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. 
+            CRITICAL: Return ONLY JSON. Every activity and hotel MUST have: "website", "bookingUrl", and "imageUrl" (use realistic unsplash links if unknown). 
+            Schema: {
+              "destination": "...", "summary": "...",
+              "lodgingSuggestions": [{"name": "...", "type": "...", "price": "₹...", "website": "...", "bookingUrl": "...", "imageUrl": "...", "why": "..."}],
+              "mustTryFoods": [{"dish": "...", "description": "...", "imageUrl": "..."}],
+              "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "...", "cost": 0, "website": "...", "imageUrl": "...", "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "...", "website": "..."}]}]
+            }`;
+            const result = await callGeminiAPI(model, apiKey, prompt);
+            setItinerary(result);
+            successfulModel = model;
+            console.log(`Success! Using model: ${successfulModel}`);
+            localStorage.setItem('working_gemini_model', successfulModel);
+            return;
+        } catch (e) {
+            console.warn(`${model} failed:`, e.message);
+            lastError = e;
+        }
+    }
+    throw lastError || new Error("Your API key does not have access to any compatible text generation models.");
   };
 
   const callGeminiAPI = async (model, key, prompt) => {
@@ -120,7 +157,9 @@ export default function Itinerary() {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
         const prompt = `Context Itinerary: ${JSON.stringify(itinerary)}. User: "${userMsg}". Reply as Concierge. If changing, wrap FULL JSON in <json>...</json>.`;
         
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const activeModel = localStorage.getItem('working_gemini_model') || 'gemini-pro';
+        
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
