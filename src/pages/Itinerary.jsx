@@ -66,9 +66,29 @@ export default function Itinerary() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("API Key missing.");
 
-    const availableModels = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"];
-    let lastError = null;
+    // Start with the most reliable v1beta models
+    let availableModels = ["gemini-1.5-flash", "gemini-1.5-pro"]; 
+    
+    try {
+        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const listData = await listRes.json();
+        if (listData.models) {
+            // Only use models that support generateContent AND are 1.5 versions (most stable for v1beta)
+            const discovered = listData.models
+                .filter(m => m.supportedGenerationMethods.includes("generateContent") && m.name.includes("1.5"))
+                .map(m => m.name.split("/").pop());
+            
+            if (discovered.length > 0) {
+                availableModels = discovered;
+                // Prioritize Flash for speed
+                availableModels.sort((a, b) => a.includes("flash") ? -1 : 1);
+            }
+        }
+    } catch (e) {
+        console.warn("Discovery failed, sticking to stable 1.5 defaults.");
+    }
 
+    let lastError = null;
     for (const model of availableModels) {
         try {
             const prompt = `Generate a high-end itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. 
@@ -79,15 +99,15 @@ export default function Itinerary() {
               "mustTryFoods": [{"dish": "...", "description": "...", "imageUrl": "..."}],
               "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "...", "cost": 0, "website": "...", "imageUrl": "...", "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "...", "website": "..."}]}]
             }`;
-            
             const result = await callGeminiAPI(model, apiKey, prompt);
             setItinerary(result);
             return;
         } catch (e) {
+            console.error(`Attempt with ${model} failed:`, e);
             lastError = e;
         }
     }
-    throw lastError;
+    throw lastError || new Error("AI engine failed to find a compatible model. Check your API key.");
   };
 
   const callGeminiAPI = async (model, key, prompt) => {
