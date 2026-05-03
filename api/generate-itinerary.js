@@ -71,8 +71,7 @@ Rules:
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.4,
-            maxOutputTokens: 8192,
-            response_mime_type: "application/json"
+            maxOutputTokens: 8192
           }
         })
       }

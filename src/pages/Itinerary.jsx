@@ -66,29 +66,24 @@ export default function Itinerary() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("API Key missing.");
 
-    // Hardcoded stable models to absolutely prevent any 'model not found' or 'preview' errors.
-    const availableModels = ["gemini-1.5-flash", "gemini-1.5-pro"]; 
+    // Only testing the absolute standard model.
+    const model = "gemini-1.5-flash"; 
 
-    let lastError = null;
-    for (const model of availableModels) {
-        try {
-            const prompt = `Generate a high-end itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. 
-            CRITICAL: Return ONLY JSON. Every activity and hotel MUST have: "website", "bookingUrl", and "imageUrl" (use realistic unsplash links if unknown). 
-            Schema: {
-              "destination": "...", "summary": "...",
-              "lodgingSuggestions": [{"name": "...", "type": "...", "price": "₹...", "website": "...", "bookingUrl": "...", "imageUrl": "...", "why": "..."}],
-              "mustTryFoods": [{"dish": "...", "description": "...", "imageUrl": "..."}],
-              "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "...", "cost": 0, "website": "...", "imageUrl": "...", "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "...", "website": "..."}]}]
-            }`;
-            const result = await callGeminiAPI(model, apiKey, prompt);
-            setItinerary(result);
-            return;
-        } catch (e) {
-            console.error(`Attempt with ${model} failed:`, e);
-            lastError = e;
-        }
+    try {
+        const prompt = `Generate a high-end itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. 
+        CRITICAL: Return ONLY JSON. Every activity and hotel MUST have: "website", "bookingUrl", and "imageUrl" (use realistic unsplash links if unknown). 
+        Schema: {
+          "destination": "...", "summary": "...",
+          "lodgingSuggestions": [{"name": "...", "type": "...", "price": "₹...", "website": "...", "bookingUrl": "...", "imageUrl": "...", "why": "..."}],
+          "mustTryFoods": [{"dish": "...", "description": "...", "imageUrl": "..."}],
+          "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "...", "cost": 0, "website": "...", "imageUrl": "...", "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "...", "website": "..."}]}]
+        }`;
+        const result = await callGeminiAPI(model, apiKey, prompt);
+        setItinerary(result);
+    } catch (e) {
+        console.error(`Attempt with ${model} failed:`, e);
+        throw e; // Throw the EXACT error so the user sees it, not a masked fallback error
     }
-    throw lastError || new Error("AI engine failed to find a compatible model. Check your API key.");
   };
 
   const callGeminiAPI = async (model, key, prompt) => {
@@ -97,14 +92,21 @@ export default function Itinerary() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.3, response_mime_type: "application/json" }
+            // Removed response_mime_type to prevent strict 400 errors
+            generationConfig: { temperature: 0.3 }
         })
     });
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
+    if (data.error) throw new Error(`Google API Error: ${data.error.message}`);
     let raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!raw) throw new Error("AI returned empty data.");
     raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(raw);
+    
+    // Find JSON block just in case there's surrounding text
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("Could not extract JSON from AI response.");
+    
+    return JSON.parse(match[0]);
   };
 
   const handleChat = async () => {
