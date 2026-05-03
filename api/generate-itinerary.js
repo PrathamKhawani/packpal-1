@@ -129,15 +129,21 @@ Rules:
       return res.status(502).json({ error: 'AI returned empty response (possibly blocked by safety filters).' });
     }
 
-    // Sanitize: Remove markdown code fences if present
-    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Bulletproof JSON extraction: find the first { and last }
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+        console.error('No JSON found in text:', rawText);
+        return res.status(502).json({ error: 'AI did not return a valid itinerary format. Please try again.' });
+    }
+    
+    const cleanJson = jsonMatch[0];
 
     let itinerary;
     try {
-        itinerary = JSON.parse(rawText);
+        itinerary = JSON.parse(cleanJson);
     } catch (parseErr) {
-        console.error('JSON Parse Error:', parseErr, 'Raw Text:', rawText);
-        return res.status(502).json({ error: 'AI returned malformed JSON data. Please try again.' });
+        console.error('JSON Parse Error:', parseErr, 'Clean Text:', cleanJson);
+        return res.status(502).json({ error: 'AI returned malformed data. Please try again.' });
     }
 
     return res.status(200).json(itinerary);
