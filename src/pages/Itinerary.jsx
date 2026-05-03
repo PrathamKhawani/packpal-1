@@ -40,7 +40,12 @@ export default function Itinerary() {
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
       setItinerary(data);
     } catch (err) {
-      alert(err.message || 'Failed to generate itinerary. Check your API key.');
+      const msg = err.message || '';
+      if (msg.includes('invalid response') || msg.includes('404')) {
+          alert('Local Dev Note: To use AI itineraries locally, you must run "npx vercel dev" instead of "npm run dev". This ensures the /api functions can read your .env file.');
+      } else {
+          alert(err.message || 'Failed to generate itinerary. Check your API key.');
+      }
     } finally {
       setLoading(false);
     }

@@ -35,7 +35,7 @@
   --bg: 222 47% 4%;
   --bg-card: 222 47% 6%;
   --text: 210 40% 98%;
-  --text-muted: 215 20% 65%;
+  --text-muted: 215 25% 75%;
   --border: 217 32% 12%;
   --p: 217 91% 60%;
   --p-light: 213 94% 68%;
@@ -80,6 +80,7 @@ body::before {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.02em;
+  color: inherit;
 }
 
 /* Utilities */
@@ -119,9 +120,10 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   border: 1px solid hsl(var(--border));
-  button, input, select, textarea {
-  font-family: inherit;
 }
+
+button, input, select, textarea {
+  font-family: inherit;
 }
 
 .btn {
