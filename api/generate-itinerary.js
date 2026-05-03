@@ -20,43 +20,40 @@ export default async function handler(req, res) {
   }
 
   const prompt = `
-Generate a minimalist ${days}-day travel itinerary for ${destination}.
+Generate a ${days}-day travel itinerary for ${destination}.
 Budget: ₹${budget} (MUST stay under). Vibe: ${vibe || 'balanced'}.
 
-CRITICAL VERCEL TIMEOUT CONSTRAINT:
-You have less than 5 seconds to respond. 
-- Include EXACTLY 2 events per day.
-- Event descriptions MUST be 3 to 6 words maximum.
-- Do not output markdown, comments, or extra text.
-
-Return ONLY minified JSON perfectly matching this schema:
+Return ONLY minified JSON (no markdown, no extra text) matching exactly this schema:
 {
   "destination": "${destination}",
-  "totalEstimatedCost": "₹...", 
+  "totalEstimatedCost": "₹...",
   "days": [
     {
       "day": 1,
-      "label": "Brief Day Label",
+      "label": "Day 1 - Brief Label",
       "events": [
         {
           "time": "9:00 AM",
-          "title": "Breakfast",
-          "description": "Eat local food.",
+          "title": "Short Title",
+          "description": "One short sentence.",
           "type": "food",
-          "estimatedCost": "₹..."
-        },
-        {
-          "time": "2:00 PM",
-          "title": "Visit Museum",
-          "description": "See historical artifacts.",
-          "type": "sightseeing",
-          "estimatedCost": "₹..."
+          "estimatedCost": "₹...",
+          "lat": 48.8566,
+          "lng": 2.3522
         }
       ]
     }
   ]
 }
+
+Rules:
+- 3 events per day maximum.
+- type must be one of: food, sightseeing, transport, activity, accommodation, shopping.
+- All costs in ₹.
+- CRITICAL: every event MUST have accurate lat and lng decimal coordinates for its exact specific location (restaurant, landmark, hotel address). Use real-world GPS coordinates.
+- Do not output markdown, code fences, or any text outside the JSON object.
 `;
+
 
   try {
     // 1. Discover available models dynamically to avoid standard 404 errors
@@ -100,7 +97,8 @@ Return ONLY minified JSON perfectly matching this schema:
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.4,
-            maxOutputTokens: 4096
+            maxOutputTokens: 8192,
+            response_mime_type: "application/json"
           }
         })
       }
@@ -125,26 +123,18 @@ Return ONLY minified JSON perfectly matching this schema:
     }
 
     const data = await response.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawText) {
       return res.status(502).json({ error: 'AI returned empty response (possibly blocked by safety filters).' });
     }
 
-    // Extra text stripping: find the exact JSON object bracket bounds
-    const match = rawText.match(/\{[\s\S]*\}/);
-    if (!match) {
-        return res.status(502).json({ error: 'AI output format was invalid. Please try again.\\n\\nRAW DUMP: ' + rawText });
-    }
-    
     let itinerary;
     try {
-        // Auto-repair missing trailing commas between objects (a common LLM JSON bug)
-        let repairedJson = match[0].replace(/\}\s*(?=\{)/g, '},');
-        itinerary = JSON.parse(repairedJson);
+        itinerary = JSON.parse(rawText);
     } catch (parseErr) {
         console.error('JSON Parse Error:', parseErr, 'Raw Text:', rawText);
-        return res.status(502).json({ error: 'AI returned malformed data. Details: ' + parseErr.message + '\\n\\nRAW DUMP: ' + rawText });
+        return res.status(502).json({ error: 'AI returned malformed JSON data. Please try again.' });
     }
 
     return res.status(200).json(itinerary);
