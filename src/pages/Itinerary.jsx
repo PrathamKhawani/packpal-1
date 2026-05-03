@@ -111,17 +111,33 @@ export default function Itinerary() {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        body: JSON.stringify({ 
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 8192,
+                response_mime_type: "application/json"
+            }
+        })
     });
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
     
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!raw) throw new Error("Empty AI response");
+    let raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!raw) throw new Error("The AI returned an empty response. This might be due to safety filters.");
 
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("Invalid JSON format from AI");
-    return JSON.parse(match[0]);
+    // Robust Sanitization: Handle markdown and whitespace
+    raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    try {
+        // Attempt direct parse first
+        return JSON.parse(raw);
+    } catch (e) {
+        // Fallback: extract the largest { ... } block
+        const match = raw.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error("The AI provided text but no valid itinerary data. Please try again.");
+        return JSON.parse(match[0]);
+    }
   };
 
   const handleChat = async () => {
@@ -204,19 +220,19 @@ export default function Itinerary() {
                     <label>Destination</label>
                     <input value={form.destination} onChange={e => setForm({...form, destination: e.target.value})} placeholder="e.g. Kyoto, Japan" />
                 </div>
-                <div className="row-v4">
-                    <div className="input-v4">
-                        <label>Duration</label>
-                        <input type="number" value={form.days} onChange={e => setForm({...form, days: e.target.value})} />
-                    </div>
-                    <div className="input-v4">
-                        <label>Vibe</label>
-                        <select value={form.vibe} onChange={e => setForm({...form, vibe: e.target.value})}>
-                            <option value="balanced">Balanced</option>
-                            <option value="adventure">Intrepid</option>
-                            <option value="relaxed">Serene</option>
-                        </select>
-                    </div>
+                <div className="input-v4">
+                    <label>Duration (Days)</label>
+                    <input type="number" value={form.days} onChange={e => setForm({...form, days: e.target.value})} />
+                </div>
+                <div className="input-v4">
+                    <label>Travel Vibe</label>
+                    <select value={form.vibe} onChange={e => setForm({...form, vibe: e.target.value})}>
+                        <option value="balanced">Balanced</option>
+                        <option value="adventure">Intrepid</option>
+                        <option value="relaxed">Serene</option>
+                        <option value="luxury">Luxury</option>
+                        <option value="budget">Backpacker</option>
+                    </select>
                 </div>
                 <button className={`btn-primary-v4 ${loading ? 'loading' : ''}`} onClick={generateAI}>
                     {loading ? <RefreshCw className="spin" size={16} /> : <><Sparkles size={16} /> GENERATE STORY</>}
