@@ -10,11 +10,10 @@ import {
   Target, Zap as Adventure, Heart as Relaxing, Palette as Culture
 } from 'lucide-react';
 
-// Advanced Radar Chart for Trip "DNA"
 const RadarChart = ({ data }) => {
   const points = data.map((d, i) => {
     const angle = (i * 360) / data.length;
-    const r = (d.value / 100) * 40;
+    const r = (d.value / 100) * 32;
     const x = 50 + r * Math.cos((angle - 90) * (Math.PI / 180));
     const y = 50 + r * Math.sin((angle - 90) * (Math.PI / 180));
     return `${x},${y}`;
@@ -22,15 +21,15 @@ const RadarChart = ({ data }) => {
 
   return (
     <svg viewBox="0 0 100 100" className="radar-chart">
-      <circle cx="50" cy="50" r="40" className="radar-grid" />
-      <circle cx="50" cy="50" r="30" className="radar-grid" />
-      <circle cx="50" cy="50" r="20" className="radar-grid" />
-      <circle cx="50" cy="50" r="10" className="radar-grid" />
+      <circle cx="50" cy="50" r="32" className="radar-grid" />
+      <circle cx="50" cy="50" r="24" className="radar-grid" />
+      <circle cx="50" cy="50" r="16" className="radar-grid" />
+      <circle cx="50" cy="50" r="8" className="radar-grid" />
       <polygon points={points} className="radar-area" />
       {data.map((d, i) => {
         const angle = (i * 360) / data.length;
-        const x = 50 + 45 * Math.cos((angle - 90) * (Math.PI / 180));
-        const y = 50 + 45 * Math.sin((angle - 90) * (Math.PI / 180));
+        const x = 50 + 40 * Math.cos((angle - 90) * (Math.PI / 180));
+        const y = 50 + 40 * Math.sin((angle - 90) * (Math.PI / 180));
         return <g key={i}><text x={x} y={y} className="radar-label">{d.label[0]}</text></g>;
       })}
     </svg>
@@ -41,17 +40,15 @@ export default function Dashboard() {
   const { items, members, expenses, tripConfig, setTripConfig } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [tempDest, setTempDest] = useState(tripConfig.destination);
-  const [weather, setWeather] = useState({ temp: 24, desc: 'Partly Cloudy', icon: <CloudSun size={32} />, forecast: [] });
+  const [weather, setWeather] = useState({ temp: 24, desc: 'Partly Cloudy', icon: <CloudSun size={24} />, forecast: [] });
   const [heroImg, setHeroImg] = useState('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=1200');
 
   useEffect(() => {
     const fetchTripData = async () => {
       try {
-        // 1. Fetch Background Image
-        setHeroImg(`https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=1200`); // Fallback
-        setHeroImg(`https://source.unsplash.com/featured/1200x600?${encodeURIComponent(tripConfig.destination)}&t=${Date.now()}`);
+        setHeroImg(`https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=1200`);
+        setHeroImg(`https://source.unsplash.com/featured/800x400?${encodeURIComponent(tripConfig.destination)}&t=${Date.now()}`);
 
-        // 2. Geocode & Weather
         const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(tripConfig.destination)}&count=1&language=en&format=json`);
         const geoData = await geoRes.json();
         
@@ -65,13 +62,13 @@ export default function Dashboard() {
             const code = weatherData.current_weather.weathercode;
             
             const getWeatherMeta = (c) => {
-              if (c <= 3) return { desc: 'Clear', icon: <Sun size={32} /> };
-              if (c <= 48) return { desc: 'Cloudy', icon: <CloudSun size={32} /> };
-              if (c <= 67) return { desc: 'Rainy', icon: <CloudRain size={32} /> };
-              return { desc: 'Stormy', icon: <Zap size={32} /> };
+              if (c <= 3) return { desc: 'Clear', icon: <Sun size={24} /> };
+              if (c <= 48) return { desc: 'Cloudy', icon: <CloudSun size={24} /> };
+              if (c <= 67) return { desc: 'Rainy', icon: <CloudRain size={24} /> };
+              return { desc: 'Stormy', icon: <Zap size={24} /> };
             };
 
-            const daily = weatherData.daily.temperature_2m_max.slice(1, 6).map((t, i) => ({
+            const daily = weatherData.daily.temperature_2m_max.slice(1, 5).map((t, i) => ({
               temp: Math.round(t),
               code: weatherData.daily.weathercode[i+1],
               day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][(new Date().getDay() + i + 1) % 7]
@@ -91,54 +88,52 @@ export default function Dashboard() {
   const daysRemaining = Math.ceil((new Date(tripConfig.startDate) - new Date()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="dashboard-ultra">
-      {/* Dynamic Background Blur */}
-      <div className="ultra-bg" style={{ backgroundImage: `url(${heroImg})` }} />
+    <div className="dashboard-compact">
+      <div className="ultra-bg-compact" style={{ backgroundImage: `url(${heroImg})` }} />
 
-      <div className="bento-grid-ultra">
-        {/* Immersive Hero */}
+      <div className="bento-grid-compact">
+        {/* Compact Hero */}
         <motion.div 
-          className="bento-item-ultra hero-ultra"
+          className="bento-item-compact hero-compact"
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <div className="hero-overlay">
-            <div className="hero-content-ultra">
-              <div className="badge-premium"><Target size={12} /> UPCOMING TRIP</div>
-              <div className="hero-title-group">
+          <div className="hero-overlay-compact">
+            <div className="hero-content-compact">
+              <div className="badge-compact"><Target size={10} /> UPCOMING</div>
+              <div className="hero-title-compact">
                 <h1>{tripConfig.destination}</h1>
-                <button className="btn-edit-ultra" onClick={() => setIsEditing(true)}><Edit3 size={18} /></button>
+                <button className="btn-edit-compact" onClick={() => setIsEditing(true)}><Edit3 size={14} /></button>
               </div>
-              <p className="hero-subtitle">Departure in {daysRemaining} days • Team of {members.length} ready</p>
-              <div className="hero-stats-row">
-                <div className="h-stat"><strong>{packedPct}%</strong><span>Packed</span></div>
-                <div className="h-stat"><strong>₹{spent.toLocaleString()}</strong><span>Invested</span></div>
-                <div className="h-stat"><strong>{items.length}</strong><span>Items</span></div>
+              <p className="hero-subtext-compact">In {daysRemaining} days • {members.length} Members</p>
+              <div className="hero-quick-stats">
+                <div className="hq-stat"><strong>{packedPct}%</strong><span>Packed</span></div>
+                <div className="hq-stat"><strong>₹{(spent/1000).toFixed(1)}k</strong><span>Spent</span></div>
               </div>
             </div>
-            <div className="hero-image-preview" style={{ backgroundImage: `url(${heroImg})` }}>
-              <div className="image-blur-layer" />
+            <div className="hero-img-compact" style={{ backgroundImage: `url(${heroImg})` }}>
+              <div className="img-vignette" />
             </div>
           </div>
         </motion.div>
 
-        {/* Live Weather Forecast */}
+        {/* Compact Weather */}
         <motion.div 
-          className="bento-item-ultra glass-ultra weather-ultra"
+          className="bento-item-compact glass-compact weather-compact"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="weather-current-ultra">
-            <div className="w-icon-ultra">{weather.icon}</div>
-            <div className="w-info-ultra">
-              <span className="w-temp-ultra">{weather.temp}°</span>
-              <span className="w-desc-ultra">{weather.desc}</span>
+          <div className="w-main-compact">
+            <div className="w-ico">{weather.icon}</div>
+            <div className="w-val">
+              <span className="w-t">{weather.temp}°</span>
+              <span className="w-d">{weather.desc}</span>
             </div>
           </div>
-          <div className="weather-forecast-strip">
+          <div className="w-forecast-compact">
             {weather.forecast.map((f, i) => (
-              <div key={i} className="f-day">
+              <div key={i} className="wf-day">
                 <span>{f.day}</span>
                 <strong>{f.temp}°</strong>
               </div>
@@ -146,136 +141,102 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Trip DNA Chart */}
+        {/* Trip DNA */}
         <motion.div 
-          className="bento-item-ultra glass-ultra dna-ultra"
+          className="bento-item-compact glass-compact dna-compact"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="section-header-ultra">
-            <h3>TRIP DNA</h3>
-            <Info size={14} className="info-icon" />
-          </div>
-          <div className="dna-content">
+          <div className="sec-header-compact"><h3>TRIP DNA</h3></div>
+          <div className="dna-viz">
             <RadarChart data={[
-              { label: 'Adventure', value: 85 },
-              { label: 'Relaxing', value: 40 },
-              { label: 'Culture', value: 70 },
-              { label: 'Food', value: 95 },
-              { label: 'Budget', value: 60 }
+              { label: 'Adv', value: 85 },
+              { label: 'Rel', value: 40 },
+              { label: 'Cul', value: 70 },
+              { label: 'Foo', value: 95 },
+              { label: 'Bud', value: 60 }
             ]} />
-            <div className="dna-legend">
-              <div><Adventure size={12} /> Adventure <span>85%</span></div>
-              <div><Relaxing size={12} /> Relaxing <span>40%</span></div>
+            <div className="dna-tags">
+              <div className="dna-tag"><Adventure size={10} /> 85%</div>
+              <div className="dna-tag"><Culture size={10} /> 70%</div>
             </div>
           </div>
         </motion.div>
 
-        {/* Quick Access Grid */}
-        <div className="bento-item-ultra quick-grid-ultra">
-          <button className="quick-box glass-ultra">
-            <div className="q-icon" style={{ background: 'hsla(var(--p) / 0.15)' }}><Compass size={20} /></div>
-            <span>Explorer</span>
-          </button>
-          <button className="quick-box glass-ultra">
-            <div className="q-icon" style={{ background: 'hsla(var(--success) / 0.15)' }}><PlaneTakeoff size={20} /></div>
-            <span>Bookings</span>
-          </button>
-          <button className="quick-box glass-ultra">
-            <div className="q-icon" style={{ background: 'hsla(var(--warning) / 0.15)' }}><Users size={20} /></div>
-            <span>Splits</span>
-          </button>
-          <button className="quick-box glass-ultra">
-            <div className="q-icon" style={{ background: 'hsla(var(--danger) / 0.15)' }}><IndianRupee size={20} /></div>
-            <span>Currency</span>
-          </button>
+        {/* Quick Grid */}
+        <div className="bento-item-compact quick-actions-compact">
+          <button className="qa-btn glass-compact"><Compass size={16} /><span>Explorer</span></button>
+          <button className="qa-btn glass-compact"><PlaneTakeoff size={16} /><span>Travel</span></button>
+          <button className="qa-btn glass-compact"><Users size={16} /><span>Split</span></button>
+          <button className="qa-btn glass-compact"><IndianRupee size={16} /><span>Cash</span></button>
         </div>
 
-        {/* Activity Intelligence */}
+        {/* Intelligence Feed */}
         <motion.div 
-          className="bento-item-ultra glass-ultra activity-ultra col-span-2"
+          className="bento-item-compact glass-compact col-span-2 intel-compact"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="section-header-ultra">
-            <h3>INTEL FEED</h3>
-            <button className="btn-all">FULL LOG <ChevronRight size={14} /></button>
-          </div>
-          <div className="intel-list">
+          <div className="sec-header-compact"><h3>INTEL</h3></div>
+          <div className="intel-scroll">
             {[
-              { user: 'John', text: 'Checked off "Medical Kit"', time: '2m ago', type: 'checklist' },
-              { user: 'System', text: 'Weather alert: Rain expected Tuesday', time: '1h ago', type: 'alert' },
-              { user: 'Sarah', text: 'Added new document to Vault', time: '3h ago', type: 'vault' }
+              { u: 'JD', t: 'Tent packed', time: '2m', c: 'hsl(var(--p))' },
+              { u: 'SYS', t: 'Rain alert', time: '1h', c: 'hsl(var(--danger))' },
+              { u: 'SK', t: 'Doc uploaded', time: '3h', c: 'hsl(var(--warning))' }
             ].map((item, i) => (
-              <div key={i} className="intel-row">
-                <div className={`intel-type ${item.type}`} />
-                <div className="intel-body">
-                  <p><strong>{item.user}</strong> {item.text}</p>
-                  <span>{item.time}</span>
-                </div>
+              <div key={i} className="intel-item">
+                <div className="intel-avatar" style={{ background: item.c }}>{item.u}</div>
+                <p>{item.t}</p>
+                <span>{item.time}</span>
               </div>
             ))}
           </div>
         </motion.div>
 
-        {/* Financial Health */}
+        {/* Budget Health */}
         <motion.div 
-          className="bento-item-ultra glass-ultra budget-ultra col-span-2"
+          className="bento-item-compact glass-compact col-span-2 budget-compact"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <div className="section-header-ultra">
-            <h3>FINANCIAL HEALTH</h3>
-            <span className="budget-cap">CAP: ₹{tripConfig.budget.toLocaleString()}</span>
+          <div className="sec-header-compact">
+            <h3>BUDGET</h3>
+            <span>₹{tripConfig.budget.toLocaleString()}</span>
           </div>
-          <div className="budget-metrics-ultra">
-            <div className="metric-main">
-              <span className="m-label">Total Burn</span>
-              <span className="m-value">₹{spent.toLocaleString()}</span>
-              <div className="m-progress-bar">
-                <motion.div 
-                  initial={{ width: 0 }} 
-                  animate={{ width: `${(spent / tripConfig.budget) * 100}%` }} 
-                  className="m-progress-fill" 
-                />
-              </div>
+          <div className="budget-core">
+            <div className="b-main">
+              <span className="b-val">₹{spent.toLocaleString()}</span>
+              <div className="b-bar"><motion.div initial={{ width: 0 }} animate={{ width: `${(spent/tripConfig.budget)*100}%` }} className="b-fill" /></div>
             </div>
-            <div className="metric-grid-ultra">
-              <div className="m-sub"><span>Remaining</span><strong>₹{Math.max(tripConfig.budget - spent, 0).toLocaleString()}</strong></div>
-              <div className="m-sub"><span>Daily Avg</span><strong>₹{Math.round(spent / 5).toLocaleString()}</strong></div>
+            <div className="b-subs">
+              <div className="b-sub"><span>Left</span><strong>₹{Math.max(tripConfig.budget-spent,0).toLocaleString()}</strong></div>
+              <div className="b-sub"><span>Burn</span><strong>{Math.round((spent/tripConfig.budget)*100)}%</strong></div>
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Edit Destination Modal */}
+      {/* Edit Modal */}
       <AnimatePresence>
         {isEditing && (
-          <div className="modal-overlay" onClick={() => setIsEditing(false)}>
+          <div className="modal-overlay-compact" onClick={() => setIsEditing(false)}>
             <motion.div 
-              className="modal-content-ultra glass-ultra"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="modal-box-compact glass-compact"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               onClick={e => e.stopPropagation()}
             >
-              <div className="modal-header-ultra">
-                <h2>Re-Route Mission</h2>
-                <button className="close-btn" onClick={() => setIsEditing(false)}><X size={20} /></button>
+              <div className="modal-top">
+                <h2>Reroute</h2>
+                <button onClick={() => setIsEditing(false)}><X size={16} /></button>
               </div>
-              <form onSubmit={(e) => { e.preventDefault(); setTripConfig({...tripConfig, destination: tempDest}); setIsEditing(false); }} className="modal-form-ultra">
-                <div className="input-group-ultra">
-                  <label>NEW DESTINATION</label>
-                  <input autoFocus value={tempDest} onChange={e => setTempDest(e.target.value)} placeholder="Where are we heading?" />
-                </div>
-                <div className="input-group-ultra">
-                  <label>START DATE</label>
-                  <input type="date" value={tripConfig.startDate.split('T')[0]} onChange={e => setTripConfig({...tripConfig, startDate: new Date(e.target.value).toISOString()})} />
-                </div>
-                <button type="submit" className="btn-save-ultra">INITIALIZE MISSION</button>
+              <form onSubmit={e => { e.preventDefault(); setTripConfig({...tripConfig, destination: tempDest}); setIsEditing(false); }}>
+                <input value={tempDest} onChange={e => setTempDest(e.target.value)} placeholder="Destination" />
+                <button type="submit">UPDATE MISSION</button>
               </form>
             </motion.div>
           </div>
@@ -283,111 +244,86 @@ export default function Dashboard() {
       </AnimatePresence>
 
       <style>{`
-        .dashboard-ultra { position: relative; min-height: 100vh; padding: 2rem; color: #fff; overflow-x: hidden; }
-        .ultra-bg { position: fixed; inset: 0; background-size: cover; background-position: center; filter: blur(100px) brightness(0.3); opacity: 0.6; z-index: -1; transform: scale(1.2); }
+        .dashboard-compact { position: relative; padding: 1.25rem; color: #fff; }
+        .ultra-bg-compact { position: fixed; inset: 0; background-size: cover; background-position: center; filter: blur(80px) brightness(0.2); opacity: 0.5; z-index: -1; }
         
-        .bento-grid-ultra { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto auto; gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
-        .bento-item-ultra { border-radius: 24px; overflow: hidden; position: relative; }
-        .glass-ultra { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .bento-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; max-width: 1200px; margin: 0 auto; }
+        .bento-item-compact { border-radius: 16px; overflow: hidden; position: relative; }
+        .glass-compact { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.06); }
         
         /* Hero */
-        .hero-ultra { grid-column: span 3; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
-        .hero-overlay { display: grid; grid-template-columns: 1.5fr 1fr; height: 320px; }
-        .hero-content-ultra { padding: 3rem; display: flex; flex-direction: column; justify-content: center; }
-        .badge-premium { display: inline-flex; align-items: center; gap: 6px; background: hsla(var(--p) / 0.2); color: hsl(var(--p-light)); font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-radius: 100px; width: fit-content; margin-bottom: 1.5rem; letter-spacing: 0.05em; border: 1px solid hsla(var(--p) / 0.3); }
-        .hero-title-group { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 0.5rem; }
-        .hero-title-group h1 { font-size: 4rem; line-height: 1; letter-spacing: -0.04em; }
-        .btn-edit-ultra { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
-        .btn-edit-ultra:hover { background: hsla(var(--p) / 0.5); transform: rotate(15deg) scale(1.1); }
-        .hero-subtitle { color: rgba(255,255,255,0.5); font-size: 1rem; margin-bottom: 2.5rem; }
-        .hero-stats-row { display: flex; gap: 3rem; }
-        .h-stat { display: flex; flex-direction: column; }
-        .h-stat strong { font-size: 1.5rem; font-weight: 800; }
-        .h-stat span { font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 700; }
-        .hero-image-preview { position: relative; background-size: cover; background-position: center; border-left: 1px solid rgba(255,255,255,0.1); }
-        .image-blur-layer { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.5), transparent); }
+        .hero-compact { grid-column: span 3; background: rgba(0,0,0,0.2); height: 180px; }
+        .hero-overlay-compact { display: grid; grid-template-columns: 1fr 200px; height: 100%; }
+        .hero-content-compact { padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
+        .badge-compact { display: flex; align-items: center; gap: 4px; background: hsla(var(--p) / 0.2); color: hsl(var(--p-light)); font-size: 0.55rem; font-weight: 900; padding: 2px 8px; border-radius: 100px; width: fit-content; margin-bottom: 0.75rem; letter-spacing: 0.05em; }
+        .hero-title-compact { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem; }
+        .hero-title-compact h1 { font-size: 2.25rem; line-height: 1; font-weight: 800; letter-spacing: -0.04em; }
+        .btn-edit-compact { background: rgba(255,255,255,0.08); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .hero-subtext-compact { color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 600; margin-bottom: 1.25rem; }
+        .hero-quick-stats { display: flex; gap: 2rem; }
+        .hq-stat { display: flex; flex-direction: column; }
+        .hq-stat strong { font-size: 1.1rem; font-weight: 800; }
+        .hq-stat span { font-size: 0.6rem; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 800; }
+        .hero-img-compact { background-size: cover; background-position: center; }
+        .img-vignette { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.6), transparent); }
 
         /* Weather */
-        .weather-ultra { padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; }
-        .weather-current-ultra { display: flex; align-items: center; gap: 1.5rem; }
-        .w-icon-ultra { font-size: 3rem; color: hsl(var(--p-light)); }
-        .w-info-ultra { display: flex; flex-direction: column; }
-        .w-temp-ultra { font-size: 3.5rem; font-weight: 800; line-height: 1; }
-        .w-desc-ultra { font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.6); }
-        .weather-forecast-strip { display: flex; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 16px; }
-        .f-day { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .f-day span { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.4); }
-        .f-day strong { font-size: 0.9rem; }
+        .weather-compact { padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; }
+        .w-main-compact { display: flex; align-items: center; gap: 0.75rem; }
+        .w-ico { color: hsl(var(--p-light)); }
+        .w-val { display: flex; flex-direction: column; }
+        .w-t { font-size: 2rem; font-weight: 900; line-height: 1; }
+        .w-d { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.5); }
+        .w-forecast-compact { display: flex; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.05); }
+        .wf-day { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .wf-day span { font-size: 0.55rem; font-weight: 800; color: rgba(255,255,255,0.3); }
+        .wf-day strong { font-size: 0.75rem; }
 
-        /* Radar Chart */
-        .dna-ultra { padding: 1.5rem; }
-        .section-header-ultra { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .section-header-ultra h3 { font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); }
-        .radar-chart { width: 100%; height: 180px; }
-        .radar-grid { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 0.5; }
-        .radar-area { fill: hsla(var(--p) / 0.3); stroke: hsl(var(--p-light)); stroke-width: 2; }
-        .radar-label { fill: rgba(255,255,255,0.4); font-size: 8px; font-weight: 800; }
-        .dna-content { display: flex; align-items: center; gap: 1rem; }
-        .dna-legend { display: flex; flex-direction: column; gap: 12px; }
-        .dna-legend div { font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.6); }
-        .dna-legend span { margin-left: auto; color: #fff; }
+        /* Radar */
+        .dna-compact { padding: 1rem; height: 180px; }
+        .sec-header-compact h3 { font-size: 0.6rem; font-weight: 900; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 0.5rem; }
+        .radar-chart { width: 100%; height: 110px; }
+        .radar-grid { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 0.5; }
+        .radar-area { fill: hsla(var(--p) / 0.2); stroke: hsl(var(--p-light)); stroke-width: 1.5; }
+        .radar-label { fill: rgba(255,255,255,0.3); font-size: 6px; font-weight: 800; }
+        .dna-viz { display: flex; align-items: center; }
+        .dna-tags { display: flex; flex-direction: column; gap: 8px; }
+        .dna-tag { font-size: 0.6rem; font-weight: 800; display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); }
 
         /* Quick Grid */
-        .quick-grid-ultra { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .quick-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: none; cursor: pointer; transition: 0.3s; padding: 1.5rem; }
-        .quick-box:hover { background: rgba(255,255,255,0.1); transform: translateY(-5px); }
-        .q-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; }
-        .quick-box span { font-size: 0.75rem; font-weight: 800; color: rgba(255,255,255,0.6); }
+        .quick-actions-compact { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .qa-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; transition: 0.2s; padding: 0.75rem; }
+        .qa-btn:hover { background: rgba(255,255,255,0.08); }
+        .qa-btn span { font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.4); }
 
-        /* Intel Feed */
-        .activity-ultra { padding: 2rem; }
-        .btn-all { background: none; border: none; color: hsl(var(--p-light)); font-size: 0.7rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        .intel-list { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem; }
-        .intel-row { display: flex; align-items: flex-start; gap: 1rem; }
-        .intel-type { width: 4px; height: 32px; border-radius: 2px; }
-        .intel-type.checklist { background: hsl(var(--p)); }
-        .intel-type.alert { background: hsl(var(--danger)); }
-        .intel-type.vault { background: hsl(var(--warning)); }
-        .intel-body p { font-size: 0.875rem; color: rgba(255,255,255,0.8); }
-        .intel-body span { font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 600; }
+        /* Intel */
+        .intel-compact { padding: 1.25rem; }
+        .intel-scroll { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem; }
+        .intel-item { display: flex; align-items: center; gap: 0.75rem; }
+        .intel-avatar { width: 20px; height: 20px; border-radius: 6px; font-size: 0.55rem; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+        .intel-item p { font-size: 0.75rem; color: rgba(255,255,255,0.7); flex: 1; }
+        .intel-item span { font-size: 0.6rem; color: rgba(255,255,255,0.3); font-weight: 700; }
 
         /* Budget */
-        .budget-ultra { padding: 2rem; }
-        .budget-cap { font-size: 0.7rem; font-weight: 900; background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; }
-        .budget-metrics-ultra { display: grid; grid-template-columns: 1.5fr 1fr; gap: 3rem; margin-top: 1.5rem; }
-        .metric-main { display: flex; flex-direction: column; gap: 4px; }
-        .m-label { font-size: 0.75rem; font-weight: 800; color: rgba(255,255,255,0.4); }
-        .m-value { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.02em; }
-        .m-progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 1rem; }
-        .m-progress-fill { height: 100%; background: linear-gradient(to right, hsl(var(--p)), hsl(var(--p-light))); border-radius: 4px; }
-        .metric-grid-ultra { display: flex; flex-direction: column; gap: 1rem; }
-        .m-sub { display: flex; flex-direction: column; }
-        .m-sub span { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; }
-        .m-sub strong { font-size: 1.1rem; font-weight: 800; }
+        .budget-compact { padding: 1.25rem; }
+        .budget-compact .sec-header-compact { display: flex; justify-content: space-between; }
+        .budget-core { display: grid; grid-template-columns: 1fr 120px; gap: 1.5rem; margin-top: 0.75rem; }
+        .b-val { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.02em; }
+        .b-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-top: 0.5rem; }
+        .b-fill { height: 100%; background: hsl(var(--p)); }
+        .b-subs { display: flex; flex-direction: column; gap: 0.5rem; }
+        .b-sub { display: flex; justify-content: space-between; font-size: 0.65rem; }
+        .b-sub span { color: rgba(255,255,255,0.3); font-weight: 800; }
 
-        /* Modal Ultra */
-        .modal-content-ultra { width: 100%; max-width: 500px; padding: 3rem; border-radius: 32px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
-        .modal-header-ultra { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
-        .modal-header-ultra h2 { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.02em; }
-        .input-group-ultra { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; }
-        .input-group-ultra label { font-size: 0.7rem; font-weight: 900; color: rgba(255,255,255,0.5); letter-spacing: 0.1em; }
-        .input-group-ultra input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 1.25rem; border-radius: 16px; color: #fff; font-size: 1.1rem; outline: none; transition: 0.3s; }
-        .input-group-ultra input:focus { border-color: hsl(var(--p)); background: rgba(255,255,255,0.1); box-shadow: 0 0 20px hsla(var(--p) / 0.2); }
-        .btn-save-ultra { width: 100%; padding: 1.25rem; border-radius: 16px; border: none; background: hsl(var(--p)); color: #fff; font-weight: 900; font-size: 1rem; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px hsla(var(--p) / 0.4); }
-        .btn-save-ultra:hover { transform: translateY(-3px); box-shadow: 0 15px 40px hsla(var(--p) / 0.5); }
-
-        @media (max-width: 1200px) {
-          .bento-grid-ultra { grid-template-columns: 1fr 1fr; }
-          .hero-ultra, .activity-ultra, .budget-ultra { grid-column: span 2; }
-          .hero-title-group h1 { font-size: 3rem; }
+        @media (max-width: 1024px) {
+          .bento-grid-compact { grid-template-columns: 1fr 1fr; }
+          .hero-compact, .intel-compact, .budget-compact { grid-column: span 2; }
         }
         @media (max-width: 768px) {
-          .bento-grid-ultra { grid-template-columns: 1fr; }
-          .hero-ultra, .activity-ultra, .budget-ultra { grid-column: span 1; }
-          .hero-overlay { grid-template-columns: 1fr; height: auto; }
-          .hero-image-preview { display: none; }
-          .hero-title-group h1 { font-size: 2.5rem; }
-          .dashboard-ultra { padding: 1rem; }
+          .bento-grid-compact { grid-template-columns: 1fr; }
+          .hero-compact, .intel-compact, .budget-compact { grid-column: span 1; }
+          .hero-overlay-compact { grid-template-columns: 1fr; }
+          .hero-img-compact { display: none; }
         }
       `}</style>
     </div>
