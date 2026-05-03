@@ -23,21 +23,21 @@ export default async function handler(req, res) {
 Generate a ${days}-day travel itinerary for ${destination}.
 Budget: ₹${budget} (MUST stay under). Vibe: ${vibe || 'balanced'}.
 
-Return ONLY minified JSON (no markdown, no extra text) matching exactly this schema:
+Return ONLY minified JSON matching exactly this schema:
 {
   "destination": "${destination}",
   "totalEstimatedCost": "₹...",
   "days": [
     {
       "day": 1,
-      "label": "Day 1 - Brief Label",
-      "events": [
+      "theme": "Day 1 - Brief Theme",
+      "activities": [
         {
           "time": "9:00 AM",
-          "title": "Short Title",
+          "activity": "Short Title",
           "description": "One short sentence.",
           "type": "food",
-          "estimatedCost": "₹...",
+          "cost": 500,
           "lat": 48.8566,
           "lng": 2.3522
         }
