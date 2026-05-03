@@ -102,7 +102,8 @@ export default function Itinerary() {
         try {
             console.log(`Testing model: ${model}`);
             const prompt = `Generate a high-end itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. 
-            CRITICAL: Return ONLY JSON. Every activity and hotel MUST have: "website", "bookingUrl", and "imageUrl" (use realistic unsplash links if unknown). 
+            CRITICAL: Return ONLY JSON. Every activity and hotel MUST have: "website", "bookingUrl", and "imageUrl".
+            For "imageUrl", you MUST use a dynamic image service to get REAL pictures. Format: "https://loremflickr.com/800/600/travel,<specific_keyword>" where <specific_keyword> is a 1-word description of the place/food (e.g., "eiffeltower", "luxuryhotel", "pasta"). Do NOT use fake domains.
             Schema: {
               "destination": "...", "summary": "...",
               "lodgingSuggestions": [{"name": "...", "type": "...", "price": "₹...", "website": "...", "bookingUrl": "...", "imageUrl": "...", "why": "..."}],

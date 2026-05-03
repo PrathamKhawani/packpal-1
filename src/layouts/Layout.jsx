@@ -12,6 +12,8 @@ import {
 export default function Layout() {
   const { currentUser, logout, theme, toggleTheme } = useApp();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -92,14 +94,69 @@ export default function Layout() {
           </div>
 
           <div className="header-right">
-            <button className="theme-toggle" onClick={toggleTheme}>
+            <button className="theme-toggle" onClick={toggleTheme} title="Toggle Theme">
               {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             </button>
-            <button className="header-btn"><Bell size={16} /></button>
+            
+            {/* Notifications Dropdown */}
+            <div className="relative-container">
+                <button className="header-btn" onClick={() => setShowNotifications(!showNotifications)} title="Notifications">
+                    <Bell size={16} />
+                    <span className="notif-badge">3</span>
+                </button>
+                <AnimatePresence>
+                    {showNotifications && (
+                        <motion.div className="dropdown-menu notif-menu glass" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+                            <div className="drop-header">
+                                <h4>Notifications</h4>
+                                <span className="mark-read" onClick={() => setShowNotifications(false)}>Mark all as read</span>
+                            </div>
+                            <div className="drop-content">
+                                <div className="notif-item unread">
+                                    <div className="n-icon"><Compass size={14} /></div>
+                                    <div className="n-text"><strong>Trip Updated</strong><p>Your Paris itinerary was modified.</p><span>2m ago</span></div>
+                                </div>
+                                <div className="notif-item">
+                                    <div className="n-icon"><Users size={14} /></div>
+                                    <div className="n-text"><strong>New Member</strong><p>Sarah joined your workspace.</p><span>1h ago</span></div>
+                                </div>
+                                <div className="notif-item">
+                                    <div className="n-icon"><Wallet size={14} /></div>
+                                    <div className="n-text"><strong>Expense Added</strong><p>Flight tickets logged by Admin.</p><span>Yesterday</span></div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
             <div className="sep" />
-            <div className="profile-btn">
-                <div className="avatar-sm">{currentUser?.username?.[0].toUpperCase()}</div>
-                <ChevronDown size={12} className="chevron" />
+            
+            {/* Profile Dropdown */}
+            <div className="relative-container">
+                <div className="profile-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} title="Account Menu">
+                    <div className="avatar-sm">{currentUser?.username?.[0].toUpperCase()}</div>
+                    <ChevronDown size={12} className="chevron" />
+                </div>
+                <AnimatePresence>
+                    {showProfileMenu && (
+                        <motion.div className="dropdown-menu profile-menu glass" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+                            <div className="drop-header profile-head">
+                                <div className="avatar-md">{currentUser?.username?.[0].toUpperCase()}</div>
+                                <div className="p-info">
+                                    <strong>{currentUser?.username}</strong>
+                                    <span>{currentUser?.role}</span>
+                                </div>
+                            </div>
+                            <div className="drop-content p-links">
+                                <button className="p-item"><SettingsIcon size={14} /> Account Settings</button>
+                                <button className="p-item"><Lock size={14} /> Privacy & Security</button>
+                                <div className="p-sep" />
+                                <button className="p-item danger" onClick={handleLogout}><LogOut size={14} /> Sign Out</button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
           </div>
         </header>
@@ -262,6 +319,42 @@ export default function Layout() {
           .sidebar-premium { position: fixed; left: -240px; transition: left 0.3s ease; height: 100vh; width: 240px !important; }
           .sidebar-premium.collapsed { left: 0; }
         }
+        
+        /* Dropdown Styles */
+        .relative-container { position: relative; display: flex; align-items: center; }
+        .notif-badge { position: absolute; top: 0px; right: 0px; background: hsl(var(--p)); color: #fff; font-size: 0.5rem; font-weight: 900; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid var(--glass-bg); pointer-events: none; }
+        
+        .dropdown-menu { position: absolute; top: calc(100% + 10px); right: 0; background: var(--glass-bg); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; z-index: 100; display: flex; flex-direction: column; }
+        .notif-menu { width: 320px; }
+        .profile-menu { width: 220px; }
+        
+        .drop-header { padding: 1rem; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
+        .drop-header h4 { font-size: 0.9rem; font-weight: 800; margin: 0; }
+        .mark-read { font-size: 0.65rem; font-weight: 700; color: hsl(var(--p)); cursor: pointer; transition: 0.2s; }
+        .mark-read:hover { text-decoration: underline; }
+        
+        .drop-content { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; }
+        .notif-item { padding: 1rem; border-bottom: 1px solid var(--glass-border); display: flex; gap: 0.75rem; cursor: pointer; transition: 0.2s; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item:hover { background: hsla(var(--text) / 0.03); }
+        .notif-item.unread { background: hsla(var(--p) / 0.05); }
+        .n-icon { width: 32px; height: 32px; border-radius: 10px; background: hsla(var(--p) / 0.1); color: hsl(var(--p)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .n-text { flex: 1; min-width: 0; }
+        .n-text strong { font-size: 0.8rem; display: block; margin-bottom: 2px; }
+        .n-text p { font-size: 0.75rem; color: hsl(var(--text-muted)); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+        .n-text span { font-size: 0.6rem; color: hsl(var(--text-muted)); font-weight: 700; display: block; margin-top: 4px; opacity: 0.7; }
+        
+        .profile-head { flex-direction: row; justify-content: flex-start; gap: 10px; background: hsla(var(--p) / 0.05); }
+        .avatar-md { width: 40px; height: 40px; border-radius: 12px; background: hsl(var(--p)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; }
+        .p-info strong { font-size: 0.85rem; display: block; }
+        .p-info span { font-size: 0.65rem; color: hsl(var(--p)); font-weight: 800; text-transform: uppercase; }
+        
+        .p-links { padding: 0.5rem; }
+        .p-item { width: 100%; text-align: left; background: none; border: none; padding: 0.6rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: hsl(var(--text)); border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        .p-item:hover { background: hsla(var(--text) / 0.05); }
+        .p-sep { height: 1px; background: var(--glass-border); margin: 0.25rem 0; }
+        .p-item.danger { color: hsl(var(--danger)); }
+        .p-item.danger:hover { background: hsla(var(--danger) / 0.1); }
       `}</style>
     </div>
   );
