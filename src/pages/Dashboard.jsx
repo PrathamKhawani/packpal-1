@@ -39,7 +39,7 @@ const RadarChart = ({ data, theme }) => {
 };
 
 export default function Dashboard() {
-  const { items, members, expenses, tripConfig, setTripConfig, theme, currentUser } = useApp();
+  const { items, members, expenses, tripConfig, setTripConfig, theme, currentUser, activityLog } = useApp();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [tempDest, setTempDest] = useState(tripConfig.destination);
@@ -186,19 +186,24 @@ export default function Dashboard() {
         <motion.div className="bento-card glass intel-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
             <div className="card-head"><h3>INTEL FEED</h3></div>
             <div className="intel-list">
-                {[
-                    { user: 'PK', text: 'Checked in at Mumbai Terminal', time: '12m', color: 'hsl(var(--p))' },
-                    { user: 'AI', text: 'Weather alert: Expected rain tomorrow', time: '45m', color: 'hsl(var(--danger))' },
-                    { user: 'SK', text: 'Added 5 items to packing list', time: '2h', color: 'hsl(var(--warning))' }
-                ].map((intel, i) => (
-                    <div key={i} className="intel-row">
-                        <div className="intel-avatar" style={{ background: intel.color }}>{intel.user}</div>
-                        <div className="intel-info">
-                            <p>{intel.text}</p>
-                            <span>{intel.time} ago</span>
+                {activityLog.slice(0, 5).map((intel) => {
+                    // Helper to format time relative to now
+                    const diffMins = Math.floor((new Date() - new Date(intel.time)) / 60000);
+                    let timeStr = 'Just now';
+                    if (diffMins >= 1440) timeStr = `${Math.floor(diffMins / 1440)}d`;
+                    else if (diffMins >= 60) timeStr = `${Math.floor(diffMins / 60)}h`;
+                    else if (diffMins > 0) timeStr = `${diffMins}m`;
+
+                    return (
+                        <div key={intel.id} className="intel-row">
+                            <div className="intel-avatar" style={{ background: intel.color }}>{intel.user}</div>
+                            <div className="intel-info">
+                                <p>{intel.text}</p>
+                                <span>{timeStr} ago</span>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </motion.div>
 

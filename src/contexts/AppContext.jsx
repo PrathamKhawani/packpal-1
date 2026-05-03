@@ -59,6 +59,13 @@ export function AppProvider({ children }) {
     ];
   });
   
+  const [activityLog, setActivityLog] = useState(() => {
+    const log = localStorage.getItem('packpal_activityLog');
+    return log ? JSON.parse(log) : [
+        { id: '1', user: 'AI', text: 'System initialized. Ready for deployment.', time: new Date(Date.now() - 3600000).toISOString(), color: 'hsl(var(--p))' }
+    ];
+  });
+
   const [categories] = useState([
     { id: 'all', name: 'All Items', icon: 'list' },
     { id: 'clothing', name: 'Clothing', icon: 'shirt' },
@@ -78,8 +85,20 @@ export function AppProvider({ children }) {
   useEffect(() => { localStorage.setItem('packpal_vault', JSON.stringify(vaultDocs)); }, [vaultDocs]);
   useEffect(() => { localStorage.setItem('packpal_members', JSON.stringify(members)); }, [members]);
   useEffect(() => { localStorage.setItem('packpal_tripConfig', JSON.stringify(tripConfig)); }, [tripConfig]);
+  useEffect(() => { localStorage.setItem('packpal_activityLog', JSON.stringify(activityLog)); }, [activityLog]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+  const logActivity = (text, color = 'hsl(var(--p))') => {
+    const newLog = {
+      id: Math.random().toString(36).substr(2, 9),
+      user: currentUser?.username?.charAt(0).toUpperCase() || 'SYS',
+      text,
+      time: new Date().toISOString(),
+      color
+    };
+    setActivityLog(prev => [newLog, ...prev].slice(0, 50));
+  };
 
   const login = (username, password, role) => {
     if (!LOGIN_ROLES.includes(role)) return false;
@@ -165,12 +184,14 @@ export function AppProvider({ children }) {
       }]).select();
       if (!error && data) {
         setItems([data[0], ...items]);
+        logActivity(`Added "${item.name}" to packing list`, 'hsl(var(--success))');
         return { data, error };
       }
     } catch (e) {}
     
     // Fallback
     setItems([newItem, ...items]);
+    logActivity(`Added "${item.name}" to packing list`, 'hsl(var(--success))');
     return { data: [newItem], error: null };
   };
 
@@ -204,6 +225,7 @@ export function AppProvider({ children }) {
       await supabase.from('checklist_items').update({ status }).eq('id', id);
     } catch (e) {}
     setItems(items.map(i => i.id === id ? { ...i, status } : i));
+    if (status === 'packed') logActivity(`Packed an item`, 'hsl(var(--p))');
   };
 
   // CRUD Operations - Expenses
@@ -223,11 +245,13 @@ export function AppProvider({ children }) {
       }]).select();
       if (!error && data) {
         setExpenses([data[0], ...expenses]);
+        logActivity(`Logged expense: ₹${exp.amount} for ${exp.description}`, 'hsl(var(--warning))');
         return { data, error };
       }
     } catch (e) {}
     
     setExpenses([newExp, ...expenses]);
+    logActivity(`Logged expense: ₹${exp.amount} for ${exp.description}`, 'hsl(var(--warning))');
     return { data: [newExp], error: null };
   };
 
@@ -242,6 +266,7 @@ export function AppProvider({ children }) {
   const addMember = (member) => {
     const newM = { ...member, id: Math.random().toString(36).substr(2, 9) };
     setMembers([newM, ...members]);
+    logActivity(`Added team member: ${member.name}`, 'hsl(var(--p-light))');
   };
 
   const deleteMember = (id) => {
@@ -268,11 +293,13 @@ export function AppProvider({ children }) {
           type: data[0].type || data[0].description
         };
         setVaultDocs([savedDoc, ...vaultDocs]);
+        logActivity(`Uploaded document to Vault: ${doc.name}`, 'hsl(var(--danger))');
         return { data: [savedDoc], error };
       }
     } catch (e) {}
     
     setVaultDocs([newDoc, ...vaultDocs]);
+    logActivity(`Uploaded document to Vault: ${doc.name}`, 'hsl(var(--danger))');
     return { data: [newDoc], error: null };
   };
 
@@ -298,6 +325,7 @@ export function AppProvider({ children }) {
       categories,
       theme, toggleTheme,
       isLoading,
+      activityLog, logActivity,
       refreshData: loadData,
       permissions: ROLE_PERMISSIONS[currentUser?.role] || ROLE_PERMISSIONS.viewer
     }}>
