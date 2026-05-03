@@ -27,20 +27,22 @@ Return ONLY minified JSON matching exactly this schema:
 {
   "destination": "${destination}",
   "totalEstimatedCost": "₹...",
+  "summary": "One sentence about the trip vibe.",
+  "lodgingSuggestions": [
+    { "name": "Hotel Name", "type": "Luxury/Boutique/Budget", "priceRange": "₹...", "why": "Short reason" }
+  ],
+  "mustTryFoods": [
+    { "dish": "Dish Name", "description": "Short description" }
+  ],
   "days": [
     {
       "day": 1,
-      "theme": "Day 1 - Brief Theme",
+      "theme": "Day Theme",
       "activities": [
-        {
-          "time": "9:00 AM",
-          "activity": "Short Title",
-          "description": "One short sentence.",
-          "type": "food",
-          "cost": 500,
-          "lat": 48.8566,
-          "lng": 2.3522
-        }
+        { "time": "9:00 AM", "activity": "Title", "description": "Short desc", "type": "food/sightseeing/activity", "cost": 0, "lat": 0, "lng": 0 }
+      ],
+      "diningHighlights": [
+        { "name": "Restaurant", "cuisine": "Local/Cuisine", "specialty": "Dish" }
       ]
     }
   ]
