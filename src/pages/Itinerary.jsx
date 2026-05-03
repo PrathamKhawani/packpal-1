@@ -73,9 +73,16 @@ export default function Itinerary() {
         const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
         const listData = await listRes.json();
         if (listData.models) {
-            // Only use models that support generateContent AND are 1.5 versions (most stable for v1beta)
+            // Only use models that are 'flash' or 'pro' and are 1.5 versions
             const discovered = listData.models
-                .filter(m => m.supportedGenerationMethods.includes("generateContent") && m.name.includes("1.5"))
+                .filter(m => {
+                    const name = m.name.toLowerCase();
+                    return m.supportedGenerationMethods.includes("generateContent") && 
+                           name.includes("1.5") && 
+                           (name.includes("flash") || name.includes("pro")) &&
+                           !name.includes("robotics") &&
+                           !name.includes("preview");
+                })
                 .map(m => m.name.split("/").pop());
             
             if (discovered.length > 0) {
