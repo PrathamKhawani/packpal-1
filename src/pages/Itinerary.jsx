@@ -80,10 +80,27 @@ export default function Itinerary() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("API Key missing. Please check your .env file.");
 
-    const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+    let availableModels = ["gemini-1.5-flash", "gemini-1.5-pro"]; // Default safe list
+    
+    try {
+        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const listData = await listRes.json();
+        if (listData.models) {
+            // Get all models that support generateContent and have 'gemini' in name
+            availableModels = listData.models
+                .filter(m => m.supportedGenerationMethods.includes("generateContent"))
+                .map(m => m.name.split("/").pop());
+            
+            // Re-order to prioritize Flash for speed
+            availableModels.sort((a, b) => a.includes("flash") ? -1 : 1);
+        }
+    } catch (e) {
+        console.warn("Model discovery failed, using default list.", e);
+    }
+
     let lastError = null;
 
-    for (const model of models) {
+    for (const model of availableModels) {
         try {
             console.log(`Attempting generation with ${model}...`);
             const prompt = `Generate a travel itinerary for ${form.destination}. Duration: ${form.days} days. Budget: ₹${form.budget}. Vibe: ${form.vibe}. Return ONLY a JSON object: {"destination": "${form.destination}", "summary": "...", "lodgingSuggestions": [{"name": "...", "type": "...", "priceRange": "...", "why": "..."}], "mustTryFoods": [{"dish": "...", "description": "..."}], "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "type": "sightseeing", "cost": 0, "lat": 0, "lng": 0}], "diningHighlights": [{"name": "...", "cuisine": "...", "specialty": "..."}]}]}. Use real GPS coordinates.`;
