@@ -23,32 +23,55 @@ export default function Itinerary() {
   const generateAI = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/generate-itinerary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
+      let res;
+      try {
+        res = await fetch('/api/generate-itinerary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form)
+        });
+      } catch (e) {
+        // Fallback to direct client-side call if local server isn't running
+        console.warn("API route not found, attempting direct AI connection...");
+        return await generateDirectly();
+      }
       
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        const text = await res.text();
-        console.error("Non-JSON response received:", text);
-        throw new Error("AI server returned an invalid response. Please check if your GEMINI_API_KEY is configured in Vercel.");
+          // If server returns HTML (like a 404), try direct fallback
+          return await generateDirectly();
       }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
       setItinerary(data);
     } catch (err) {
-      const msg = err.message || '';
-      if (msg.includes('invalid response') || msg.includes('404')) {
-          alert('Local Dev Note: To use AI itineraries locally, you must run "npx vercel dev" instead of "npm run dev". This ensures the /api functions can read your .env file.');
-      } else {
-          alert(err.message || 'Failed to generate itinerary. Check your API key.');
-      }
+      alert(err.message || 'Failed to generate itinerary. Check your API key.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateDirectly = async () => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        throw new Error("Local API Key missing. Please add VITE_GEMINI_API_KEY to your .env file to enable local AI generation.");
+    }
+
+    const prompt = `Generate a ${form.days}-day travel itinerary for ${form.destination}. Budget: ₹${form.budget}. Vibe: ${form.vibe}. Return ONLY valid JSON matching this schema: {"destination": "...", "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "cost": 0, "lat": 0, "lng": 0}]}]}. 3 activities per day. Use real coordinates.`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+
+    const data = await response.json();
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI failed to return valid data.");
+    const itineraryData = JSON.parse(jsonMatch[0]);
+    setItinerary(itineraryData);
   };
 
   const allActivities = itinerary?.days?.flatMap(day => day.activities) || [];
