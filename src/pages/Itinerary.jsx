@@ -67,11 +67,30 @@ export default function Itinerary() {
     });
 
     const data = await response.json();
+    
+    if (data.error) {
+        throw new Error(`AI API Error: ${data.error.message || 'Unknown error'}`);
+    }
+
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+        console.error("Gemini Response Structure:", data);
+        throw new Error("AI returned an empty response. This usually happens if the destination is blocked by safety filters or the API key is invalid.");
+    }
+
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI failed to return valid data.");
-    const itineraryData = JSON.parse(jsonMatch[0]);
-    setItinerary(itineraryData);
+    if (!jsonMatch) {
+        console.error("Raw AI Text:", rawText);
+        throw new Error("AI failed to return valid itinerary data. Please try a different destination or vibe.");
+    }
+
+    try {
+        const itineraryData = JSON.parse(jsonMatch[0]);
+        setItinerary(itineraryData);
+    } catch (e) {
+        console.error("JSON Parse Error:", e, "Cleaned Text:", jsonMatch[0]);
+        throw new Error("AI returned malformed data. Please try again.");
+    }
   };
 
   const allActivities = itinerary?.days?.flatMap(day => day.activities) || [];
