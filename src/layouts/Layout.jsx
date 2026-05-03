@@ -14,6 +14,7 @@ export default function Layout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [activeModal, setActiveModal] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -149,8 +150,8 @@ export default function Layout() {
                                 </div>
                             </div>
                             <div className="drop-content p-links">
-                                <button className="p-item"><SettingsIcon size={14} /> Account Settings</button>
-                                <button className="p-item"><Lock size={14} /> Privacy & Security</button>
+                                <button className="p-item" onClick={() => { setActiveModal('account'); setShowProfileMenu(false); }}><SettingsIcon size={14} /> Account Settings</button>
+                                <button className="p-item" onClick={() => { setActiveModal('privacy'); setShowProfileMenu(false); }}><Lock size={14} /> Privacy & Security</button>
                                 <div className="p-sep" />
                                 <button className="p-item danger" onClick={handleLogout}><LogOut size={14} /> Sign Out</button>
                             </div>
@@ -165,6 +166,62 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {activeModal && (
+            <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <motion.div className="modal-content glass" initial={{ y: 50, scale: 0.9 }} animate={{ y: 0, scale: 1 }} exit={{ y: 50, scale: 0.9 }}>
+                    <div className="modal-header">
+                        <h3>{activeModal === 'account' ? 'Account Settings' : 'Privacy & Security'}</h3>
+                        <button className="close-btn" onClick={() => setActiveModal(null)}>X</button>
+                    </div>
+                    <div className="modal-body">
+                        {activeModal === 'account' && (
+                            <div className="settings-form">
+                                <div className="s-field">
+                                    <label>Username</label>
+                                    <input type="text" defaultValue={currentUser?.username} />
+                                </div>
+                                <div className="s-field">
+                                    <label>Email Address</label>
+                                    <input type="email" defaultValue={`${currentUser?.username.toLowerCase()}@packpal.com`} />
+                                </div>
+                                <div className="s-field">
+                                    <label>Role</label>
+                                    <input type="text" value={currentUser?.role.toUpperCase()} disabled />
+                                </div>
+                                <button className="s-btn" onClick={() => { alert('Settings saved successfully!'); setActiveModal(null); }}>Save Changes</button>
+                            </div>
+                        )}
+                        {activeModal === 'privacy' && (
+                            <div className="settings-form">
+                                <div className="s-toggle">
+                                    <div>
+                                        <strong>Two-Factor Authentication</strong>
+                                        <p>Secure your account with 2FA.</p>
+                                    </div>
+                                    <input type="checkbox" defaultChecked />
+                                </div>
+                                <div className="s-toggle">
+                                    <div>
+                                        <strong>Public Profile</strong>
+                                        <p>Allow others to find your travel logs.</p>
+                                    </div>
+                                    <input type="checkbox" />
+                                </div>
+                                <div className="s-field" style={{ marginTop: '1rem' }}>
+                                    <label>Change Password</label>
+                                    <input type="password" placeholder="New password" />
+                                </div>
+                                <button className="s-btn" onClick={() => { alert('Privacy settings updated!'); setActiveModal(null); }}>Update Security</button>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            </motion.div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .layout-root { display: flex; min-height: 100vh; background: hsl(var(--bg)); color: hsl(var(--text)); transition: background 0.3s ease; }
@@ -355,6 +412,25 @@ export default function Layout() {
         .p-sep { height: 1px; background: var(--glass-border); margin: 0.25rem 0; }
         .p-item.danger { color: hsl(var(--danger)); }
         .p-item.danger:hover { background: hsla(var(--danger) / 0.1); }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .modal-content { width: 400px; max-width: 90%; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: hsla(var(--text)/0.02); }
+        .modal-header h3 { margin: 0; font-size: 1.1rem; font-weight: 800; }
+        .close-btn { background: none; border: none; font-size: 1.2rem; font-weight: 900; color: hsl(var(--text-muted)); cursor: pointer; }
+        .modal-body { padding: 1.5rem; }
+        .settings-form { display: flex; flex-direction: column; gap: 1.25rem; }
+        .s-field { display: flex; flex-direction: column; gap: 0.5rem; }
+        .s-field label { font-size: 0.75rem; font-weight: 700; color: hsl(var(--text-muted)); }
+        .s-field input { padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid hsl(var(--border)); background: hsla(var(--text)/0.03); color: hsl(var(--text)); font-size: 0.9rem; outline: none; transition: 0.2s; }
+        .s-field input:focus { border-color: hsl(var(--p)); background: var(--bg-card); }
+        .s-field input:disabled { opacity: 0.5; cursor: not-allowed; }
+        .s-toggle { display: flex; justify-content: space-between; align-items: center; }
+        .s-toggle strong { font-size: 0.9rem; display: block; }
+        .s-toggle p { font-size: 0.7rem; color: hsl(var(--text-muted)); margin: 0; }
+        .s-btn { width: 100%; padding: 0.85rem; border-radius: 10px; background: hsl(var(--p)); color: #fff; font-weight: 800; border: none; cursor: pointer; margin-top: 1rem; transition: 0.2s; }
+        .s-btn:hover { opacity: 0.9; transform: translateY(-1px); }
       `}</style>
     </div>
   );
