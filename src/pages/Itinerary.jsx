@@ -29,6 +29,13 @@ export default function Itinerary() {
         body: JSON.stringify(form)
       });
       
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response received:", text);
+        throw new Error("AI server returned an invalid response. Please check if your GEMINI_API_KEY is configured in Vercel.");
+      }
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
       setItinerary(data);

@@ -129,6 +129,9 @@ Rules:
       return res.status(502).json({ error: 'AI returned empty response (possibly blocked by safety filters).' });
     }
 
+    // Sanitize: Remove markdown code fences if present
+    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+
     let itinerary;
     try {
         itinerary = JSON.parse(rawText);
