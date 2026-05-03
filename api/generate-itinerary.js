@@ -58,36 +58,8 @@ Rules:
 
 
   try {
-    // 1. Discover available models dynamically to avoid standard 404 errors
-    let selectedModel = 'models/gemini-1.5-flash-latest'; // Fallback
-    
-    try {
-      const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-      if (modelsRes.ok) {
-        const modelsData = await modelsRes.json();
-        if (modelsData && modelsData.models) {
-          // Filter for models that support text generation
-          const validModels = modelsData.models.filter(m => 
-            m.supportedGenerationMethods && 
-            m.supportedGenerationMethods.includes('generateContent') &&
-            m.name.includes('gemini') && 
-            !m.name.includes('vision') // Prefer text/multimodal base over pure vision legacy
-          );
-          
-          if (validModels.length > 0) {
-            // Prioritize newest flash -> any flash -> pro
-            const flash15 = validModels.find(m => m.name.includes('1.5-flash'));
-            const anyFlash = validModels.find(m => m.name.includes('flash'));
-            const pro15 = validModels.find(m => m.name.includes('pro'));
-            
-            const bestModel = flash15 || anyFlash || pro15 || validModels[0];
-            selectedModel = bestModel.name; 
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Model discovery failed, using fallback.", e);
-    }
+    // 1. Explicitly hardcode stable models to avoid API 'not found' or 'deprecated' errors.
+    const selectedModel = 'models/gemini-1.5-flash';
 
     // 2. Execute text generation with the dynamically discovered model
     const response = await fetch(

@@ -66,34 +66,8 @@ export default function Itinerary() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("API Key missing.");
 
-    // Start with the most reliable v1beta models
-    let availableModels = ["gemini-1.5-flash", "gemini-1.5-pro"]; 
-    
-    try {
-        const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const listData = await listRes.json();
-        if (listData.models) {
-            // Only use models that are 'flash' or 'pro' and are 1.5 versions
-            const discovered = listData.models
-                .filter(m => {
-                    const name = m.name.toLowerCase();
-                    return m.supportedGenerationMethods.includes("generateContent") && 
-                           name.includes("1.5") && 
-                           (name.includes("flash") || name.includes("pro")) &&
-                           !name.includes("robotics") &&
-                           !name.includes("preview");
-                })
-                .map(m => m.name.split("/").pop());
-            
-            if (discovered.length > 0) {
-                availableModels = discovered;
-                // Prioritize Flash for speed
-                availableModels.sort((a, b) => a.includes("flash") ? -1 : 1);
-            }
-        }
-    } catch (e) {
-        console.warn("Discovery failed, sticking to stable 1.5 defaults.");
-    }
+    // Hardcoded stable models to absolutely prevent any 'model not found' or 'preview' errors.
+    const availableModels = ["gemini-1.5-flash", "gemini-1.5-pro"]; 
 
     let lastError = null;
     for (const model of availableModels) {
