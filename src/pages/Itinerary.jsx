@@ -58,9 +58,20 @@ export default function Itinerary() {
         throw new Error("Local API Key missing. Please add VITE_GEMINI_API_KEY to your .env file to enable local AI generation.");
     }
 
+    // Dynamic model discovery
+    let modelName = "gemini-1.5-flash"; 
+    try {
+        const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const modelsData = await modelsRes.json();
+        if (modelsData.models) {
+            const bestModel = modelsData.models.find(m => m.name.includes("1.5-flash") || m.name.includes("flash")) || modelsData.models[0];
+            modelName = bestModel.name.split("/").pop(); // Get just the ID
+        }
+    } catch (e) { console.warn("Model discovery failed, using fallback."); }
+
     const prompt = `Generate a ${form.days}-day travel itinerary for ${form.destination}. Budget: ₹${form.budget}. Vibe: ${form.vibe}. Return ONLY valid JSON matching this schema: {"destination": "...", "days": [{"day": 1, "theme": "...", "activities": [{"time": "...", "activity": "...", "description": "...", "cost": 0, "lat": 0, "lng": 0}]}]}. 3 activities per day. Use real coordinates.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
