@@ -337,7 +337,7 @@ export default function Layout() {
             transition: 0.2s; 
             font-size: 0.8rem; 
         }
-        .search-pill input:focus { border-color: hsl(var(--p)); background: var(--bg-card); box-shadow: 0 0 0 4px hsla(var(--p) / 0.05); }
+        .search-pill input:focus { border-color: hsl(var(--p)); background: hsl(var(--bg-card)); box-shadow: 0 0 0 4px hsla(var(--p) / 0.05); }
         .s-icon { position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%); color: hsl(var(--text-muted)); }
 
         .header-right { display: flex; align-items: center; gap: 0.5rem; }
@@ -415,7 +415,7 @@ export default function Layout() {
 
         /* Modal Styles */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .modal-content { width: 400px; max-width: 90%; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-content { width: 400px; max-width: 90%; background: hsl(var(--bg-card)); border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: hsla(var(--text)/0.02); }
         .modal-header h3 { margin: 0; font-size: 1.1rem; font-weight: 800; }
         .close-btn { background: none; border: none; font-size: 1.2rem; font-weight: 900; color: hsl(var(--text-muted)); cursor: pointer; }
@@ -424,7 +424,7 @@ export default function Layout() {
         .s-field { display: flex; flex-direction: column; gap: 0.5rem; }
         .s-field label { font-size: 0.75rem; font-weight: 700; color: hsl(var(--text-muted)); }
         .s-field input { padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid hsl(var(--border)); background: hsla(var(--text)/0.03); color: hsl(var(--text)); font-size: 0.9rem; outline: none; transition: 0.2s; }
-        .s-field input:focus { border-color: hsl(var(--p)); background: var(--bg-card); }
+        .s-field input:focus { border-color: hsl(var(--p)); background: hsl(var(--bg-card)); }
         .s-field input:disabled { opacity: 0.5; cursor: not-allowed; }
         .s-toggle { display: flex; justify-content: space-between; align-items: center; }
         .s-toggle strong { font-size: 0.9rem; display: block; }
