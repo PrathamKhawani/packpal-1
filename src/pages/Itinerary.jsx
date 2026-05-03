@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TripMap from '../components/TripMap';
 
 export default function Itinerary() {
-  const { tripConfig } = useApp();
+  const { tripConfig, setTripConfig } = useApp();
   const [loading, setLoading] = useState(false);
   const [itinerary, setItinerary] = useState(null);
   const [expandedDay, setExpandedDay] = useState(0);
@@ -112,6 +112,7 @@ export default function Itinerary() {
             }`;
             const result = await callGeminiAPI(model, apiKey, prompt);
             setItinerary(result);
+            setTripConfig({ ...tripConfig, destination: form.destination, days: form.days, budget: form.budget });
             successfulModel = model;
             console.log(`Success! Using model: ${successfulModel}`);
             localStorage.setItem('working_gemini_model', successfulModel);
