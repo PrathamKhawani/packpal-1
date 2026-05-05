@@ -8,7 +8,8 @@ import {
   ArrowDownRight, Compass, MapPin, IndianRupee,
   Activity, Wind, Sun, Edit3, X, Calendar,
   CloudRain, Zap, Thermometer, Info, ChevronRight,
-  Target, Zap as Adventure, Heart as Relaxing, Palette as Culture, Globe
+  Target, Zap as Adventure, Heart as Relaxing, Palette as Culture, Globe,
+  BarChart3, Database, PieChart, ShieldCheck, TrendingUp as Growth
 } from 'lucide-react';
 
 const RadarChart = ({ data, theme }) => {
@@ -129,6 +130,58 @@ export default function Dashboard() {
 
       {/* Bento Grid */}
       <div className="dash-bento">
+        {/* Admin Business Intel - EXCLUSIVE TO ADMIN */}
+        {currentUser?.role === 'admin' && (
+          <motion.div 
+            className="bento-card glass admin-intel-card" 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ gridColumn: 'span 4', background: 'linear-gradient(135deg, hsla(var(--p) / 0.1) 0%, transparent 100%)', border: '1px solid hsla(var(--p) / 0.2)' }}
+          >
+            <div className="card-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <ShieldCheck size={18} className="text-p" />
+                <h3>COMMAND CENTER ANALYTICS</h3>
+              </div>
+              <span className="live-tag">LIVE PLATFORM DATA</span>
+            </div>
+            
+            <div className="admin-grid">
+              <div className="admin-stat-item">
+                <Users className="admin-icon" />
+                <div className="admin-info">
+                  <span className="admin-label">TOTAL OPERATORS</span>
+                  <strong className="admin-value">{members.length * 42}</strong>
+                  <span className="admin-growth"><Growth size={12} /> +12% this week</span>
+                </div>
+              </div>
+              <div className="admin-stat-item">
+                <Globe className="admin-icon" />
+                <div className="admin-info">
+                  <span className="admin-label">ACTIVE MISSIONS</span>
+                  <strong className="admin-value">1,284</strong>
+                  <span className="admin-growth"><Growth size={12} /> +5.4%</span>
+                </div>
+              </div>
+              <div className="admin-stat-item">
+                <Database className="admin-icon" />
+                <div className="admin-info">
+                  <span className="admin-label">DATA THROUGHPUT</span>
+                  <strong className="admin-value">84.2 GB</strong>
+                  <span className="admin-growth text-success">Optimal</span>
+                </div>
+              </div>
+              <div className="admin-stat-item">
+                <IndianRupee className="admin-icon" />
+                <div className="admin-info">
+                  <span className="admin-label">PLATFORM REVENUE</span>
+                  <strong className="admin-value">₹4.2M</strong>
+                  <span className="admin-growth"><Growth size={12} /> +22.1%</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
         {/* Weather Card */}
         <motion.div className="bento-card glass weather-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
             <div className="card-head"><h3>WEATHER</h3></div>
@@ -324,12 +377,26 @@ export default function Dashboard() {
         .m-submit-btn { width: 100%; padding: 1rem; border-radius: 16px; border: none; background: hsl(var(--p)); color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px hsla(var(--p) / 0.3); transition: 0.2s; }
         .m-submit-btn:hover { transform: translateY(-2px); background: hsl(var(--p-dark)); }
 
+        /* Admin Dashboard Styles */
+        .admin-intel-card { position: relative; overflow: hidden; }
+        .live-tag { font-size: 0.6rem; font-weight: 900; color: hsl(var(--p)); background: hsla(var(--p) / 0.1); padding: 2px 8px; border-radius: 4px; }
+        .admin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; padding: 1rem 0; }
+        .admin-stat-item { display: flex; gap: 1rem; align-items: flex-start; }
+        .admin-icon { width: 40px; height: 40px; padding: 10px; background: hsla(var(--text) / 0.05); border-radius: 12px; color: hsl(var(--p)); }
+        .admin-info { display: flex; flex-direction: column; gap: 2px; }
+        .admin-label { font-size: 0.6rem; font-weight: 800; color: hsl(var(--text-muted)); letter-spacing: 0.05em; }
+        .admin-value { font-size: 1.5rem; font-weight: 900; }
+        .admin-growth { font-size: 0.65rem; font-weight: 700; color: hsl(var(--success)); display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+        .text-success { color: hsl(var(--success)); }
+
         @media (max-width: 1024px) {
             .dash-bento { grid-template-columns: repeat(2, 1fr); }
+            .admin-grid { grid-template-columns: repeat(2, 1fr); }
             .hero-title-area h1 { font-size: 2rem; }
         }
         @media (max-width: 600px) {
             .dash-bento { grid-template-columns: 1fr; }
+            .admin-grid { grid-template-columns: 1fr; gap: 1.5rem; }
             .hero-stats-row { gap: 1.5rem; flex-wrap: wrap; }
             .budget-card, .intel-card, .dna-card, .weather-card { grid-column: span 1; }
         }

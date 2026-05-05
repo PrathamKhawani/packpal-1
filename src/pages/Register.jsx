@@ -1,32 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useApp, LOGIN_ROLES } from '../contexts/AppContext';
-import { motion } from 'framer-motion';
-import { Map, Lock, User, ChevronRight, Sparkles, Globe, Shield, Zap } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  User, Lock, Shield, Briefcase, 
+  ChevronRight, ArrowLeft, CheckCircle2, 
+  Sparkles, Globe, Zap
+} from 'lucide-react';
 
-export default function Login() {
+export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState(LOGIN_ROLES[1] || 'owner'); // Default to owner
+  const [role, setRole] = useState('member'); // 'owner' or 'member'
   const [error, setError] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
   
-  const { login } = useApp();
+  const { register } = useApp();
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
     setError('');
     
     if (!username || !password) {
-      setError('Please enter both username and password.');
+      setError('Please fill in all fields.');
       return;
     }
 
-    const success = login(username, password, role);
-    if (success) {
-      navigate(`/${role}/dashboard`);
+    const result = register(username, password, role);
+    if (result.success) {
+      setIsSuccess(true);
+      setTimeout(() => navigate('/login'), 2000);
     } else {
-      setError(`Authentication failed. Please verify credentials for the "${role}" role.`);
+      setError(result.message || 'Registration failed.');
     }
   };
 
@@ -48,7 +54,7 @@ export default function Login() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            Welcome to <span className="text-gradient">PackPal</span>
+            Join <span className="text-gradient">PackPal</span>
           </motion.h1>
           
           <motion.p
@@ -57,14 +63,14 @@ export default function Login() {
             transition={{ delay: 0.3 }}
             className="visual-text"
           >
-            Access your mission-critical travel assets and collaborate with your elite team in real-time.
+            Create your account and start organizing your next big expedition with precision.
           </motion.p>
 
           <div className="visual-perks">
             {[
-              { icon: <Shield size={18} />, text: 'Military-Grade Security' },
-              { icon: <Zap size={18} />, text: 'Zero-Latency Sync' },
-              { icon: <Sparkles size={18} />, text: 'AI-Driven Logistics' }
+              { icon: <Shield size={18} />, text: 'Encrypted Vault Storage' },
+              { icon: <Zap size={18} />, text: 'Real-time Synchronization' },
+              { icon: <Sparkles size={18} />, text: 'AI-Powered Insights' }
             ].map((perk, i) => (
               <motion.div 
                 key={i}
@@ -88,63 +94,88 @@ export default function Login() {
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
         >
+          <Link to="/login" className="back-link">
+            <ArrowLeft size={16} /> Back to Sign In
+          </Link>
+
           <div className="auth-header">
-            <h2>Command Access</h2>
-            <p>Enter your authorization credentials below</p>
+            <h2>Initialization</h2>
+            <p>Select your operational role and credentials</p>
           </div>
 
-          <form onSubmit={handleLogin} className="auth-form">
-            {error && <div className="error-msg">{error}</div>}
+          {isSuccess ? (
+            <motion.div 
+              className="success-state"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <div className="success-icon"><CheckCircle2 size={48} /></div>
+              <h3>Account Created</h3>
+              <p>Redirecting to command center...</p>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleRegister} className="auth-form">
+              {error && <div className="error-msg">{error}</div>}
 
-            <div className="v3-input-group">
-              <label>OPERATIONAL ROLE</label>
-              <div className="v3-select-box">
-                <Shield size={18} className="box-icon" />
-                <select value={role} onChange={e => setRole(e.target.value)}>
-                  {LOGIN_ROLES.map(r => (
-                    <option key={r} value={r}>{r.toUpperCase()}</option>
-                  ))}
-                </select>
+              <div className="role-selection">
+                <label className="section-label">SELECT OPERATIONAL ROLE</label>
+                <div className="role-cards">
+                  <button 
+                    type="button" 
+                    className={`role-card ${role === 'owner' ? 'active' : ''}`}
+                    onClick={() => setRole('owner')}
+                  >
+                    <Briefcase size={24} />
+                    <div className="role-info">
+                      <strong>OWNER</strong>
+                      <span>Manage trips & teams</span>
+                    </div>
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`role-card ${role === 'member' ? 'active' : ''}`}
+                    onClick={() => setRole('member')}
+                  >
+                    <User size={24} />
+                    <div className="role-info">
+                      <strong>MEMBER</strong>
+                      <span>Manage personal assets</span>
+                    </div>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="v3-input-group">
-              <label>IDENTIFIER</label>
-              <div className="v3-input-box">
-                <User size={18} className="box-icon" />
-                <input 
-                  type="text" 
-                  placeholder="Username" 
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                />
+              <div className="v3-input-group">
+                <label>IDENTIFIER</label>
+                <div className="v3-input-box">
+                  <User size={18} className="box-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Username" 
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="v3-input-group">
-              <label>ACCESS CODE</label>
-              <div className="v3-input-box">
-                <Lock size={18} className="box-icon" />
-                <input 
-                  type="password" 
-                  placeholder="••••••••" 
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
+              <div className="v3-input-group">
+                <label>ACCESS CODE</label>
+                <div className="v3-input-box">
+                  <Lock size={18} className="box-icon" />
+                  <input 
+                    type="password" 
+                    placeholder="••••••••" 
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
 
-            <button type="submit" className="v3-submit-btn">
-              AUTHORIZE ACCESS <ChevronRight size={18} />
-            </button>
-          </form>
-
-          <div className="auth-footer">
-            <p>Unauthorized personnel? <Link to="/register">Create Credentials</Link></p>
-            <div className="demo-hint">
-              <strong>DEMO:</strong> admin123, owner123, member123
-            </div>
-          </div>
+              <button type="submit" className="v3-submit-btn">
+                DEPLOY ACCOUNT <ChevronRight size={18} />
+              </button>
+            </form>
+          )}
         </motion.div>
       </div>
 
@@ -215,19 +246,53 @@ export default function Login() {
           max-width: 480px;
           padding: 3.5rem;
           border-radius: 32px;
+          position: relative;
         }
+
+        .back-link {
+          position: absolute;
+          top: 2rem;
+          left: 2rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 700;
+          color: hsl(var(--text-muted));
+          text-decoration: none;
+          transition: 0.2s;
+        }
+        .back-link:hover { color: hsl(var(--p)); }
 
         .auth-header { margin-bottom: 2.5rem; }
         .auth-header h2 { font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; }
         .auth-header p { color: hsl(var(--text-muted)); font-weight: 500; }
 
+        .role-selection { margin-bottom: 2rem; }
+        .section-label { font-size: 0.7rem; font-weight: 900; color: hsl(var(--text-muted)); letter-spacing: 0.15em; margin-bottom: 1rem; display: block; }
+        .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .role-card {
+          padding: 1.5rem;
+          border-radius: 16px;
+          border: 2px solid hsla(var(--text) / 0.05);
+          background: hsla(var(--text) / 0.02);
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          text-align: left;
+          color: hsl(var(--text-muted));
+        }
+        .role-card.active { border-color: hsl(var(--p)); background: hsla(var(--p) / 0.05); color: hsl(var(--p)); }
+        .role-info strong { font-size: 1rem; display: block; }
+        .role-info span { font-size: 0.75rem; opacity: 0.7; }
+
         .v3-input-group { margin-bottom: 1.5rem; }
         .v3-input-group label { font-size: 0.7rem; font-weight: 900; color: hsl(var(--text-muted)); letter-spacing: 0.15em; margin-bottom: 0.75rem; display: block; }
-        
-        .v3-input-box, .v3-select-box { position: relative; }
-        .box-icon { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: hsl(var(--text-muted)); pointer-events: none; }
-        
-        .v3-input-box input, .v3-select-box select {
+        .v3-input-box { position: relative; }
+        .box-icon { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: hsl(var(--text-muted)); }
+        .v3-input-box input {
           width: 100%;
           padding: 1.125rem 1.125rem 1.125rem 3.5rem;
           border-radius: 16px;
@@ -238,9 +303,8 @@ export default function Login() {
           outline: none;
           transition: 0.2s;
           color: hsl(var(--text));
-          appearance: none;
         }
-        .v3-input-box input:focus, .v3-select-box select:focus { border-color: hsl(var(--p)); box-shadow: 0 0 0 5px hsla(var(--p) / 0.1); background: white; }
+        .v3-input-box input:focus { border-color: hsl(var(--p)); box-shadow: 0 0 0 5px hsla(var(--p) / 0.1); background: white; }
 
         .v3-submit-btn {
           width: 100%;
@@ -262,12 +326,12 @@ export default function Login() {
         }
         .v3-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 40px hsla(var(--p) / 0.4); }
 
-        .auth-footer { margin-top: 2rem; text-align: center; }
-        .auth-footer p { font-size: 0.95rem; color: hsl(var(--text-muted)); font-weight: 600; }
-        .auth-footer a { color: hsl(var(--p)); text-decoration: none; font-weight: 800; margin-left: 0.25rem; }
-        
-        .demo-hint { margin-top: 1.5rem; font-size: 0.75rem; color: hsl(var(--text-muted)); opacity: 0.7; }
         .error-msg { padding: 1rem; background: hsla(var(--danger) / 0.1); color: hsl(var(--danger)); border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 600; border: 1px solid hsla(var(--danger) / 0.1); }
+        
+        .success-state { text-align: center; padding: 2rem 0; }
+        .success-icon { color: hsl(var(--success)); margin-bottom: 1.5rem; }
+        .success-state h3 { font-size: 1.75rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .success-state p { color: hsl(var(--text-muted)); }
 
         @media (max-width: 1024px) {
           .auth-visual { display: none; }

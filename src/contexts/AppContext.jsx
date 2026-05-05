@@ -3,15 +3,14 @@ import { supabase } from '../api/supabase';
 
 const AppContext = createContext();
 
-// Define Login Roles - only these roles can access the application
-export const LOGIN_ROLES = ['owner', 'admin', 'member', 'viewer'];
+// Define Login Roles - exactly 3 as requested
+export const LOGIN_ROLES = ['admin', 'owner', 'member'];
 
 // Role Hierarchy (Permissions)
 export const ROLE_PERMISSIONS = {
+  admin: ['view', 'edit', 'delete', 'manage_users', 'view_reports', 'view_analytics'],
   owner: ['view', 'edit', 'delete', 'manage_users', 'view_reports'],
-  admin: ['view', 'edit', 'delete', 'view_reports'],
-  member: ['view', 'edit'],
-  viewer: ['view']
+  member: ['view', 'edit']
 };
 
 export function AppProvider({ children }) {
@@ -51,11 +50,22 @@ export function AppProvider({ children }) {
   const [members, setMembers] = useState(() => {
     const m = localStorage.getItem('packpal_members');
     return m ? JSON.parse(m) : [
+      { id: 'admin', name: 'Admin Boss', role: 'admin', email: 'admin@packpal.com' },
       { id: 'me', name: 'You', role: 'owner', email: 'owner@example.com' },
-      { id: 'sarah', name: 'Sarah', role: 'admin', email: 'sarah@example.com' },
-      { id: 'mike', name: 'Mike', role: 'member', email: 'mike@example.com' },
-      { id: 'alex', name: 'Alex', role: 'member', email: 'alex@example.com' },
-      { id: 'tom', name: 'Tom', role: 'viewer', email: 'tom@example.com' }
+      { id: 'sarah', name: 'Sarah', role: 'member', email: 'sarah@example.com' },
+      { id: 'mike', name: 'Mike', role: 'member', email: 'mike@example.com' }
+    ];
+  });
+  
+  // Simulated Users Database for Login
+  const [users, setUsers] = useState(() => {
+    const u = localStorage.getItem('packpal_users');
+    if (u) return JSON.parse(u);
+    // Initial users corresponding to members
+    return [
+      { username: 'admin', password: 'admin123', role: 'admin' },
+      { username: 'owner', password: 'owner123', role: 'owner' },
+      { username: 'member', password: 'member123', role: 'member' }
     ];
   });
   
@@ -101,22 +111,42 @@ export function AppProvider({ children }) {
   };
 
   const login = (username, password, role) => {
-    if (!LOGIN_ROLES.includes(role)) return false;
+    const userMatch = users.find(u => u.username === username && u.password === password && u.role === role);
     
-    if (password === `${role}123`) {
+    if (userMatch) {
       const user = { 
-        username, 
-        role, 
-        id: role, 
+        ...userMatch,
+        id: userMatch.role, 
         avatar: username.charAt(0).toUpperCase(),
-        // Link to role-based API path
-        apiBase: `/api/${role}`
+        apiBase: `/api/${userMatch.role}`
       };
       setCurrentUser(user);
       localStorage.setItem('packpal_currentUser', JSON.stringify(user));
       return true;
     }
     return false;
+  };
+
+  const register = (username, password, role) => {
+    if (users.find(u => u.username === username)) {
+      return { success: false, message: 'Username already exists' };
+    }
+    
+    const newUser = { username, password, role };
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    localStorage.setItem('packpal_users', JSON.stringify(updatedUsers));
+    
+    // Also add to members list for UI
+    const newMember = { 
+      id: Math.random().toString(36).substr(2, 9), 
+      name: username, 
+      role: role, 
+      email: `${username}@example.com` 
+    };
+    setMembers(prev => [...prev, newMember]);
+    
+    return { success: true };
   };
 
   const logout = () => {
@@ -316,7 +346,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      currentUser, login, logout,
+      currentUser, login, register, logout,
       items, setItems, addItem, deleteItem, updateItem, updateItemStatus,
       expenses, setExpenses, addExpense, deleteExpense,
       vaultDocs, setVaultDocs, addVaultDoc, deleteVaultDoc,

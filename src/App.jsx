@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 import { AppProvider, useApp } from './contexts/AppContext';
 
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Checklists from './pages/Checklists';
 import Members from './pages/Members';
@@ -32,6 +33,7 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={currentUser ? <Navigate to={`/${currentUser.role}/dashboard`} replace /> : <Login />} />
+        <Route path="/register" element={currentUser ? <Navigate to={`/${currentUser.role}/dashboard`} replace /> : <Register />} />
         
         {/* Redirect base / to the user's role dashboard */}
         <Route path="/" element={
@@ -47,8 +49,8 @@ function AppRoutes() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="checklists" element={<Checklists />} />
           <Route path="itinerary" element={<Itinerary />} />
-          <Route path="members" element={<Members />} />
-          <Route path="vault" element={<Vault />} />
+          <Route path="members" element={['admin', 'owner'].includes(currentUser?.role) ? <Members /> : <Navigate to="../dashboard" replace />} />
+          <Route path="vault" element={['admin', 'owner'].includes(currentUser?.role) ? <Vault /> : <Navigate to="../dashboard" replace />} />
           <Route path="expenses" element={<Expenses />} />
         </Route>
 

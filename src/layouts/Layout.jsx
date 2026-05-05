@@ -29,7 +29,7 @@ export default function Layout() {
     { id: 'checklists', icon: <CheckSquare size={18} />, label: 'Checklists', path: `/${currentUser?.role}/checklists`, roles: ['owner', 'admin', 'member', 'viewer'] },
     { id: 'expenses', icon: <Wallet size={18} />, label: 'Expenses', path: `/${currentUser?.role}/expenses`, roles: ['owner', 'admin', 'member'] },
     { id: 'vault', icon: <Lock size={18} />, label: 'Vault', path: `/${currentUser?.role}/vault`, roles: ['owner', 'admin'] },
-    { id: 'members', icon: <Users size={18} />, label: 'Team', path: `/${currentUser?.role}/members`, roles: ['owner'] },
+    { id: 'members', icon: <Users size={18} />, label: 'Team', path: `/${currentUser?.role}/members`, roles: ['owner', 'admin'] },
   ];
 
   const filteredItems = menuItems.filter(item => item.roles.includes(currentUser?.role));
