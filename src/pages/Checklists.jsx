@@ -279,10 +279,10 @@ export default function Checklists() {
         .v3-mission-container {
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
-          max-width: 1300px;
+          gap: 1rem;
+          max-width: 1200px;
           margin: 0 auto;
-          padding: 1.5rem 1.5rem 6rem;
+          padding: 1rem 1rem 4rem;
           color: hsl(var(--text));
         }
 
@@ -290,7 +290,7 @@ export default function Checklists() {
         .v3-mission-header {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 1rem;
         }
         .header-top-row { display: flex; justify-content: space-between; align-items: center; }
         .mission-badge {
@@ -309,22 +309,22 @@ export default function Checklists() {
         .pulse-dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
 
-        .mission-title { font-size: 2.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 0.25rem; }
-        .text-glow { color: hsl(var(--p)); text-shadow: 0 0 20px hsla(var(--p) / 0.2); }
-        .mission-desc { font-size: 0.95rem; color: hsl(var(--text-muted)); font-weight: 500; }
+        .mission-title { font-size: 1.8rem; font-weight: 900; line-height: 1.1; margin-bottom: 0.15rem; }
+        .text-glow { color: hsl(var(--p)); text-shadow: 0 0 15px hsla(var(--p) / 0.15); }
+        .mission-desc { font-size: 0.85rem; color: hsl(var(--text-muted)); font-weight: 500; }
 
         .header-main-grid { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; }
         .mission-stats-hub {
           display: flex;
           align-items: center;
-          gap: 1.5rem;
-          padding: 1.25rem 2rem;
-          border-radius: 24px;
+          gap: 1.25rem;
+          padding: 0.75rem 1.5rem;
+          border-radius: 20px;
           background: hsla(var(--bg-card) / 0.4);
         }
-        .hub-stat { display: flex; flex-direction: column; gap: 0.15rem; min-width: 120px; }
-        .hub-label { font-size: 0.6rem; font-weight: 900; color: hsl(var(--text-muted)); letter-spacing: 0.12em; }
-        .hub-value { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+        .hub-stat { display: flex; flex-direction: column; gap: 0.1rem; min-width: 100px; }
+        .hub-label { font-size: 0.55rem; font-weight: 900; color: hsl(var(--text-muted)); letter-spacing: 0.12em; }
+        .hub-value { font-size: 1.1rem; font-weight: 900; font-variant-numeric: tabular-nums; }
         .hub-progress { height: 6px; background: hsla(var(--text) / 0.05); border-radius: 10px; overflow: hidden; margin-top: 0.5rem; }
         .hub-progress-fill { height: 100%; background: linear-gradient(to right, hsl(var(--p)), hsl(var(--p-light))); }
         .hub-divider { width: 1px; height: 60px; background: hsla(var(--text) / 0.1); }
@@ -332,22 +332,22 @@ export default function Checklists() {
 
         /* Console Styles */
         .v3-console {
-          padding: 1.5rem;
-          border-radius: 24px;
+          padding: 1rem;
+          border-radius: 20px;
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
+          gap: 1rem;
           background: hsla(var(--bg-card) / 0.3);
         }
         .console-search { position: relative; }
-        .console-search .search-icon { position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); color: hsl(var(--text-muted)); }
+        .console-search .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: hsl(var(--text-muted)); }
         .console-search input {
           width: 100%;
-          padding: 1.25rem 1.5rem 1.25rem 3.5rem;
+          padding: 0.75rem 1rem 0.75rem 2.5rem;
           background: hsla(var(--text) / 0.03);
           border: 1px solid hsla(var(--text) / 0.08);
-          border-radius: 16px;
-          font-size: 1rem;
+          border-radius: 12px;
+          font-size: 0.9rem;
           color: hsl(var(--text));
           outline: none;
           transition: 0.3s;
@@ -357,12 +357,12 @@ export default function Checklists() {
         .console-filters { display: flex; justify-content: space-between; align-items: center; gap: 2rem; }
         .filter-pills { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 4px; }
         .filter-pill {
-          padding: 0.75rem 1.25rem;
-          border-radius: 12px;
+          padding: 0.4rem 0.8rem;
+          border-radius: 10px;
           background: hsla(var(--text) / 0.04);
           border: 1px solid transparent;
           color: hsl(var(--text-muted));
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           font-weight: 800;
           letter-spacing: 0.05em;
           cursor: pointer;
@@ -375,9 +375,9 @@ export default function Checklists() {
         .console-actions { display: flex; align-items: center; gap: 1.5rem; }
         .mode-toggle { display: flex; padding: 4px; border-radius: 12px; }
         .mode-toggle button {
-          width: 42px;
-          height: 42px;
-          border-radius: 10px;
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
           border: none;
           background: none;
           color: hsl(var(--text-muted));
@@ -392,16 +392,16 @@ export default function Checklists() {
         .deploy-btn {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          padding: 1rem 1.75rem;
+          gap: 0.5rem;
+          padding: 0.6rem 1.2rem;
           background: hsl(var(--p));
           color: white;
           border: none;
-          border-radius: 16px;
+          border-radius: 12px;
           font-weight: 900;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           cursor: pointer;
-          box-shadow: 0 10px 25px hsla(var(--p) / 0.2);
+          box-shadow: 0 6px 16px hsla(var(--p) / 0.2);
           transition: 0.3s;
         }
         .deploy-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 35px hsla(var(--p) / 0.3); }
@@ -411,26 +411,26 @@ export default function Checklists() {
         .group-container { display: flex; flex-direction: column; gap: 1.5rem; }
         .group-header { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 1rem; }
         .group-title-box { display: flex; flex-direction: column; gap: 0.25rem; }
-        .group-title-box h3 { font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
+        .group-title-box h3 { font-size: 1.1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
         .group-tag { font-size: 0.7rem; font-weight: 800; color: hsl(var(--p)); background: hsla(var(--p) / 0.1); padding: 2px 10px; border-radius: 100px; width: fit-content; }
         
         .group-cards {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 1rem;
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 0.75rem;
         }
 
         /* Asset Card */
         .asset-card {
           background: hsla(var(--bg-card) / 0.5);
           border: 1px solid hsla(var(--text) / 0.08);
-          border-radius: 24px;
-          padding: 1.5rem;
+          border-radius: 16px;
+          padding: 0.75rem 1rem;
           display: flex;
           align-items: center;
-          gap: 1.5rem;
+          gap: 1rem;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
         }
@@ -446,9 +446,9 @@ export default function Checklists() {
         .asset-card:hover::after { opacity: 1; }
 
         .check-box {
-          width: 36px;
-          height: 36px;
-          border-radius: 12px;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
           border: 2px solid hsla(var(--text) / 0.1);
           display: flex;
           align-items: center;
@@ -461,7 +461,7 @@ export default function Checklists() {
         .asset-card.packed .check-box { background: hsl(var(--success)); border-color: hsl(var(--success)); color: white; box-shadow: 0 5px 15px hsla(var(--success) / 0.3); }
 
         .asset-details { flex: 1; min-width: 0; z-index: 1; }
-        .asset-label { display: block; font-size: 1.125rem; font-weight: 800; margin-bottom: 0.4rem; transition: 0.2s; }
+        .asset-label { display: block; font-size: 0.9rem; font-weight: 800; margin-bottom: 0.2rem; transition: 0.2s; }
         .asset-card.packed .asset-label { text-decoration: line-through; opacity: 0.5; }
         
         .asset-meta-row { display: flex; align-items: center; gap: 1rem; }
