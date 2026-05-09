@@ -32,10 +32,10 @@ export function AppProvider({ children }) {
 
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem('packpal_items');
-    if (saved) return JSON.parse(saved);
+    const currentItems = saved ? JSON.parse(saved) : [];
     
-    // Expanded Tactical Database
-    return [
+    // Expanded Tactical Database (20 items)
+    const defaultItems = [
       { id: 'def1', name: 'Tactical GPS Unit', category: 'tech', status: 'packed', assignedTo: 'You', created_at: new Date().toISOString() },
       { id: 'def2', name: 'Waterproof Hard Shell', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
       { id: 'def3', name: 'Solar Power Bank 20k', category: 'tech', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() },
@@ -53,8 +53,17 @@ export function AppProvider({ children }) {
       { id: 'def15', name: 'Signal Mirror & Whistle', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
       { id: 'def16', name: 'Tactical Hard-Knuckle Gloves', category: 'clothing', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() },
       { id: 'def17', name: 'Bio-Degradable Wet Wipes', category: 'hygiene', status: 'packed', assignedTo: 'Sarah', created_at: new Date().toISOString() },
-      { id: 'def18', name: 'Topographic Mission Map', category: 'tech', status: 'pending', assignedTo: 'Admin', created_at: new Date().toISOString() }
+      { id: 'def18', name: 'Topographic Mission Map', category: 'tech', status: 'pending', assignedTo: 'Admin', created_at: new Date().toISOString() },
+      { id: 'def19', name: 'Tactical LED Flashlight', category: 'tech', status: 'packed', assignedTo: 'You', created_at: new Date().toISOString() },
+      { id: 'def20', name: 'Hydration Bladder 3L', category: 'hygiene', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() }
     ];
+
+    // Force update if the user has fewer than 15 items (to ensure they see the full database)
+    if (currentItems.length < 15) {
+      return defaultItems;
+    }
+    
+    return currentItems;
   });
   const [expenses, setExpenses] = useState(() => {
     const e = localStorage.getItem('packpal_expenses');
