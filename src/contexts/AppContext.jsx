@@ -34,14 +34,26 @@ export function AppProvider({ children }) {
     const saved = localStorage.getItem('packpal_items');
     if (saved) return JSON.parse(saved);
     
-    // Default Tactical Data
+    // Expanded Tactical Database
     return [
       { id: 'def1', name: 'Tactical GPS Unit', category: 'tech', status: 'packed', assignedTo: 'You', created_at: new Date().toISOString() },
       { id: 'def2', name: 'Waterproof Hard Shell', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
       { id: 'def3', name: 'Solar Power Bank 20k', category: 'tech', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() },
       { id: 'def4', name: 'Emergency Rations (72h)', category: 'food', status: 'pending', assignedTo: 'Sarah', created_at: new Date().toISOString() },
       { id: 'def5', name: 'First Aid Trauma Kit', category: 'hygiene', status: 'packed', assignedTo: 'Admin', created_at: new Date().toISOString() },
-      { id: 'def6', name: 'Noise-Cancelling Comms', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() }
+      { id: 'def6', name: 'Noise-Cancelling Comms', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+      { id: 'def7', name: 'Leatherman Multi-tool', category: 'tech', status: 'packed', assignedTo: 'Mike', created_at: new Date().toISOString() },
+      { id: 'def8', name: 'Tactical Recon Boots', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+      { id: 'def9', name: 'Water Purification Tabs', category: 'hygiene', status: 'pending', assignedTo: 'Sarah', created_at: new Date().toISOString() },
+      { id: 'def10', name: 'Night Vision Monocular', category: 'tech', status: 'pending', assignedTo: 'Admin', created_at: new Date().toISOString() },
+      { id: 'def11', name: 'High-Calorie Energy Gels', category: 'food', status: 'packed', assignedTo: 'Mike', created_at: new Date().toISOString() },
+      { id: 'def12', name: '550 Paracord (50ft)', category: 'tech', status: 'pending', assignedTo: 'Sarah', created_at: new Date().toISOString() },
+      { id: 'def13', name: 'Thermal Base Layers', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+      { id: 'def14', name: 'Ferrocerium Fire Starter', category: 'tech', status: 'packed', assignedTo: 'Admin', created_at: new Date().toISOString() },
+      { id: 'def15', name: 'Signal Mirror & Whistle', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+      { id: 'def16', name: 'Tactical Hard-Knuckle Gloves', category: 'clothing', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() },
+      { id: 'def17', name: 'Bio-Degradable Wet Wipes', category: 'hygiene', status: 'packed', assignedTo: 'Sarah', created_at: new Date().toISOString() },
+      { id: 'def18', name: 'Topographic Mission Map', category: 'tech', status: 'pending', assignedTo: 'Admin', created_at: new Date().toISOString() }
     ];
   });
   const [expenses, setExpenses] = useState(() => {
