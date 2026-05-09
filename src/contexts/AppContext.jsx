@@ -30,7 +30,20 @@ export function AppProvider({ children }) {
     };
   });
 
-  const [items, setItems] = useState(() => JSON.parse(localStorage.getItem('packpal_items')) || []);
+  const [items, setItems] = useState(() => {
+    const saved = localStorage.getItem('packpal_items');
+    if (saved) return JSON.parse(saved);
+    
+    // Default Tactical Data
+    return [
+      { id: 'def1', name: 'Tactical GPS Unit', category: 'tech', status: 'packed', assignedTo: 'You', created_at: new Date().toISOString() },
+      { id: 'def2', name: 'Waterproof Hard Shell', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+      { id: 'def3', name: 'Solar Power Bank 20k', category: 'tech', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() },
+      { id: 'def4', name: 'Emergency Rations (72h)', category: 'food', status: 'pending', assignedTo: 'Sarah', created_at: new Date().toISOString() },
+      { id: 'def5', name: 'First Aid Trauma Kit', category: 'hygiene', status: 'packed', assignedTo: 'Admin', created_at: new Date().toISOString() },
+      { id: 'def6', name: 'Noise-Cancelling Comms', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() }
+    ];
+  });
   const [expenses, setExpenses] = useState(() => {
     const e = localStorage.getItem('packpal_expenses');
     return e ? JSON.parse(e) : [
