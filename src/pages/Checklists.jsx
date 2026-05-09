@@ -279,10 +279,10 @@ export default function Checklists() {
         .v3-mission-container {
           display: flex;
           flex-direction: column;
-          gap: 2.5rem;
-          max-width: 1400px;
+          gap: 1.5rem;
+          max-width: 1300px;
           margin: 0 auto;
-          padding: 2rem 2rem 10rem;
+          padding: 1.5rem 1.5rem 6rem;
           color: hsl(var(--text));
         }
 
@@ -290,7 +290,7 @@ export default function Checklists() {
         .v3-mission-header {
           display: flex;
           flex-direction: column;
-          gap: 2rem;
+          gap: 1.25rem;
         }
         .header-top-row { display: flex; justify-content: space-between; align-items: center; }
         .mission-badge {
@@ -309,22 +309,22 @@ export default function Checklists() {
         .pulse-dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
 
-        .mission-title { font-size: 4rem; font-weight: 900; line-height: 1; margin-bottom: 0.5rem; }
-        .text-glow { color: hsl(var(--p)); text-shadow: 0 0 30px hsla(var(--p) / 0.3); }
-        .mission-desc { font-size: 1.1rem; color: hsl(var(--text-muted)); font-weight: 500; }
+        .mission-title { font-size: 2.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 0.25rem; }
+        .text-glow { color: hsl(var(--p)); text-shadow: 0 0 20px hsla(var(--p) / 0.2); }
+        .mission-desc { font-size: 0.95rem; color: hsl(var(--text-muted)); font-weight: 500; }
 
-        .header-main-grid { display: grid; grid-template-columns: 1fr auto; gap: 4rem; align-items: center; }
+        .header-main-grid { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; }
         .mission-stats-hub {
           display: flex;
           align-items: center;
-          gap: 2rem;
-          padding: 2rem 3rem;
-          border-radius: 32px;
+          gap: 1.5rem;
+          padding: 1.25rem 2rem;
+          border-radius: 24px;
           background: hsla(var(--bg-card) / 0.4);
         }
-        .hub-stat { display: flex; flex-direction: column; gap: 0.25rem; min-width: 140px; }
-        .hub-label { font-size: 0.65rem; font-weight: 900; color: hsl(var(--text-muted)); letter-spacing: 0.15em; }
-        .hub-value { font-size: 2.25rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+        .hub-stat { display: flex; flex-direction: column; gap: 0.15rem; min-width: 120px; }
+        .hub-label { font-size: 0.6rem; font-weight: 900; color: hsl(var(--text-muted)); letter-spacing: 0.12em; }
+        .hub-value { font-size: 1.5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
         .hub-progress { height: 6px; background: hsla(var(--text) / 0.05); border-radius: 10px; overflow: hidden; margin-top: 0.5rem; }
         .hub-progress-fill { height: 100%; background: linear-gradient(to right, hsl(var(--p)), hsl(var(--p-light))); }
         .hub-divider { width: 1px; height: 60px; background: hsla(var(--text) / 0.1); }
@@ -407,17 +407,17 @@ export default function Checklists() {
         .deploy-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 35px hsla(var(--p) / 0.3); }
 
         /* Grid Layouts */
-        .deployment-grid.category { display: flex; flex-direction: column; gap: 4rem; }
+        .deployment-grid.category { display: flex; flex-direction: column; gap: 2.5rem; }
         .group-container { display: flex; flex-direction: column; gap: 1.5rem; }
         .group-header { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 1rem; }
         .group-title-box { display: flex; flex-direction: column; gap: 0.25rem; }
-        .group-title-box h3 { font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
+        .group-title-box h3 { font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
         .group-tag { font-size: 0.7rem; font-weight: 800; color: hsl(var(--p)); background: hsla(var(--p) / 0.1); padding: 2px 10px; border-radius: 100px; width: fit-content; }
         
         .group-cards {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-          gap: 1.25rem;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 1rem;
         }
 
         /* Asset Card */
