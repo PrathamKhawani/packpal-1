@@ -315,10 +315,21 @@ export default function Dashboard() {
 
         {/* Activity Quick Access */}
         <div className="quick-access-grid">
-            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/itinerary`)}><Compass /> <span>Explore</span></button>
-            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/expenses`)}><IndianRupee /> <span>Wallet</span></button>
-            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/members`)}><Users /> <span>Social</span></button>
-            <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/vault`)}><Briefcase /> <span>Vault</span></button>
+            {currentUser?.role === 'admin' ? (
+              <>
+                <button className="qa-item glass" onClick={() => navigate(`/admin/analytics`)}><BarChart3 /> <span>Analytics</span></button>
+                <button className="qa-item glass" onClick={() => navigate(`/admin/members`)}><Users /> <span>Operators</span></button>
+                <button className="qa-item glass" onClick={() => navigate(`/admin/expenses`)}><IndianRupee /> <span>Wallet</span></button>
+                <button className="qa-item glass" onClick={() => navigate(`/admin/dashboard`)}><ShieldCheck /> <span>Security</span></button>
+              </>
+            ) : (
+              <>
+                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/mission-brief`)}><Target /> <span>Briefing</span></button>
+                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/itinerary`)}><Compass /> <span>Explore</span></button>
+                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/expenses`)}><IndianRupee /> <span>Wallet</span></button>
+                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/vault`)}><Briefcase /> <span>Vault</span></button>
+              </>
+            )}
         </div>
       </div>
 

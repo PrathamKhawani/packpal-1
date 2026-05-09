@@ -49,10 +49,10 @@ function AppRoutes() {
         }>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="checklists" element={<Checklists />} />
-          <Route path="itinerary" element={<Itinerary />} />
-          <Route path="members" element={['admin', 'owner'].includes(currentUser?.role) ? <Members /> : <Navigate to="../dashboard" replace />} />
-          <Route path="vault" element={['admin', 'owner'].includes(currentUser?.role) ? <Vault /> : <Navigate to="../dashboard" replace />} />
+          <Route path="checklists" element={['owner', 'member'].includes(currentUser?.role) ? <Checklists /> : <Navigate to="../dashboard" replace />} />
+          <Route path="itinerary" element={['owner', 'member'].includes(currentUser?.role) ? <Itinerary /> : <Navigate to="../dashboard" replace />} />
+          <Route path="members" element={currentUser?.role === 'admin' ? <Members /> : <Navigate to="../dashboard" replace />} />
+          <Route path="vault" element={currentUser?.role === 'owner' ? <Vault /> : <Navigate to="../dashboard" replace />} />
           <Route path="expenses" element={<Expenses />} />
           <Route path="analytics" element={currentUser?.role === 'admin' ? <Analytics /> : <Navigate to="../dashboard" replace />} />
           <Route path="mission-brief" element={currentUser?.role === 'owner' ? <MissionBrief /> : <Navigate to="../dashboard" replace />} />
