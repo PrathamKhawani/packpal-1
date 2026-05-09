@@ -75,6 +75,16 @@ export default function Checklists() {
           </motion.div>
           
           <div className="header-actions">
+             <button 
+               className="v3-btn-icon glass" 
+               title="Sync Inventory" 
+               onClick={() => {
+                 localStorage.removeItem('packpal_items');
+                 window.location.reload();
+               }}
+             >
+               <Sparkles size={18} />
+             </button>
              <button className="v3-btn-icon glass" title="Global Stats"><BarChart3 size={18} /></button>
              <button className="v3-btn-icon glass" title="Team Filter"><UserIcon size={18} /></button>
           </div>

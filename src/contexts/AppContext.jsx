@@ -218,7 +218,15 @@ export function AppProvider({ children }) {
       const expsRes = await roleApiCall('expenses', 'select');
       const vltRes = await roleApiCall('vault_docs', 'select');
 
-      if (itmsRes.data) setItems(itmsRes.data.map(i => ({ ...i, assignedTo: i.assigned_to })));
+      if (itmsRes.data) {
+        const dbItems = itmsRes.data.map(i => ({ ...i, assignedTo: i.assigned_to }));
+        // If DB has very little data, use our expanded tactical database instead
+        if (dbItems.length < 15) {
+          setItems(INITIAL_TACTICAL_DATA);
+        } else {
+          setItems(dbItems);
+        }
+      }
       if (expsRes.data) setExpenses(expsRes.data.map(e => ({ ...e, payer: e.paid_by })));
       if (vltRes.data) setVaultDocs(vltRes.data.map(d => ({ 
         ...d, 
