@@ -120,18 +120,37 @@ export default function Layout() {
                                 <span className="mark-read" onClick={() => setShowNotifications(false)}>Mark all as read</span>
                             </div>
                             <div className="drop-content">
-                                <div className="notif-item unread">
-                                    <div className="n-icon"><Compass size={14} /></div>
-                                    <div className="n-text"><strong>Trip Updated</strong><p>Your Paris itinerary was modified.</p><span>2m ago</span></div>
-                                </div>
-                                <div className="notif-item">
-                                    <div className="n-icon"><Users size={14} /></div>
-                                    <div className="n-text"><strong>New Member</strong><p>Sarah joined your workspace.</p><span>1h ago</span></div>
-                                </div>
-                                <div className="notif-item">
-                                    <div className="n-icon"><Wallet size={14} /></div>
-                                    <div className="n-text"><strong>Expense Added</strong><p>Flight tickets logged by Admin.</p><span>Yesterday</span></div>
-                                </div>
+                                {currentUser?.role === 'admin' ? (
+                                    <>
+                                        <div className="notif-item unread">
+                                            <div className="n-icon"><Shield size={14} /></div>
+                                            <div className="n-text"><strong>Security Alert</strong><p>Multiple login attempts detected.</p><span>2m ago</span></div>
+                                        </div>
+                                        <div className="notif-item">
+                                            <div className="n-icon"><Users size={14} /></div>
+                                            <div className="n-text"><strong>New Operator</strong><p>Sarah was added to the system.</p><span>1h ago</span></div>
+                                        </div>
+                                        <div className="notif-item">
+                                            <div className="n-icon"><Zap size={14} /></div>
+                                            <div className="n-text"><strong>System Patch</strong><p>Version 3.4.2 deployed successfully.</p><span>Yesterday</span></div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="notif-item unread">
+                                            <div className="n-icon"><Compass size={14} /></div>
+                                            <div className="n-text"><strong>Mission Updated</strong><p>Your deployment itinerary was modified.</p><span>2m ago</span></div>
+                                        </div>
+                                        <div className="notif-item">
+                                            <div className="n-icon"><Target size={14} /></div>
+                                            <div className="n-text"><strong>Objective Met</strong><p>Tactical gear verification complete.</p><span>4h ago</span></div>
+                                        </div>
+                                        <div className="notif-item">
+                                            <div className="n-icon"><Wallet size={14} /></div>
+                                            <div className="n-text"><strong>Budget Alert</strong><p>New expense logged: ₹45,000.</p><span>Yesterday</span></div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </motion.div>
                     )}
