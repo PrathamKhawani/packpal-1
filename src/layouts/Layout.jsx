@@ -25,6 +25,8 @@ export default function Layout() {
 
   const menuItems = [
     { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', path: `/${currentUser?.role}/dashboard`, roles: ['owner', 'admin', 'member', 'viewer'] },
+    { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Analytics', path: `/${currentUser?.role}/analytics`, roles: ['admin'] },
+    { id: 'mission-brief', icon: <Target size={18} />, label: 'Mission Brief', path: `/${currentUser?.role}/mission-brief`, roles: ['owner'] },
     { id: 'itinerary', icon: <Compass size={18} />, label: 'Itinerary', path: `/${currentUser?.role}/itinerary`, roles: ['owner', 'admin', 'member', 'viewer'] },
     { id: 'checklists', icon: <CheckSquare size={18} />, label: 'Checklists', path: `/${currentUser?.role}/checklists`, roles: ['owner', 'admin', 'member', 'viewer'] },
     { id: 'expenses', icon: <Wallet size={18} />, label: 'Expenses', path: `/${currentUser?.role}/expenses`, roles: ['owner', 'admin', 'member'] },

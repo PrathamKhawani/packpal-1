@@ -10,6 +10,8 @@ import Members from './pages/Members';
 import Vault from './pages/Vault';
 import Expenses from './pages/Expenses';
 import Itinerary from './pages/Itinerary';
+import Analytics from './pages/Analytics';
+import MissionBrief from './pages/MissionBrief';
 import Layout from './layouts/Layout';
 
 const ProtectedRoute = ({ children }) => {
@@ -52,6 +54,8 @@ function AppRoutes() {
           <Route path="members" element={['admin', 'owner'].includes(currentUser?.role) ? <Members /> : <Navigate to="../dashboard" replace />} />
           <Route path="vault" element={['admin', 'owner'].includes(currentUser?.role) ? <Vault /> : <Navigate to="../dashboard" replace />} />
           <Route path="expenses" element={<Expenses />} />
+          <Route path="analytics" element={currentUser?.role === 'admin' ? <Analytics /> : <Navigate to="../dashboard" replace />} />
+          <Route path="mission-brief" element={currentUser?.role === 'owner' ? <MissionBrief /> : <Navigate to="../dashboard" replace />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

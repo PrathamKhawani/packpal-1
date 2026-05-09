@@ -182,6 +182,58 @@ export default function Dashboard() {
             </div>
           </motion.div>
         )}
+        {/* Mission Control - EXCLUSIVE TO OWNER */}
+        {currentUser?.role === 'owner' && (
+          <motion.div 
+            className="bento-card glass owner-brief-card" 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ gridColumn: 'span 4', background: 'linear-gradient(135deg, hsla(var(--success) / 0.1) 0%, transparent 100%)', border: '1px solid hsla(var(--success) / 0.2)' }}
+          >
+            <div className="card-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Target size={18} className="text-success" />
+                <h3>MISSION CONTROL OVERVIEW</h3>
+              </div>
+              <span className="live-tag success">READY FOR DEPLOYMENT</span>
+            </div>
+            
+            <div className="admin-grid">
+              <div className="admin-stat-item">
+                <Flag className="admin-icon success" />
+                <div className="admin-info">
+                  <span className="admin-label">OBJECTIVES</span>
+                  <strong className="admin-value">8 / 12</strong>
+                  <span className="admin-growth">66% Complete</span>
+                </div>
+              </div>
+              <div className="admin-stat-item">
+                <Users className="admin-icon success" />
+                <div className="admin-info">
+                  <span className="admin-label">TEAM READINESS</span>
+                  <strong className="admin-value">OPTIMAL</strong>
+                  <span className="admin-growth text-success">All members online</span>
+                </div>
+              </div>
+              <div className="admin-stat-item">
+                <ShieldCheck className="admin-icon success" />
+                <div className="admin-info">
+                  <span className="admin-label">SECURITY STATUS</span>
+                  <strong className="admin-value">VERIFIED</strong>
+                  <span className="admin-growth text-success">Vault Secured</span>
+                </div>
+              </div>
+              <div className="admin-stat-item">
+                <Zap className="admin-icon success" />
+                <div className="admin-info">
+                  <span className="admin-label">DEPLOYMENT TIME</span>
+                  <strong className="admin-value">T-4 DAYS</strong>
+                  <span className="admin-growth">On Schedule</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
         {/* Weather Card */}
         <motion.div className="bento-card glass weather-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
             <div className="card-head"><h3>WEATHER</h3></div>
@@ -379,10 +431,11 @@ export default function Dashboard() {
 
         /* Admin Dashboard Styles */
         .admin-intel-card { position: relative; overflow: hidden; }
-        .live-tag { font-size: 0.6rem; font-weight: 900; color: hsl(var(--p)); background: hsla(var(--p) / 0.1); padding: 2px 8px; border-radius: 4px; }
+        .live-tag.success { color: hsl(var(--success)); background: hsla(var(--success) / 0.1); }
         .admin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; padding: 1rem 0; }
         .admin-stat-item { display: flex; gap: 1rem; align-items: flex-start; }
         .admin-icon { width: 40px; height: 40px; padding: 10px; background: hsla(var(--text) / 0.05); border-radius: 12px; color: hsl(var(--p)); }
+        .admin-icon.success { color: hsl(var(--success)); background: hsla(var(--success) / 0.1); }
         .admin-info { display: flex; flex-direction: column; gap: 2px; }
         .admin-label { font-size: 0.6rem; font-weight: 800; color: hsl(var(--text-muted)); letter-spacing: 0.05em; }
         .admin-value { font-size: 1.5rem; font-weight: 900; }
