@@ -9,7 +9,7 @@ import {
   Activity, Wind, Sun, Edit3, X, Calendar,
   CloudRain, Zap, Thermometer, Info, ChevronRight,
   Target, Zap as Adventure, Heart as Relaxing, Palette as Culture, Globe,
-  BarChart3, Database, PieChart, ShieldCheck, TrendingUp as Growth
+  BarChart3, Database, PieChart, ShieldCheck, TrendingUp as Growth, Flag
 } from 'lucide-react';
 
 const RadarChart = ({ data, theme }) => {
@@ -100,12 +100,13 @@ export default function Dashboard() {
 
   return (
     <div className="dash-container">
-      {/* Hero Section */}
-      <motion.section 
-        className="hero-section"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      {/* Hero Section - HIDDEN FOR ADMIN */}
+      {currentUser?.role !== 'admin' && (
+        <motion.section 
+          className="hero-section"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
         <div className="hero-card glass">
           <div className="hero-img-box" style={{ backgroundImage: `url(${heroImg})` }}>
             <div className="hero-gradient-overlay" />
@@ -127,6 +128,7 @@ export default function Dashboard() {
           </div>
         </div>
       </motion.section>
+      )}
 
       {/* Bento Grid */}
       <div className="dash-bento">
@@ -234,8 +236,9 @@ export default function Dashboard() {
             </div>
           </motion.div>
         )}
-        {/* Weather Card */}
-        <motion.div className="bento-card glass weather-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
+        {/* Weather Card - HIDDEN FOR ADMIN */}
+        {currentUser?.role !== 'admin' && (
+          <motion.div className="bento-card glass weather-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
             <div className="card-head"><h3>WEATHER</h3></div>
             <div className="w-body">
                 <div className="w-main">
@@ -254,10 +257,12 @@ export default function Dashboard() {
                     ))}
                 </div>
             </div>
-        </motion.div>
+          </motion.div>
+        )}
 
-        {/* Analytics/DNA Card */}
-        <motion.div className="bento-card glass dna-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
+        {/* Analytics/DNA Card - HIDDEN FOR ADMIN */}
+        {currentUser?.role !== 'admin' && (
+          <motion.div className="bento-card glass dna-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
             <div className="card-head"><h3>TRIP VIBE</h3></div>
             <div className="dna-body">
                 <RadarChart theme={theme} data={[
@@ -268,10 +273,12 @@ export default function Dashboard() {
                   { label: 'Social', value: 50 }
                 ]} />
             </div>
-        </motion.div>
+          </motion.div>
+        )}
 
-        {/* Financial Summary */}
-        <motion.div className="bento-card glass budget-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
+        {/* Financial Summary - HIDDEN FOR ADMIN */}
+        {currentUser?.role !== 'admin' && (
+          <motion.div className="bento-card glass budget-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
             <div className="card-head"><h3>FINANCES</h3><span className="b-total">₹{tripConfig.budget.toLocaleString()}</span></div>
             <div className="b-body">
                 <div className="b-spent">
@@ -286,7 +293,8 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Intelligence Feed */}
         <motion.div className="bento-card glass intel-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
@@ -319,8 +327,8 @@ export default function Dashboard() {
               <>
                 <button className="qa-item glass" onClick={() => navigate(`/admin/analytics`)}><BarChart3 /> <span>Analytics</span></button>
                 <button className="qa-item glass" onClick={() => navigate(`/admin/members`)}><Users /> <span>Operators</span></button>
-                <button className="qa-item glass" onClick={() => navigate(`/admin/expenses`)}><IndianRupee /> <span>Wallet</span></button>
                 <button className="qa-item glass" onClick={() => navigate(`/admin/dashboard`)}><ShieldCheck /> <span>Security</span></button>
+                <button className="qa-item glass" onClick={() => navigate(`/admin/dashboard`)}><Database /> <span>System Logs</span></button>
               </>
             ) : (
               <>

@@ -40,12 +40,17 @@
   --p: 217 91% 60%;
   --p-light: 213 94% 68%;
   --p-dark: 221 83% 53%;
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --glass-bg: hsla(var(--bg) / 0.6);
+  --glass-border: hsla(var(--text) / 0.08);
+
+  /* Role Themes */
+  --admin-p: 217 91% 60%;
+  --owner-p: 142 71% 45%;
 }
+
+[data-role="admin"] { --p: var(--admin-p); --p-dark: 217 91% 50%; --p-light: 217 91% 70%; }
+[data-role="owner"] { --p: var(--owner-p); --p-dark: 142 71% 35%; --p-light: 142 71% 55%; }
+[data-role="member"] { --p: 262 83% 58%; --p-dark: 262 83% 48%; --p-light: 262 83% 68%; }
 
 * {
   box-sizing: border-box;
