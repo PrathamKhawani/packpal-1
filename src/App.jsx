@@ -1,22 +1,31 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AppProvider, useApp } from './contexts/AppContext';
 
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import OwnerDashboard from './pages/OwnerDashboard';
-import SystemLogs from './pages/SystemLogs';
-import RiskAssessment from './pages/RiskAssessment';
-import Checklists from './pages/Checklists';
-import Members from './pages/Members';
-import Vault from './pages/Vault';
-import Expenses from './pages/Expenses';
-import Itinerary from './pages/Itinerary';
-import Analytics from './pages/Analytics';
-import MissionBrief from './pages/MissionBrief';
+// Lazy load all page components to reduce build chunk sizes and memory footprint
+const Login = React.lazy(() => import('./pages/Login'));
+const Register = React.lazy(() => import('./pages/Register'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const OwnerDashboard = React.lazy(() => import('./pages/OwnerDashboard'));
+const SystemLogs = React.lazy(() => import('./pages/SystemLogs'));
+const RiskAssessment = React.lazy(() => import('./pages/RiskAssessment'));
+const Checklists = React.lazy(() => import('./pages/Checklists'));
+const Members = React.lazy(() => import('./pages/Members'));
+const Vault = React.lazy(() => import('./pages/Vault'));
+const Expenses = React.lazy(() => import('./pages/Expenses'));
+const Itinerary = React.lazy(() => import('./pages/Itinerary'));
+const Analytics = React.lazy(() => import('./pages/Analytics'));
+const MissionBrief = React.lazy(() => import('./pages/MissionBrief'));
 import Layout from './layouts/Layout';
+
+// Fallback loader for Suspense
+const PageLoader = () => (
+  <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--bg))', color: 'hsl(var(--p))' }}>
+    <div style={{ width: '40px', height: '40px', border: '3px solid hsla(var(--p)/0.2)', borderTopColor: 'hsl(var(--p))', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  </div>
+);
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -79,7 +88,9 @@ function AppRoutes() {
 function App() {
   return (
     <AppProvider>
-      <AppRoutes />
+      <Suspense fallback={<PageLoader />}>
+        <AppRoutes />
+      </Suspense>
     </AppProvider>
   );
 }

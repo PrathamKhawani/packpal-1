@@ -126,50 +126,87 @@ export default function AdminDashboard() {
 
       <style>{`
         .admin-theme { --p: 217 91% 60%; }
+        
         .admin-hero { 
-            padding: 2.5rem; 
+            padding: 3rem; 
             border-radius: 24px; 
-            background: linear-gradient(135deg, hsla(var(--p) / 0.1), transparent);
-            border: 1px solid hsla(var(--p) / 0.2);
+            background: 
+              radial-gradient(circle at 100% 0%, hsla(var(--p)/0.15) 0%, transparent 40%),
+              linear-gradient(135deg, hsla(0,0,0,0.4), hsla(0,0,0,0.1));
+            border: 1px solid var(--glass-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: inset 0 1px 0 hsla(255,255,255,0.05), 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
         }
-        .admin-hero h1 { font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.5rem; }
-        .admin-hero p { color: hsl(var(--text-muted)); font-weight: 600; }
-        .hero-badge { font-size: 0.65rem; font-weight: 900; color: hsl(var(--p)); letter-spacing: 0.1em; margin-bottom: 1rem; }
         
-        .hero-stats { display: flex; gap: 3rem; }
-        .h-stat { display: flex; flex-direction: column; }
-        .h-stat span { font-size: 0.65rem; font-weight: 800; color: hsl(var(--text-muted)); }
-        .h-stat strong { font-size: 1.5rem; font-weight: 900; }
+        .admin-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm10 10h10v10H10V10z' fill='rgba(255,255,255,0.02)' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .hero-content, .hero-stats { position: relative; z-index: 1; }
+        
+        .admin-hero h1 { font-size: 3.5rem; font-weight: 900; letter-spacing: -0.05em; margin-bottom: 0.5rem; color: #fff; text-shadow: 0 0 30px hsla(var(--p)/0.5); }
+        .admin-hero p { color: hsl(var(--text-muted)); font-weight: 600; font-size: 1.1rem; }
+        .hero-badge { display: inline-block; font-size: 0.65rem; font-weight: 900; color: #fff; background: hsla(var(--p)/0.2); border: 1px solid hsla(var(--p)/0.4); padding: 4px 12px; border-radius: 100px; letter-spacing: 0.15em; margin-bottom: 1.25rem; box-shadow: 0 0 15px hsla(var(--p)/0.3); }
+        
+        .hero-stats { display: flex; gap: 4rem; }
+        .h-stat { display: flex; flex-direction: column; position: relative; }
+        .h-stat span { font-size: 0.7rem; font-weight: 800; color: hsl(var(--p-light)); letter-spacing: 0.1em; margin-bottom: 4px; text-transform: uppercase; }
+        .h-stat strong { font-size: 2rem; font-weight: 900; color: #fff; letter-spacing: -0.02em; }
+
+        .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; }
+        .card-head h3 { font-size: 1rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; }
+        .live-tag { font-size: 0.6rem; font-weight: 900; letter-spacing: 0.1em; color: hsl(var(--p-light)); background: hsla(var(--p)/0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid hsla(var(--p)/0.3); animation: pulse 2s infinite; }
+        
+        .admin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .admin-stat-item { padding: 1.5rem; background: hsla(0,0,0,0.3); border-radius: 16px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 1rem; transition: 0.3s; box-shadow: inset 0 1px 0 hsla(255,255,255,0.02); }
+        .admin-stat-item:hover { transform: translateY(-4px); background: hsla(0,0,0,0.5); border-color: hsla(var(--p)/0.3); box-shadow: inset 0 1px 0 hsla(255,255,255,0.05), 0 10px 20px rgba(0,0,0,0.3); }
+        
+        .admin-icon { width: 44px; height: 44px; background: hsla(var(--p)/0.1); color: hsl(var(--p-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid hsla(var(--p)/0.2); box-shadow: 0 0 15px hsla(var(--p)/0.2); }
+        .admin-icon.success { background: hsla(var(--success)/0.1); color: hsl(var(--success)); border-color: hsla(var(--success)/0.2); box-shadow: 0 0 15px hsla(var(--success)/0.2); }
+        .admin-icon.warning { background: hsla(var(--warning)/0.1); color: hsl(var(--warning)); border-color: hsla(var(--warning)/0.2); box-shadow: 0 0 15px hsla(var(--warning)/0.2); }
+
+        .admin-info { display: flex; flex-direction: column; }
+        .admin-label { font-size: 0.7rem; font-weight: 800; color: hsl(var(--text-muted)); text-transform: uppercase; letter-spacing: 0.05em; }
+        .admin-value { font-size: 1.75rem; font-weight: 900; color: #fff; margin: 4px 0; }
+        .admin-growth { font-size: 0.75rem; font-weight: 700; color: hsl(var(--success)); display: flex; align-items: center; gap: 4px; }
 
         .health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .health-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: hsla(var(--text) / 0.03); border-radius: 12px; }
-        .health-item span { font-size: 0.8rem; font-weight: 600; flex: 1; }
-        .health-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
+        .health-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: hsla(0,0,0,0.3); border-radius: 16px; border: 1px solid var(--glass-border); transition: 0.3s; }
+        .health-item:hover { background: hsla(0,0,0,0.5); }
+        .health-item span { font-size: 0.85rem; font-weight: 700; flex: 1; color: #fff; }
+        .health-status { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
         
         .mini-logs { display: flex; flex-direction: column; gap: 0.75rem; }
-        .log-entry { display: flex; align-items: center; gap: 0.75rem; font-size: 0.75rem; font-weight: 600; padding: 0.5rem 0; border-bottom: 1px solid hsla(var(--text) / 0.05); }
-        .log-entry:last-child { border-bottom: none; }
-        .log-entry em { font-size: 0.65rem; color: hsl(var(--text-muted)); margin-left: auto; }
-        .log-entry.warning { color: hsl(var(--warning)); }
+        .log-entry { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; font-weight: 600; padding: 0.75rem 1rem; background: hsla(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--glass-border); transition: 0.3s; }
+        .log-entry:hover { background: hsla(0,0,0,0.4); }
+        .log-entry em { font-size: 0.7rem; color: hsl(var(--text-muted)); margin-left: auto; font-weight: 700; }
+        .log-entry.warning { border-color: hsla(var(--warning)/0.3); background: hsla(var(--warning)/0.05); }
 
-        .map-placeholder { position: relative; height: 100%; border-radius: 12px; background: hsla(var(--text) / 0.02); overflow: hidden; }
-        .map-grid { position: absolute; inset: 0; background-image: radial-gradient(hsla(var(--p) / 0.2) 1px, transparent 1px); background-size: 20px 20px; }
+        .map-placeholder { position: relative; height: 100%; min-height: 250px; border-radius: 16px; background: hsla(0,0,0,0.4); overflow: hidden; border: 1px solid var(--glass-border); box-shadow: inset 0 0 40px rgba(0,0,0,0.8); }
+        .map-grid { position: absolute; inset: 0; background-image: radial-gradient(hsla(var(--p)/0.3) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.5; }
         .pulse-point { 
             position: absolute; 
             width: 8px; 
             height: 8px; 
-            background: hsl(var(--p)); 
+            background: hsl(var(--p-light)); 
             border-radius: 50%; 
-            box-shadow: 0 0 0 0 hsla(var(--p) / 0.4);
-            animation: pulse 2s infinite;
+            box-shadow: 0 0 20px hsl(var(--p-light));
+            animation: pulse-ring 2s infinite cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 hsla(var(--p) / 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px hsla(var(--p) / 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 hsla(var(--p) / 0); }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 hsla(var(--p-light)/0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px hsla(var(--p-light)/0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 hsla(var(--p-light)/0); }
         }
       `}</style>
     </div>
@@ -179,7 +216,7 @@ export default function AdminDashboard() {
 function HealthItem({ icon, label, status, color }) {
     return (
         <div className="health-item">
-            <div className={`admin-icon ${color}`} style={{ width: '28px', height: '28px', padding: '6px' }}>{icon}</div>
+            <div className={`admin-icon ${color !== 'p' ? color : ''}`} style={{ width: '36px', height: '36px' }}>{icon}</div>
             <span>{label}</span>
             <div className={`health-status text-${color}`}>{status}</div>
         </div>
