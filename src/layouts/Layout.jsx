@@ -3,10 +3,10 @@ import { Outlet, NavLink, useNavigate, useLocation, Link } from 'react-router-do
 import { useApp } from '../contexts/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard, ClipboardList, Users, Wallet, 
+  BarChart3, Target, LayoutDashboard, ClipboardList, Users, Wallet, 
   Shield, LogOut, Map, Sun, Moon, Compass,
   ChevronLeft, Menu, Search, Bell, Command, ChevronDown,
-  User as UserIcon, Settings as SettingsIcon, Lock, CheckSquare
+  User as UserIcon, Settings as SettingsIcon, Lock, CheckSquare, Activity, Zap, AlertTriangle
 } from 'lucide-react';
 
 export default function Layout() {
@@ -24,25 +24,33 @@ export default function Layout() {
   };
 
   const menuItems = [
-    { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', path: `/${currentUser?.role}/dashboard`, roles: ['owner', 'admin', 'member', 'viewer'] },
-    // ADMIN EXCLUSIVES
-    { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Analytics', path: `/${currentUser?.role}/analytics`, roles: ['admin'] },
-    { id: 'members', icon: <Users size={18} />, label: 'Team Management', path: `/${currentUser?.role}/members`, roles: ['admin'] },
+    // ADMIN MODULES (Supreme Control)
+    { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Command Center', path: `/admin/dashboard`, roles: ['admin'] },
+    { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Platform Analytics', path: `/admin/analytics`, roles: ['admin'] },
+    { id: 'members', icon: <Users size={18} />, label: 'Operator Control', path: `/admin/members`, roles: ['admin'] },
+    { id: 'system-logs', icon: <Shield size={18} />, label: 'System Audit', path: `/admin/system-logs`, roles: ['admin'] },
+    { id: 'vault', icon: <Lock size={18} />, label: 'Secure Vault', path: `/admin/vault`, roles: ['admin'] },
+    { id: 'risk-assessment', icon: <Activity size={18} />, label: 'Risk Analysis', path: `/admin/risk-assessment`, roles: ['admin'] },
     
-    // OWNER EXCLUSIVES
-    { id: 'mission-brief', icon: <Target size={18} />, label: 'Mission Brief', path: `/${currentUser?.role}/mission-brief`, roles: ['owner'] },
-    { id: 'vault', icon: <Lock size={18} />, label: 'Vault Documents', path: `/${currentUser?.role}/vault`, roles: ['owner'] },
-    { id: 'itinerary', icon: <Compass size={18} />, label: 'Itinerary Planning', path: `/${currentUser?.role}/itinerary`, roles: ['owner', 'member'] },
-    { id: 'checklists', icon: <CheckSquare size={18} />, label: 'Checklists', path: `/${currentUser?.role}/checklists`, roles: ['owner', 'member'] },
+    // OWNER MODULES
+    { id: 'dashboard', icon: <Compass size={18} />, label: 'Mission Control', path: `/owner/dashboard`, roles: ['owner'] },
     
-    // SHARED
-    { id: 'expenses', icon: <Wallet size={18} />, label: 'Expenses', path: `/${currentUser?.role}/expenses`, roles: ['owner', 'admin', 'member'] },
+    // SHARED TACTICAL (Admin + Owner)
+    { id: 'mission-brief', icon: <Target size={18} />, label: 'Tactical Brief', path: `/${currentUser?.role}/mission-brief`, roles: ['admin', 'owner'] },
+    { id: 'expenses', icon: <Wallet size={18} />, label: 'Financial Ops', path: `/${currentUser?.role}/expenses`, roles: ['admin', 'owner'] },
+    
+    // SHARED (Admin + Owner + Member)
+    { id: 'itinerary', icon: <Map size={18} />, label: 'Itinerary Planning', path: `/${currentUser?.role}/itinerary`, roles: ['admin', 'owner', 'member'] },
+    { id: 'checklists', icon: <CheckSquare size={18} />, label: 'Checklist Protocols', path: `/${currentUser?.role}/checklists`, roles: ['admin', 'owner', 'member'] },
+    
+    // MEMBER SPECIFIC
+    { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Member View', path: `/member/dashboard`, roles: ['member'] },
   ];
 
   const filteredItems = menuItems.filter(item => item.roles.includes(currentUser?.role));
 
   return (
-    <div className="layout-root">
+    <div className="layout-root" data-role={currentUser?.role}>
       {/* Sidebar */}
       <motion.aside 
         className={`sidebar-premium ${isCollapsed ? 'collapsed' : ''}`}
