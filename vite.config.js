@@ -7,10 +7,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000', // Assuming local dev server or vercel dev
+        target: 'http://localhost:3000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 10000
   }
 })
