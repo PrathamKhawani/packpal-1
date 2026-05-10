@@ -186,51 +186,50 @@ export default function Dashboard() {
         )}
         {/* Mission Control - EXCLUSIVE TO OWNER */}
         {currentUser?.role === 'owner' && (
-          <motion.div 
-            className="bento-card glass owner-brief-card" 
+          <motion.div
+            className="bento-card mc-owner-card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ gridColumn: 'span 4', background: 'linear-gradient(135deg, hsla(var(--success) / 0.1) 0%, transparent 100%)', border: '1px solid hsla(var(--success) / 0.2)' }}
+            style={{ gridColumn: 'span 4' }}
           >
-            <div className="card-head">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Target size={18} className="text-success" />
-                <h3>MISSION CONTROL OVERVIEW</h3>
+            <div className="mc-top-bar">
+              <div className="mc-top-left">
+                <div className="mc-live-badge"><span className="mc-live-dot" />LIVE — MISSION ACTIVE</div>
+                <h3 className="mc-heading">MISSION CONTROL</h3>
               </div>
-              <span className="live-tag success">READY FOR DEPLOYMENT</span>
+              <div className="mc-readiness"><strong>84%</strong><span>READINESS</span></div>
             </div>
-            
-            <div className="admin-grid">
-              <div className="admin-stat-item">
-                <Flag className="admin-icon success" />
-                <div className="admin-info">
-                  <span className="admin-label">OBJECTIVES</span>
-                  <strong className="admin-value">8 / 12</strong>
-                  <span className="admin-growth">66% Complete</span>
+            <div className="mc-stats-grid">
+              <div className="mc-stat">
+                <div className="mc-stat-icon"><Flag size={16} /></div>
+                <div className="mc-stat-body">
+                  <span className="mc-stat-label">OBJECTIVES</span>
+                  <strong className="mc-stat-val">8 / 12</strong>
+                  <div className="mc-mini-bar"><motion.div className="mc-mini-fill" style={{background:'hsl(var(--success))'}} initial={{width:0}} animate={{width:'66%'}} transition={{delay:0.4,duration:0.7}} /></div>
                 </div>
               </div>
-              <div className="admin-stat-item">
-                <Users className="admin-icon success" />
-                <div className="admin-info">
-                  <span className="admin-label">TEAM READINESS</span>
-                  <strong className="admin-value">OPTIMAL</strong>
-                  <span className="admin-growth text-success">All members online</span>
+              <div className="mc-stat">
+                <div className="mc-stat-icon ready"><Users size={16} /></div>
+                <div className="mc-stat-body">
+                  <span className="mc-stat-label">TEAM READINESS</span>
+                  <strong className="mc-stat-val">OPTIMAL</strong>
+                  <span className="mc-stat-sub success">All members online</span>
                 </div>
               </div>
-              <div className="admin-stat-item">
-                <ShieldCheck className="admin-icon success" />
-                <div className="admin-info">
-                  <span className="admin-label">SECURITY STATUS</span>
-                  <strong className="admin-value">VERIFIED</strong>
-                  <span className="admin-growth text-success">Vault Secured</span>
+              <div className="mc-stat">
+                <div className="mc-stat-icon ready"><ShieldCheck size={16} /></div>
+                <div className="mc-stat-body">
+                  <span className="mc-stat-label">SECURITY</span>
+                  <strong className="mc-stat-val">VERIFIED</strong>
+                  <span className="mc-stat-sub success">Vault Secured</span>
                 </div>
               </div>
-              <div className="admin-stat-item">
-                <Zap className="admin-icon success" />
-                <div className="admin-info">
-                  <span className="admin-label">DEPLOYMENT TIME</span>
-                  <strong className="admin-value">T-4 DAYS</strong>
-                  <span className="admin-growth">On Schedule</span>
+              <div className="mc-stat">
+                <div className="mc-stat-icon"><Zap size={16} /></div>
+                <div className="mc-stat-body">
+                  <span className="mc-stat-label">DEPLOYMENT</span>
+                  <strong className="mc-stat-val">T‑4 DAYS</strong>
+                  <span className="mc-stat-sub">On Schedule</span>
                 </div>
               </div>
             </div>
@@ -463,6 +462,31 @@ export default function Dashboard() {
         .admin-label { font-size: 0.75rem; font-weight: 600; color: hsl(var(--text-muted)); }
         .admin-value { font-size: 1.5rem; font-weight: 800; color: hsl(var(--text)); margin: 0; }
         .admin-growth { font-size: 0.75rem; font-weight: 600; color: hsl(var(--success)); display: flex; align-items: center; gap: 4px; }
+
+        /* Mission Control Owner Card */
+        .mc-owner-card { background: linear-gradient(135deg, hsla(var(--success)/.06) 0%, hsl(var(--bg-card)) 60%) !important; border: 1px solid hsla(var(--success)/.25) !important; }
+        .mc-top-bar { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; }
+        .mc-live-badge { display:inline-flex; align-items:center; gap:7px; font-size:0.58rem; font-weight:800; color:hsl(var(--success)); background:hsla(var(--success)/.1); border:1px solid hsla(var(--success)/.2); padding:3px 10px; border-radius:100px; letter-spacing:0.07em; margin-bottom:0.5rem; }
+        .mc-live-dot { width:6px; height:6px; border-radius:50%; background:hsl(var(--success)); animation:mc-pulse 1.4s infinite; }
+        @keyframes mc-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(0.8)} }
+        .mc-heading { font-size:0.78rem; font-weight:800; color:hsl(var(--text-muted)); letter-spacing:0.1em; margin:0; }
+        .mc-readiness { display:flex; flex-direction:column; align-items:flex-end; }
+        .mc-readiness strong { font-size:2rem; font-weight:800; color:hsl(var(--success)); line-height:1; }
+        .mc-readiness span { font-size:0.55rem; font-weight:800; color:hsl(var(--text-muted)); letter-spacing:0.1em; }
+        .mc-stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+        .mc-stat { display:flex; gap:0.875rem; align-items:flex-start; padding:1rem; background:hsl(var(--bg)); border:1px solid hsl(var(--border)); border-radius:var(--radius-md); transition:0.2s; }
+        .mc-stat:hover { border-color:hsl(var(--text-muted)); transform:translateY(-1px); }
+        .mc-stat-icon { width:36px; height:36px; border-radius:8px; background:hsla(var(--success)/.1); color:hsl(var(--success)); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .mc-stat-icon.ready { background:hsla(var(--success)/.1); color:hsl(var(--success)); }
+        .mc-stat-body { display:flex; flex-direction:column; gap:3px; flex:1; }
+        .mc-stat-label { font-size:0.58rem; font-weight:800; color:hsl(var(--text-muted)); letter-spacing:0.08em; }
+        .mc-stat-val { font-size:1.15rem; font-weight:800; color:hsl(var(--text)); line-height:1.1; }
+        .mc-stat-sub { font-size:0.65rem; font-weight:600; color:hsl(var(--text-muted)); }
+        .mc-stat-sub.success { color:hsl(var(--success)); }
+        .mc-mini-bar { height:3px; background:hsl(var(--border)); border-radius:10px; overflow:hidden; margin-top:4px; }
+        .mc-mini-fill { height:100%; border-radius:10px; }
+        @media(max-width:1024px){ .mc-stats-grid { grid-template-columns:repeat(2,1fr); } }
+        @media(max-width:600px){ .mc-stats-grid { grid-template-columns:1fr; } }
 
         @media (max-width: 1024px) {
             .dash-bento { grid-template-columns: repeat(2, 1fr); }

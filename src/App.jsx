@@ -17,6 +17,7 @@ const Expenses = React.lazy(() => import('./pages/Expenses'));
 const Itinerary = React.lazy(() => import('./pages/Itinerary'));
 const Analytics = React.lazy(() => import('./pages/Analytics'));
 const MissionBrief = React.lazy(() => import('./pages/MissionBrief'));
+const TripSetup = React.lazy(() => import('./pages/TripSetup'));
 import Layout from './layouts/Layout';
 
 // Fallback loader for Suspense
@@ -42,12 +43,23 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppRoutes() {
-  const { currentUser } = useApp();
+  const { currentUser, tripConfig } = useApp();
 
   const renderDashboard = () => {
     if (currentUser?.role === 'admin') return <AdminDashboard />;
-    if (currentUser?.role === 'owner') return <OwnerDashboard />;
+    if (currentUser?.role === 'owner') {
+      if (!tripConfig?.setupComplete) return <Navigate to={`/${currentUser.role}/trip-setup`} replace />;
+      return <OwnerDashboard />;
+    }
     return <Dashboard />; // Member fallback
+  };
+
+  // For owners: if setup not complete, block all routes except trip-setup
+  const ownerSetupGuard = (element) => {
+    if (currentUser?.role === 'owner' && !tripConfig?.setupComplete) {
+      return <Navigate to="/owner/trip-setup" replace />;
+    }
+    return element;
   };
 
   return (
@@ -68,10 +80,11 @@ function AppRoutes() {
         }>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={renderDashboard()} />
-          <Route path="checklists" element={['admin', 'owner', 'member'].includes(currentUser?.role) ? <Checklists /> : <Navigate to="../dashboard" replace />} />
-          <Route path="itinerary" element={['admin', 'owner', 'member'].includes(currentUser?.role) ? <Itinerary /> : <Navigate to="../dashboard" replace />} />
-          <Route path="expenses" element={['admin', 'owner'].includes(currentUser?.role) ? <Expenses /> : <Navigate to="../dashboard" replace />} />
-          <Route path="mission-brief" element={['admin', 'owner'].includes(currentUser?.role) ? <MissionBrief /> : <Navigate to="../dashboard" replace />} />
+          <Route path="checklists" element={ownerSetupGuard(['admin', 'owner', 'member'].includes(currentUser?.role) ? <Checklists /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="itinerary" element={ownerSetupGuard(['admin', 'owner', 'member'].includes(currentUser?.role) ? <Itinerary /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="expenses" element={ownerSetupGuard(['admin', 'owner'].includes(currentUser?.role) ? <Expenses /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="mission-brief" element={ownerSetupGuard(['admin', 'owner'].includes(currentUser?.role) ? <MissionBrief /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="trip-setup" element={currentUser?.role === 'owner' ? <TripSetup /> : <Navigate to="../dashboard" replace />} />
           <Route path="vault" element={currentUser?.role === 'admin' ? <Vault /> : <Navigate to="../dashboard" replace />} />
           <Route path="risk-assessment" element={currentUser?.role === 'admin' ? <RiskAssessment /> : <Navigate to="../dashboard" replace />} />
           <Route path="members" element={currentUser?.role === 'admin' ? <Members /> : <Navigate to="../dashboard" replace />} />

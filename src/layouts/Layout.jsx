@@ -34,6 +34,7 @@ export default function Layout() {
     
     // OWNER MODULES
     { id: 'dashboard', icon: <Compass size={18} />, label: 'Mission Control', path: `/owner/dashboard`, roles: ['owner'] },
+    { id: 'trip-setup', icon: <SettingsIcon size={18} />, label: 'Trip Setup', path: `/owner/trip-setup`, roles: ['owner'] },
     
     // SHARED TACTICAL (Admin + Owner)
     { id: 'mission-brief', icon: <Target size={18} />, label: 'Tactical Brief', path: `/${currentUser?.role}/mission-brief`, roles: ['admin', 'owner'] },

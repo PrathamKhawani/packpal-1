@@ -45,13 +45,26 @@ export function AppProvider({ children }) {
     return user ? JSON.parse(user) : null;
   });
 
+  const DEFAULT_TRIP_CONFIG = {
+    tripName: '',
+    destination: '',
+    startDate: '',
+    endDate: '',
+    budget: '',
+    tripType: 'balanced',
+    totalMembers: 2,
+    notes: '',
+    setupComplete: false
+  };
+
   const [tripConfig, setTripConfig] = useState(() => {
     const saved = localStorage.getItem('packpal_tripConfig');
-    return saved ? JSON.parse(saved) : {
-      destination: 'Paris, France',
-      startDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
-      budget: 50000
-    };
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Ensure legacy configs have tripName field
+      return { ...DEFAULT_TRIP_CONFIG, ...parsed };
+    }
+    return DEFAULT_TRIP_CONFIG;
   });
 
   const [items, setItems] = useState(() => {
@@ -189,6 +202,22 @@ export function AppProvider({ children }) {
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('packpal_currentUser');
+  };
+
+  const resetTrip = () => {
+    const fresh = {
+      tripName: '',
+      destination: '',
+      startDate: '',
+      endDate: '',
+      budget: '',
+      tripType: 'balanced',
+      totalMembers: 2,
+      notes: '',
+      setupComplete: false
+    };
+    setTripConfig(fresh);
+    localStorage.setItem('packpal_tripConfig', JSON.stringify(fresh));
   };
 
   // Helper for role-prefixed API calls (Simulated)
@@ -396,7 +425,7 @@ export function AppProvider({ children }) {
       expenses, setExpenses, addExpense, deleteExpense,
       vaultDocs, setVaultDocs, addVaultDoc, deleteVaultDoc,
       members, setMembers, addMember, deleteMember,
-      tripConfig, setTripConfig,
+      tripConfig, setTripConfig, resetTrip,
       categories,
       theme, toggleTheme,
       isLoading,

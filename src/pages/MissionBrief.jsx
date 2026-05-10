@@ -1,145 +1,315 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Target, Shield, Compass, Flag, 
-  Map, Users, Zap, Briefcase,
-  ChevronRight, AlertCircle, CheckCircle2
+  Target, Shield, Flag, Map, Users, Zap, 
+  ChevronRight, AlertCircle, CheckCircle2,
+  Clock, Activity, TrendingUp, Radio, Lock,
+  Crosshair, BarChart2, GitBranch, Terminal
 } from 'lucide-react';
 
+const OBJ = [
+  { status: 'complete', text: 'Secure logistics & transportation assets', detail: 'All booking confirmations received and verified. Transport locked in.', tag: 'LOGISTICS' },
+  { status: 'active',   text: 'Verify team deployment readiness',         detail: '2 of 3 members confirmed. Awaiting Mike\'s status update.',        tag: 'PERSONNEL' },
+  { status: 'pending',  text: 'Coordinate final arrival protocols',        detail: 'Arrival briefing scheduled 24h before departure.',                 tag: 'OPS' },
+];
+
+const TEAM = [
+  { name: 'Sarah K.',  role: 'Field Lead',     status: 'READY',   color: 'success', avatar: 'SK' },
+  { name: 'Mike D.',   role: 'Operator',       status: 'STANDBY', color: 'warning', avatar: 'MD' },
+  { name: 'Admin',     role: 'Command',        status: 'ONLINE',  color: 'p',       avatar: 'AD' },
+];
+
+const TIMELINE = [
+  { label: 'Briefing',  date: 'Day 0', done: true  },
+  { label: 'Departure', date: 'Day 1', done: true  },
+  { label: 'Arrival',   date: 'Day 2', done: false },
+  { label: 'Debrief',   date: 'Day 4', done: false },
+];
+
+const RISKS = [
+  { label: 'Weather',   pct: 30, level: 'LOW',    colorVar: 'var(--success)' },
+  { label: 'Budget',    pct: 75, level: 'HIGH',   colorVar: 'var(--danger)'  },
+  { label: 'Logistics', pct: 15, level: 'CLEAR',  colorVar: 'var(--p)'       },
+];
+
 export default function MissionBrief() {
+  const [openObj, setOpenObj] = useState(null);
+
   return (
-    <div className="brief-container">
-      <header className="page-header">
-        <div className="header-info">
-          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>Mission <span className="text-glow">Briefing</span></motion.h1>
-          <p>Strategic overview and objective management for the current operation.</p>
+    <div className="mb-root">
+      {/* ── Header ── */}
+      <motion.header className="mb-header" initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }}>
+        <div className="mb-header-left">
+          <div className="mb-eyebrow"><Radio size={10} className="pulse-ico" /> TACTICAL BRIEF — OPS ACTIVE</div>
+          <h1 className="mb-title">Mission <span className="mb-accent">Control</span></h1>
+          <p className="mb-sub">Strategic overview and objective management for the current operation.</p>
         </div>
-        <div className="header-badge">
-          <Target size={16} />
-          <span>OBJECTIVE: ACTIVE</span>
-        </div>
-      </header>
-
-      <div className="brief-grid">
-        <div className="brief-main glass">
-          <div className="section-head">
-            <Flag size={20} className="text-p" />
-            <h3>PRIMARY OBJECTIVES</h3>
+        <div className="mb-header-right">
+          <div className="readiness-ring">
+            <svg viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" className="ring-track" />
+              <circle cx="40" cy="40" r="32" className="ring-fill" strokeDasharray="169 200" strokeDashoffset="42" />
+            </svg>
+            <div className="ring-label"><strong>84%</strong><span>READINESS</span></div>
           </div>
-          <div className="objective-list">
-            <ObjectiveItem status="complete" text="Secure logistics and transportation assets" />
-            <ObjectiveItem status="active" text="Verify team deployment readiness" />
-            <ObjectiveItem status="pending" text="Coordinate final mission arrival protocols" />
-          </div>
-
-          <div className="section-head" style={{ marginTop: '2.5rem' }}>
-            <Map size={20} className="text-p" />
-            <h3>STRATEGIC MAP</h3>
-          </div>
-          <div className="map-placeholder">
-            <div className="map-ui">
-              <div className="map-point start" />
-              <div className="map-path" />
-              <div className="map-point end" />
-              <div className="map-overlay">GRID SECTOR 7G - READY FOR DEPLOYMENT</div>
-            </div>
+          <div className="header-stats">
+            <div className="hs-item"><TrendingUp size={13}/><div><strong>3/5</strong><span>Objectives</span></div></div>
+            <div className="hs-item"><Activity size={13}/><div><strong>Online</strong><span>Status</span></div></div>
+            <div className="hs-item"><Clock size={13}/><div><strong>T‑4d</strong><span>Departure</span></div></div>
           </div>
         </div>
+      </motion.header>
 
-        <div className="brief-side">
-          <div className="side-card glass">
-            <div className="section-head">
-              <Users size={18} />
-              <h3>TEAM STATUS</h3>
-            </div>
-            <div className="team-status-list">
-              <TeamRow name="Sarah (Member)" status="Ready" color="var(--success)" />
-              <TeamRow name="Mike (Member)" status="Standby" color="var(--warning)" />
-              <TeamRow name="Admin (Admin)" status="Online" color="var(--p)" />
-            </div>
-          </div>
+      {/* ── Body Grid ── */}
+      <div className="mb-grid">
 
-          <div className="side-card glass alert">
-            <div className="section-head">
-              <AlertCircle size={18} />
-              <h3>MISSION RISK</h3>
-            </div>
-            <div className="risk-level">
-              <div className="risk-bar"><div className="risk-fill" /></div>
-              <div className="risk-label">LOW (NORMAL OPERATIONS)</div>
-            </div>
-          </div>
+        {/* Left column */}
+        <div className="mb-col-main">
 
-          <button className="redeploy-btn">
-            <Zap size={18} />
-            RE-AUTHORIZE MISSION
-          </button>
+          {/* Objectives */}
+          <motion.section className="mb-card" initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.05 }}>
+            <div className="mc-label"><Flag size={13}/> PRIMARY OBJECTIVES</div>
+            <div className="obj-list">
+              {OBJ.map((o, i) => (
+                <div key={i} className={`obj-item ${o.status} ${openObj===i ? 'open' : ''}`} onClick={() => setOpenObj(openObj===i ? null : i)}>
+                  <div className="obj-main-row">
+                    <div className="obj-icon-wrap">
+                      {o.status === 'complete'
+                        ? <CheckCircle2 size={16} className="ico-success" />
+                        : <div className={`obj-dot ${o.status}`} />}
+                    </div>
+                    <div className="obj-body">
+                      <span className="obj-tag">{o.tag}</span>
+                      <p className={`obj-text ${o.status === 'complete' ? 'done' : ''}`}>{o.text}</p>
+                    </div>
+                    <ChevronRight size={14} className={`obj-chevron ${openObj===i ? 'rotated' : ''}`} />
+                  </div>
+                  <AnimatePresence>
+                    {openObj === i && (
+                      <motion.div className="obj-detail" initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }}>
+                        {o.detail}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Strategic Map */}
+          <motion.section className="mb-card map-card" initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}>
+            <div className="mc-label"><Map size={13}/> STRATEGIC MAP</div>
+            <div className="map-scene">
+              <div className="map-grid-bg" />
+              <div className="map-content">
+                <div className="map-node base"><div className="node-dot" /><span>BASE</span></div>
+                <div className="map-connector"><div className="connector-line"><div className="connector-pulse" /></div></div>
+                <div className="map-node dest"><div className="node-dot green" /><span>DEST</span></div>
+              </div>
+              <div className="map-badge"><div className="live-dot" />SECTOR 7G — DEPLOYMENT READY</div>
+              <div className="map-coords">28.6139° N, 77.2090° E</div>
+            </div>
+          </motion.section>
+
+          {/* Timeline */}
+          <motion.section className="mb-card" initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
+            <div className="mc-label"><GitBranch size={13}/> MISSION TIMELINE</div>
+            <div className="tl-strip">
+              {TIMELINE.map((s, i) => (
+                <div key={i} className={`tl-step ${s.done ? 'done' : ''}`}>
+                  <div className="tl-node">{s.done ? <CheckCircle2 size={13}/> : <div className="tl-dot" />}</div>
+                  {i < TIMELINE.length-1 && <div className={`tl-line ${s.done ? 'done' : ''}`} />}
+                  <span className="tl-label">{s.label}</span>
+                  <span className="tl-date">{s.date}</span>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        </div>
+
+        {/* Right column */}
+        <div className="mb-col-side">
+
+          {/* Team Status */}
+          <motion.section className="mb-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.1 }}>
+            <div className="mc-label"><Users size={13}/> TEAM STATUS</div>
+            <div className="team-list">
+              {TEAM.map((m, i) => (
+                <div key={i} className="team-row">
+                  <div className={`team-avatar ${m.color}`}>{m.avatar}</div>
+                  <div className="team-info"><strong>{m.name}</strong><span>{m.role}</span></div>
+                  <span className={`team-badge ${m.color}`}>{m.status}</span>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Risk Panel */}
+          <motion.section className="mb-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.15 }}>
+            <div className="mc-label"><AlertCircle size={13}/> RISK ASSESSMENT</div>
+            <div className="risk-list">
+              {RISKS.map((r, i) => (
+                <div key={i} className="risk-row">
+                  <div className="risk-meta">
+                    <span className="risk-label">{r.label}</span>
+                    <span className="risk-level" style={{ color: r.colorVar }}>{r.level}</span>
+                  </div>
+                  <div className="risk-track">
+                    <motion.div className="risk-bar" style={{ background: r.colorVar }}
+                      initial={{ width: 0 }} animate={{ width: `${r.pct}%` }} transition={{ delay: 0.3+i*0.1, duration: 0.6 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="risk-footer"><Shield size={12}/> Overall: <strong>LOW THREAT — NORMAL OPS</strong></div>
+          </motion.section>
+
+          {/* Intel Terminal */}
+          <motion.section className="mb-card terminal-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.2 }}>
+            <div className="mc-label"><Terminal size={13}/> INTEL TERMINAL</div>
+            <div className="terminal-body">
+              <div className="t-line-item"><span className="t-green">✓</span> Logistics confirmed [08:42]</div>
+              <div className="t-line-item"><span className="t-yellow">⚡</span> Mike status: pending [09:15]</div>
+              <div className="t-line-item"><span className="t-blue">→</span> Briefing scheduled [10:00]</div>
+              <div className="t-line-item t-cursor"><span className="t-green">_</span> Awaiting further orders...</div>
+            </div>
+          </motion.section>
+
+          {/* CTA */}
+          <motion.button className="mb-cta" whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}>
+            <Zap size={15}/> RE-AUTHORIZE MISSION
+          </motion.button>
         </div>
       </div>
 
       <style>{`
-        .brief-container { display: flex; flex-direction: column; gap: 2rem; max-width: 1200px; margin: 0 auto; }
-        .page-header { display: flex; justify-content: space-between; align-items: flex-end; }
-        .page-header h1 { font-size: 2.5rem; font-weight: 900; }
-        .text-glow { color: hsl(var(--p)); text-shadow: 0 0 15px hsla(var(--p) / 0.3); }
-        .header-badge { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; font-weight: 800; color: #fff; background: hsl(var(--p)); padding: 6px 14px; border-radius: 100px; box-shadow: 0 5px 15px hsla(var(--p) / 0.3); }
-        
-        .brief-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
-        .brief-main { padding: 2.5rem; border-radius: 32px; }
-        .section-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
-        .section-head h3 { font-size: 0.8rem; font-weight: 900; letter-spacing: 0.1em; color: hsl(var(--text-muted)); }
-        
-        .objective-list { display: flex; flex-direction: column; gap: 1rem; }
-        .objective-item { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; background: hsla(var(--text) / 0.03); border-radius: 18px; border: 1px solid hsla(var(--text) / 0.05); }
-        .obj-status { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; }
-        .obj-text { font-size: 1rem; font-weight: 600; }
-        
-        .map-placeholder { height: 240px; background: hsla(var(--text) / 0.03); border-radius: 24px; border: 1px solid hsla(var(--text) / 0.05); position: relative; overflow: hidden; }
-        .map-ui { height: 100%; width: 100%; position: relative; padding: 3rem; display: flex; align-items: center; justify-content: space-between; }
-        .map-point { width: 16px; height: 16px; border-radius: 50%; background: hsl(var(--p)); box-shadow: 0 0 20px hsl(var(--p)); position: relative; }
-        .map-point.end { background: hsl(var(--success)); box-shadow: 0 0 20px hsl(var(--success)); }
-        .map-path { position: absolute; left: 3.5rem; right: 3.5rem; height: 2px; background: dashed hsl(var(--text-muted)); border-top: 2px dashed hsla(var(--text) / 0.1); }
-        .map-overlay { position: absolute; bottom: 1rem; left: 1rem; font-size: 0.6rem; font-weight: 900; background: hsla(0,0%,0%,0.7); color: #fff; padding: 4px 10px; border-radius: 4px; }
+        .mb-root { display:flex; flex-direction:column; gap:1.5rem; max-width:1100px; margin:0 auto; }
 
-        .brief-side { display: flex; flex-direction: column; gap: 1.5rem; }
-        .side-card { padding: 1.5rem; border-radius: 24px; }
-        .team-status-list { display: flex; flex-direction: column; gap: 1rem; }
-        .team-row { display: flex; justify-content: space-between; align-items: center; }
-        .team-row span { font-size: 0.85rem; font-weight: 600; }
-        .team-status-badge { font-size: 0.7rem; font-weight: 800; padding: 2px 10px; border-radius: 6px; }
+        /* Header */
+        .mb-header { display:flex; justify-content:space-between; align-items:flex-start; gap:2rem; background:hsl(var(--bg-card)); border:1px solid hsl(var(--border)); border-radius:16px; padding:2rem; box-shadow:var(--shadow-card); }
+        .mb-eyebrow { font-size:0.6rem; font-weight:800; color:hsl(var(--p)); background:hsla(var(--p)/.08); border:1px solid hsla(var(--p)/.2); padding:4px 12px; border-radius:100px; display:inline-flex; align-items:center; gap:8px; margin-bottom:0.75rem; letter-spacing:0.06em; }
+        .pulse-ico { animation: pulse-opacity 1.4s infinite; }
+        @keyframes pulse-opacity { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .mb-title { font-size:2.25rem; font-weight:800; letter-spacing:-0.03em; line-height:1.1; margin-bottom:0.4rem; }
+        .mb-accent { color:hsl(var(--p)); }
+        .mb-sub { font-size:0.825rem; color:hsl(var(--text-muted)); }
 
-        .risk-level { display: flex; flex-direction: column; gap: 0.75rem; }
-        .risk-bar { height: 6px; background: hsla(var(--text) / 0.05); border-radius: 10px; overflow: hidden; }
-        .risk-fill { height: 100%; width: 25%; background: hsl(var(--success)); }
-        .risk-label { font-size: 0.65rem; font-weight: 900; color: hsl(var(--success)); }
+        .mb-header-right { display:flex; align-items:center; gap:1.5rem; flex-shrink:0; }
+        .readiness-ring { position:relative; width:80px; height:80px; flex-shrink:0; }
+        .readiness-ring svg { width:80px; height:80px; transform:rotate(-90deg); }
+        .ring-track { fill:none; stroke:hsl(var(--border)); stroke-width:5; }
+        .ring-fill  { fill:none; stroke:hsl(var(--p)); stroke-width:5; stroke-linecap:round; transition:stroke-dasharray .6s; }
+        .ring-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .ring-label strong { font-size:1.1rem; font-weight:800; color:hsl(var(--text)); line-height:1; }
+        .ring-label span { font-size:0.42rem; font-weight:800; color:hsl(var(--text-muted)); letter-spacing:0.08em; }
 
-        .redeploy-btn { width: 100%; padding: 1.25rem; border-radius: 20px; border: none; background: hsl(var(--text)); color: hsl(var(--bg)); font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: 0.3s; }
-        .redeploy-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px hsla(0,0%,0%,0.2); }
+        .header-stats { display:flex; flex-direction:column; gap:0.6rem; }
+        .hs-item { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.75rem; background:hsl(var(--bg)); border:1px solid hsl(var(--border)); border-radius:8px; color:hsl(var(--p)); }
+        .hs-item div { display:flex; flex-direction:column; }
+        .hs-item strong { font-size:0.8rem; font-weight:800; color:hsl(var(--text)); line-height:1.1; }
+        .hs-item span { font-size:0.55rem; font-weight:700; color:hsl(var(--text-muted)); text-transform:uppercase; letter-spacing:0.06em; }
 
-        @media (max-width: 1024px) { .brief-grid { grid-template-columns: 1fr; } }
+        /* Grid */
+        .mb-grid { display:grid; grid-template-columns:1fr 280px; gap:1.25rem; }
+        .mb-col-main { display:flex; flex-direction:column; gap:1.25rem; }
+        .mb-col-side { display:flex; flex-direction:column; gap:1rem; }
+
+        /* Card */
+        .mb-card { background:hsl(var(--bg-card)); border:1px solid hsl(var(--border)); border-radius:14px; padding:1.25rem; box-shadow:var(--shadow-sm); }
+        .mc-label { font-size:0.6rem; font-weight:800; color:hsl(var(--text-muted)); text-transform:uppercase; letter-spacing:0.1em; display:flex; align-items:center; gap:7px; margin-bottom:1rem; }
+
+        /* Objectives */
+        .obj-list { display:flex; flex-direction:column; gap:0.5rem; }
+        .obj-item { border:1px solid hsl(var(--border)); border-radius:10px; overflow:hidden; cursor:pointer; transition:border-color .15s; }
+        .obj-item:hover { border-color:hsl(var(--text-muted)); }
+        .obj-item.open { border-color:hsla(var(--p)/.4); background:hsla(var(--p)/.03); }
+        .obj-item.active { border-left:3px solid hsl(var(--p)); }
+        .obj-item.complete { border-left:3px solid hsl(var(--success)); }
+        .obj-main-row { display:flex; align-items:center; gap:0.75rem; padding:0.8rem 1rem; }
+        .obj-icon-wrap { width:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+        .obj-dot { width:9px; height:9px; border-radius:50%; border:2px solid hsl(var(--border)); }
+        .obj-dot.active { background:hsl(var(--p)); border-color:hsla(var(--p)/.3); }
+        .obj-dot.pending { background:hsl(var(--border)); }
+        .ico-success { color:hsl(var(--success)); }
+        .obj-body { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .obj-tag { font-size:0.55rem; font-weight:800; color:hsl(var(--p)); letter-spacing:0.08em; }
+        .obj-text { font-size:0.825rem; font-weight:600; color:hsl(var(--text)); }
+        .obj-text.done { text-decoration:line-through; color:hsl(var(--text-muted)); }
+        .obj-chevron { color:hsl(var(--text-muted)); transition:transform .2s; }
+        .obj-chevron.rotated { transform:rotate(90deg); }
+        .obj-detail { padding:0 1rem 0.75rem 2.75rem; font-size:0.775rem; color:hsl(var(--text-muted)); line-height:1.5; border-top:1px solid hsl(var(--border)); padding-top:0.6rem; overflow:hidden; }
+
+        /* Map */
+        .map-card {}
+        .map-scene { height:150px; border:1px solid hsl(var(--border)); border-radius:10px; background:hsl(var(--bg)); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+        .map-grid-bg { position:absolute; inset:0; background-image:radial-gradient(hsl(var(--border)) 1px,transparent 1px); background-size:22px 22px; opacity:0.6; }
+        .map-content { position:relative; z-index:1; display:flex; align-items:center; gap:0; width:55%; }
+        .map-node { display:flex; flex-direction:column; align-items:center; gap:5px; }
+        .map-node span { font-size:0.55rem; font-weight:800; color:hsl(var(--text-muted)); letter-spacing:0.08em; }
+        .node-dot { width:12px; height:12px; border-radius:50%; background:hsl(var(--p)); box-shadow:0 0 0 4px hsla(var(--p)/.2); }
+        .node-dot.green { background:hsl(var(--success)); box-shadow:0 0 0 4px hsla(var(--success)/.2); }
+        .map-connector { flex:1; display:flex; align-items:center; }
+        .connector-line { flex:1; height:2px; background:repeating-linear-gradient(90deg,hsl(var(--p)) 0,hsl(var(--p)) 5px,transparent 5px,transparent 10px); position:relative; }
+        .connector-pulse { position:absolute; top:50%; transform:translateY(-50%); width:7px; height:7px; border-radius:50%; background:hsl(var(--p)); animation:move-dot 2s linear infinite; }
+        @keyframes move-dot { 0%{left:0%} 100%{left:100%} }
+        .map-badge { position:absolute; bottom:8px; left:10px; font-size:0.5rem; font-weight:800; background:hsl(var(--bg-card)); border:1px solid hsl(var(--border)); color:hsl(var(--text-muted)); padding:3px 8px; border-radius:4px; display:flex; align-items:center; gap:6px; letter-spacing:0.06em; }
+        .live-dot { width:6px; height:6px; border-radius:50%; background:hsl(var(--success)); animation:pulse-opacity 1.5s infinite; }
+        .map-coords { position:absolute; top:8px; right:10px; font-size:0.5rem; font-weight:700; color:hsl(var(--text-muted)); background:hsl(var(--bg-card)); border:1px solid hsl(var(--border)); padding:2px 7px; border-radius:4px; }
+
+        /* Timeline */
+        .tl-strip { display:flex; align-items:flex-start; }
+        .tl-step { flex:1; display:flex; flex-direction:column; align-items:center; position:relative; }
+        .tl-node { display:flex; align-items:center; justify-content:center; color:hsl(var(--p)); }
+        .tl-dot { width:10px; height:10px; border-radius:50%; background:hsl(var(--border)); border:2px solid hsl(var(--bg-card)); }
+        .tl-step.done .tl-dot { background:hsl(var(--p)); }
+        .tl-line { position:absolute; top:6px; left:50%; width:100%; height:2px; background:hsl(var(--border)); z-index:0; }
+        .tl-line.done { background:hsl(var(--p)); }
+        .tl-label { font-size:0.65rem; font-weight:700; color:hsl(var(--text)); margin-top:6px; text-align:center; }
+        .tl-date { font-size:0.58rem; color:hsl(var(--text-muted)); text-align:center; }
+
+        /* Team */
+        .team-list { display:flex; flex-direction:column; gap:0.5rem; }
+        .team-row { display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; background:hsl(var(--bg)); border:1px solid hsl(var(--border)); border-radius:8px; }
+        .team-avatar { width:30px; height:30px; border-radius:8px; font-size:0.6rem; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .team-avatar.success { background:hsl(var(--success)); }
+        .team-avatar.warning { background:hsl(var(--warning)); }
+        .team-avatar.p { background:hsl(var(--p)); }
+        .team-info { flex:1; display:flex; flex-direction:column; }
+        .team-info strong { font-size:0.78rem; font-weight:700; color:hsl(var(--text)); }
+        .team-info span { font-size:0.6rem; color:hsl(var(--text-muted)); }
+        .team-badge { font-size:0.55rem; font-weight:800; padding:2px 7px; border-radius:100px; letter-spacing:0.06em; }
+        .team-badge.success { background:hsla(var(--success)/.1); color:hsl(var(--success)); }
+        .team-badge.warning { background:hsla(var(--warning)/.1); color:hsl(var(--warning)); }
+        .team-badge.p { background:hsla(var(--p)/.1); color:hsl(var(--p)); }
+
+        /* Risk */
+        .risk-list { display:flex; flex-direction:column; gap:0.75rem; margin-bottom:0.875rem; }
+        .risk-row { display:flex; flex-direction:column; gap:4px; }
+        .risk-meta { display:flex; justify-content:space-between; }
+        .risk-label { font-size:0.72rem; font-weight:600; color:hsl(var(--text)); }
+        .risk-level { font-size:0.6rem; font-weight:800; letter-spacing:0.06em; }
+        .risk-track { height:4px; background:hsl(var(--bg)); border-radius:10px; overflow:hidden; }
+        .risk-bar { height:100%; border-radius:10px; }
+        .risk-footer { display:flex; align-items:center; gap:6px; font-size:0.7rem; color:hsl(var(--text-muted)); padding-top:0.75rem; border-top:1px solid hsl(var(--border)); }
+        .risk-footer strong { font-size:0.65rem; font-weight:800; color:hsl(var(--text)); }
+
+        /* Terminal */
+        .terminal-card { background:hsl(220 15% 9%) !important; border-color:hsl(220 15% 18%) !important; }
+        [data-theme="dark"] .terminal-card { background:hsl(220 15% 7%) !important; }
+        .terminal-body { display:flex; flex-direction:column; gap:0.4rem; font-family:monospace; }
+        .t-line-item { font-size:0.72rem; color:hsl(0 0% 70%); display:flex; align-items:center; gap:8px; }
+        .t-green { color:#4ade80; }
+        .t-yellow { color:#facc15; }
+        .t-blue { color:#60a5fa; }
+        .t-cursor { animation:blink-cursor 1s infinite; }
+        @keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+
+        /* CTA */
+        .mb-cta { width:100%; padding:0.9rem; border-radius:10px; border:none; background:hsl(var(--p)); color:#fff; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; letter-spacing:0.06em; box-shadow:0 4px 16px hsla(var(--p)/.3); transition:0.2s; }
+        .mb-cta:hover { background:hsl(var(--p-dark)); box-shadow:0 6px 20px hsla(var(--p)/.4); }
+
+        @media(max-width:900px){ .mb-grid{ grid-template-columns:1fr; } }
       `}</style>
-    </div>
-  );
-}
-
-function ObjectiveItem({ status, text }) {
-  const isComplete = status === 'complete';
-  const isActive = status === 'active';
-  return (
-    <div className={`objective-item ${isActive ? 'active' : ''}`}>
-      <div className="obj-status">
-        {isComplete ? <CheckCircle2 size={20} className="text-success" /> : <div className="event-dot" style={{ background: isActive ? 'hsl(var(--p))' : 'hsl(var(--text-muted))' }} />}
-      </div>
-      <span className={`obj-text ${isComplete ? 'text-muted line-through' : ''}`}>{text}</span>
-    </div>
-  );
-}
-
-function TeamRow({ name, status, color }) {
-  return (
-    <div className="team-row">
-      <span>{name}</span>
-      <span className="team-status-badge" style={{ background: `${color}20`, color: color }}>{status}</span>
     </div>
   );
 }
