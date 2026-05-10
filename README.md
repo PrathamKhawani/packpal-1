@@ -22,10 +22,10 @@
 ### 🌤️ Real-time Weather Engine
 - **Open-Meteo Sync**: Automatic geocoding of destinations with 5-day temperature forecasts and live weather condition icons.
 
-### 🔐 Multi-Role Security (RBAC)
-- **Owner**: Full system control and member management.
-- **Admin**: Full access to all planning modules (Vault, Expenses, Itinerary).
-- **Member**: Access to collaboration tools and personal tracking.
+### 🔐 Strict Role-Based Access Control (RBAC)
+- **Admin (Command Center)**: Supreme system overseer. Has exclusive access to Platform Analytics, System Logs, Secure Vault, and Risk Analysis, alongside all tactical planning modules.
+- **Owner (Mission Control)**: Mid-level tactical leader. Focused purely on mission execution with access to Itinerary, Checklists, Expenses, and Tactical Briefs, without system-governance clutter.
+- **Member**: Standard operator. Access to core collaboration tools (Dashboard, Itinerary, Checklists) for personal tracking.
 - **Viewer**: Read-only access for family or guests.
 
 ### 💼 Smart Modules
