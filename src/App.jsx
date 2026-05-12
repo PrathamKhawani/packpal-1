@@ -29,21 +29,25 @@ const PageLoader = () => (
 );
 
 const ProtectedRoute = ({ children }) => {
-  const { currentUser } = useApp();
+  const { currentUser, isLoading } = useApp();
   const { role } = useParams();
-  
+
+  if (isLoading) return <PageLoader />;
   if (!currentUser) return <Navigate to="/login" replace />;
-  
+
   // If the URL role doesn't match the user's role, redirect to the correct one
   if (role && role !== currentUser.role) {
     return <Navigate to={`/${currentUser.role}/dashboard`} replace />;
   }
-  
+
   return children;
 };
 
 function AppRoutes() {
-  const { currentUser, tripConfig } = useApp();
+  const { currentUser, tripConfig, isLoading } = useApp();
+
+  // Wait for Supabase session to resolve before making auth decisions
+  if (isLoading) return <PageLoader />;
 
   const renderDashboard = () => {
     if (currentUser?.role === 'admin') return <AdminDashboard />;
@@ -80,10 +84,10 @@ function AppRoutes() {
         }>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={renderDashboard()} />
-          <Route path="checklists" element={ownerSetupGuard(['admin', 'owner', 'member'].includes(currentUser?.role) ? <Checklists /> : <Navigate to="../dashboard" replace />)} />
-          <Route path="itinerary" element={ownerSetupGuard(['admin', 'owner', 'member'].includes(currentUser?.role) ? <Itinerary /> : <Navigate to="../dashboard" replace />)} />
-          <Route path="expenses" element={ownerSetupGuard(['admin', 'owner'].includes(currentUser?.role) ? <Expenses /> : <Navigate to="../dashboard" replace />)} />
-          <Route path="mission-brief" element={ownerSetupGuard(['admin', 'owner'].includes(currentUser?.role) ? <MissionBrief /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="checklists" element={ownerSetupGuard(['owner', 'member'].includes(currentUser?.role) ? <Checklists /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="itinerary" element={ownerSetupGuard(['owner', 'member'].includes(currentUser?.role) ? <Itinerary /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="expenses" element={ownerSetupGuard(currentUser?.role === 'owner' ? <Expenses /> : <Navigate to="../dashboard" replace />)} />
+          <Route path="mission-brief" element={ownerSetupGuard(['owner', 'member'].includes(currentUser?.role) ? <MissionBrief /> : <Navigate to="../dashboard" replace />)} />
           <Route path="trip-setup" element={currentUser?.role === 'owner' ? <TripSetup /> : <Navigate to="../dashboard" replace />} />
           <Route path="vault" element={currentUser?.role === 'admin' ? <Vault /> : <Navigate to="../dashboard" replace />} />
           <Route path="risk-assessment" element={currentUser?.role === 'admin' ? <RiskAssessment /> : <Navigate to="../dashboard" replace />} />

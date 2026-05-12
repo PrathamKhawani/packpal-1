@@ -24,28 +24,27 @@ export default function Layout() {
   };
 
   const menuItems = [
-    // ADMIN MODULES (Supreme Control)
-    { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Command Center', path: `/admin/dashboard`, roles: ['admin'] },
-    { id: 'analytics', icon: <BarChart3 size={18} />, label: 'Platform Analytics', path: `/admin/analytics`, roles: ['admin'] },
-    { id: 'members', icon: <Users size={18} />, label: 'Operator Control', path: `/admin/members`, roles: ['admin'] },
-    { id: 'system-logs', icon: <Shield size={18} />, label: 'System Audit', path: `/admin/system-logs`, roles: ['admin'] },
-    { id: 'vault', icon: <Lock size={18} />, label: 'Secure Vault', path: `/admin/vault`, roles: ['admin'] },
-    { id: 'risk-assessment', icon: <Activity size={18} />, label: 'Risk Analysis', path: `/admin/risk-assessment`, roles: ['admin'] },
-    
-    // OWNER MODULES
-    { id: 'dashboard', icon: <Compass size={18} />, label: 'Mission Control', path: `/owner/dashboard`, roles: ['owner'] },
-    { id: 'trip-setup', icon: <SettingsIcon size={18} />, label: 'Trip Setup', path: `/owner/trip-setup`, roles: ['owner'] },
-    
-    // SHARED TACTICAL (Admin + Owner)
-    { id: 'mission-brief', icon: <Target size={18} />, label: 'Tactical Brief', path: `/${currentUser?.role}/mission-brief`, roles: ['admin', 'owner'] },
-    { id: 'expenses', icon: <Wallet size={18} />, label: 'Financial Ops', path: `/${currentUser?.role}/expenses`, roles: ['admin', 'owner'] },
-    
-    // SHARED (Admin + Owner + Member)
-    { id: 'itinerary', icon: <Map size={18} />, label: 'Itinerary Planning', path: `/${currentUser?.role}/itinerary`, roles: ['admin', 'owner', 'member'] },
-    { id: 'checklists', icon: <CheckSquare size={18} />, label: 'Checklist Protocols', path: `/${currentUser?.role}/checklists`, roles: ['admin', 'owner', 'member'] },
-    
-    // MEMBER SPECIFIC
-    { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Member View', path: `/member/dashboard`, roles: ['member'] },
+    // ── ADMIN PANEL (System-level, ordered by scope) ──────────────────────────
+    { id: 'dashboard',       icon: <LayoutDashboard size={18} />, label: 'Command Center',    path: `/admin/dashboard`,        roles: ['admin'] },
+    { id: 'analytics',       icon: <BarChart3 size={18} />,       label: 'Platform Analytics', path: `/admin/analytics`,        roles: ['admin'] },
+    { id: 'members',         icon: <Users size={18} />,           label: 'Operator Control',   path: `/admin/members`,          roles: ['admin'] },
+    { id: 'system-logs',     icon: <Shield size={18} />,          label: 'System Audit',       path: `/admin/system-logs`,      roles: ['admin'] },
+    { id: 'vault',           icon: <Lock size={18} />,            label: 'Secure Vault',       path: `/admin/vault`,            roles: ['admin'] },
+    { id: 'risk-assessment', icon: <Activity size={18} />,        label: 'Risk Analysis',      path: `/admin/risk-assessment`,  roles: ['admin'] },
+
+    // ── OWNER PANEL (Trip-level, ordered by planning dependency) ─────────────
+    { id: 'dashboard',     icon: <Compass size={18} />,    label: 'Mission Control',   path: `/owner/dashboard`,          roles: ['owner'] },
+    { id: 'trip-setup',    icon: <SettingsIcon size={18} />, label: 'Trip Setup',       path: `/owner/trip-setup`,         roles: ['owner'] },
+    { id: 'mission-brief', icon: <Target size={18} />,     label: 'Mission Brief',     path: `/owner/mission-brief`,      roles: ['owner'] },
+    { id: 'itinerary',     icon: <Map size={18} />,        label: 'Itinerary',         path: `/owner/itinerary`,          roles: ['owner'] },
+    { id: 'checklists',    icon: <CheckSquare size={18} />, label: 'Checklists',        path: `/owner/checklists`,         roles: ['owner'] },
+    { id: 'expenses',      icon: <Wallet size={18} />,     label: 'Financial Ops',     path: `/owner/expenses`,           roles: ['owner'] },
+
+    // ── MEMBER PANEL (Participation-level, ordered by relevance) ─────────────
+    { id: 'dashboard',     icon: <LayoutDashboard size={18} />, label: 'Member View',   path: `/member/dashboard`,        roles: ['member'] },
+    { id: 'mission-brief', icon: <Target size={18} />,          label: 'Mission Brief', path: `/member/mission-brief`,    roles: ['member'] },
+    { id: 'itinerary',     icon: <Map size={18} />,             label: 'Itinerary',     path: `/member/itinerary`,        roles: ['member'] },
+    { id: 'checklists',    icon: <CheckSquare size={18} />,     label: 'Checklists',    path: `/member/checklists`,       roles: ['member'] },
   ];
 
   const filteredItems = menuItems.filter(item => item.roles.includes(currentUser?.role));

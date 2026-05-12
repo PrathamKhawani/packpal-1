@@ -37,13 +37,28 @@ const INITIAL_TACTICAL_DATA = [
   { id: 'def20', name: 'Hydration Bladder 3L', category: 'hygiene', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() }
 ];
 
+// Helper — build a normalized user object from a Supabase session user
+const buildUser = (supaUser) => {
+  if (!supaUser) return null;
+  const meta = supaUser.user_metadata || {};
+  const role = meta.role || 'member';
+  const username = meta.full_name || supaUser.email?.split('@')[0] || 'User';
+  return {
+    id: supaUser.id,
+    email: supaUser.email,
+    username,
+    full_name: username,
+    role,
+    avatar: username.charAt(0).toUpperCase(),
+    apiBase: `/api/${role}`,
+  };
+};
+
 export function AppProvider({ children }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('packpal_theme') || 'light');
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState(() => {
-    const user = localStorage.getItem('packpal_currentUser');
-    return user ? JSON.parse(user) : null;
-  });
+  const [isLoading, setIsLoading] = useState(true); // start true — wait for Supabase session check
+  const [authLoading, setAuthLoading] = useState(false); // individual auth action loading
+  const [currentUser, setCurrentUser] = useState(null);
 
   const DEFAULT_TRIP_CONFIG = {
     tripName: '',
@@ -61,7 +76,6 @@ export function AppProvider({ children }) {
     const saved = localStorage.getItem('packpal_tripConfig');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ensure legacy configs have tripName field
       return { ...DEFAULT_TRIP_CONFIG, ...parsed };
     }
     return DEFAULT_TRIP_CONFIG;
@@ -76,11 +90,11 @@ export function AppProvider({ children }) {
   // Forced Data Sync Effect
   useEffect(() => {
     if (items.length < 15) {
-      console.log("Forcing tactical data update...");
       setItems(INITIAL_TACTICAL_DATA);
       localStorage.setItem('packpal_items', JSON.stringify(INITIAL_TACTICAL_DATA));
     }
   }, [items.length]);
+
   const [expenses, setExpenses] = useState(() => {
     const e = localStorage.getItem('packpal_expenses');
     return e ? JSON.parse(e) : [
@@ -89,6 +103,7 @@ export function AppProvider({ children }) {
       { id: '3', description: 'Dinner @ Le Meurice', amount: 8500, payer: 'Mike', category: 'food', created_at: new Date().toISOString() }
     ];
   });
+
   const [vaultDocs, setVaultDocs] = useState(() => {
     const v = localStorage.getItem('packpal_vault');
     return v ? JSON.parse(v) : [
@@ -97,6 +112,7 @@ export function AppProvider({ children }) {
       { id: 'v3', name: 'Hotel Booking Confirmation', type: 'PDF', created_at: new Date().toISOString() }
     ];
   });
+
   const [members, setMembers] = useState(() => {
     const m = localStorage.getItem('packpal_members');
     return m ? JSON.parse(m) : [
@@ -106,23 +122,11 @@ export function AppProvider({ children }) {
       { id: 'mike', name: 'Mike', role: 'member', email: 'mike@example.com' }
     ];
   });
-  
-  // Simulated Users Database for Login
-  const [users, setUsers] = useState(() => {
-    const u = localStorage.getItem('packpal_users');
-    if (u) return JSON.parse(u);
-    // Initial users corresponding to members
-    return [
-      { username: 'admin', password: 'admin123', role: 'admin' },
-      { username: 'owner', password: 'owner123', role: 'owner' },
-      { username: 'member', password: 'member123', role: 'member' }
-    ];
-  });
-  
+
   const [activityLog, setActivityLog] = useState(() => {
     const log = localStorage.getItem('packpal_activityLog');
     return log ? JSON.parse(log) : [
-        { id: '1', user: 'AI', text: 'System initialized. Ready for deployment.', time: new Date(Date.now() - 3600000).toISOString(), color: 'hsl(var(--p))' }
+      { id: '1', user: 'AI', text: 'System initialized. Ready for deployment.', time: new Date(Date.now() - 3600000).toISOString(), color: 'hsl(var(--p))' }
     ];
   });
 
@@ -134,12 +138,29 @@ export function AppProvider({ children }) {
     { id: 'food', name: 'Food & Snacks', icon: 'utensils' }
   ]);
 
+  // ─── Supabase Auth Listener ────────────────────────────────────────────────
+  useEffect(() => {
+    // Get current session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(buildUser(session?.user ?? null));
+      setIsLoading(false);
+    });
+
+    // Subscribe to auth state changes (login, logout, token refresh, OAuth callback)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(buildUser(session?.user ?? null));
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('packpal_theme', theme);
   }, [theme]);
 
-  // Sync to LocalStorage (Fallback System)
+  // Sync non-auth state to LocalStorage
   useEffect(() => { localStorage.setItem('packpal_items', JSON.stringify(items)); }, [items]);
   useEffect(() => { localStorage.setItem('packpal_expenses', JSON.stringify(expenses)); }, [expenses]);
   useEffect(() => { localStorage.setItem('packpal_vault', JSON.stringify(vaultDocs)); }, [vaultDocs]);
@@ -160,62 +181,95 @@ export function AppProvider({ children }) {
     setActivityLog(prev => [newLog, ...prev].slice(0, 50));
   };
 
-  const login = (username, password, role) => {
-    const userMatch = users.find(u => u.username === username && u.password === password && u.role === role);
-    
-    if (userMatch) {
-      const user = { 
-        ...userMatch,
-        id: userMatch.role, 
-        avatar: username.charAt(0).toUpperCase(),
-        apiBase: `/api/${userMatch.role}`
+  // ─── Auth Actions (Real Supabase) ──────────────────────────────────────────
+
+  /**
+   * Sign in with email + password.
+   * Returns { success: true } or { success: false, message: string }
+   */
+  const login = async (email, password) => {
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { success: false, message: error.message };
+      return { success: true };
+    } catch (e) {
+      return { success: false, message: e.message };
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  /**
+   * Register with email + password + role + full_name.
+   * Role is stored in user_metadata so it persists with the Supabase session.
+   * Returns { success: true } or { success: false, message: string }
+   */
+  const register = async (email, password, role, fullName) => {
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { role, full_name: fullName || email.split('@')[0] }
+        }
+      });
+      if (error) return { success: false, message: error.message };
+
+      // After sign-up, also add to the local members list so they appear in Members panel
+      const newMember = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: fullName || email.split('@')[0],
+        role,
+        email
       };
-      setCurrentUser(user);
-      localStorage.setItem('packpal_currentUser', JSON.stringify(user));
-      return true;
+      setMembers(prev => [...prev, newMember]);
+
+      return { success: true };
+    } catch (e) {
+      return { success: false, message: e.message };
+    } finally {
+      setAuthLoading(false);
     }
-    return false;
   };
 
-  const register = (username, password, role) => {
-    if (users.find(u => u.username === username)) {
-      return { success: false, message: 'Username already exists' };
+  /**
+   * Sign in with Google OAuth.
+   * Supabase handles the redirect; onAuthStateChange will fire on return.
+   */
+  const loginWithGoogle = async (role = 'member') => {
+    setAuthLoading(true);
+    try {
+      // Store chosen role temporarily so we can write it to user_metadata on callback
+      localStorage.setItem('packpal_pending_role', role);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: { access_type: 'offline', prompt: 'consent' }
+        }
+      });
+      if (error) return { success: false, message: error.message };
+      return { success: true };
+    } catch (e) {
+      return { success: false, message: e.message };
+    } finally {
+      setAuthLoading(false);
     }
-    
-    const newUser = { username, password, role };
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem('packpal_users', JSON.stringify(updatedUsers));
-    
-    // Also add to members list for UI
-    const newMember = { 
-      id: Math.random().toString(36).substr(2, 9), 
-      name: username, 
-      role: role, 
-      email: `${username}@example.com` 
-    };
-    setMembers(prev => [...prev, newMember]);
-    
-    return { success: true };
   };
 
-  const logout = () => {
+  /**
+   * Sign out the current user.
+   */
+  const logout = async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
-    localStorage.removeItem('packpal_currentUser');
+    localStorage.removeItem('packpal_tripConfig');
   };
 
   const resetTrip = () => {
-    const fresh = {
-      tripName: '',
-      destination: '',
-      startDate: '',
-      endDate: '',
-      budget: '',
-      tripType: 'balanced',
-      totalMembers: 2,
-      notes: '',
-      setupComplete: false
-    };
+    const fresh = { ...DEFAULT_TRIP_CONFIG };
     setTripConfig(fresh);
     localStorage.setItem('packpal_tripConfig', JSON.stringify(fresh));
   };
@@ -224,16 +278,12 @@ export function AppProvider({ children }) {
   const roleApiCall = async (table, action, payload = null) => {
     const role = currentUser?.role || 'guest';
     console.log(`[API Call] ${role}/${table} -> ${action}`);
-    
-    // In a real production app, this would hit /api/${role}/${table}
-    // For this demo, we use Supabase with a LocalStorage fallback
     try {
       if (action === 'select') {
         const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: false });
         if (error) throw error;
         return { data, error: null };
       }
-      // Add other actions if needed
     } catch (e) {
       console.warn(`Supabase ${action} failed for ${table}, using LocalStorage.`, e);
       return { data: null, error: e, isFallback: true };
@@ -249,7 +299,6 @@ export function AppProvider({ children }) {
 
       if (itmsRes.data) {
         const dbItems = itmsRes.data.map(i => ({ ...i, assignedTo: i.assigned_to }));
-        // If DB has very little data, use our expanded tactical database instead
         if (dbItems.length < 15) {
           setItems(INITIAL_TACTICAL_DATA);
         } else {
@@ -257,12 +306,11 @@ export function AppProvider({ children }) {
         }
       }
       if (expsRes.data) setExpenses(expsRes.data.map(e => ({ ...e, payer: e.paid_by })));
-      if (vltRes.data) setVaultDocs(vltRes.data.map(d => ({ 
-        ...d, 
-        name: d.name || d.title, 
-        type: d.type || d.description || 'PDF' 
+      if (vltRes.data) setVaultDocs(vltRes.data.map(d => ({
+        ...d,
+        name: d.name || d.title,
+        type: d.type || d.description || 'PDF'
       })));
-
     } catch (error) {
       console.error('Data loading error:', error);
     } finally {
@@ -278,7 +326,6 @@ export function AppProvider({ children }) {
       status: 'pending',
       created_at: new Date().toISOString()
     };
-    
     try {
       const { data, error } = await supabase.from('checklist_items').insert([{
         name: item.name,
@@ -292,8 +339,6 @@ export function AppProvider({ children }) {
         return { data, error };
       }
     } catch (e) {}
-    
-    // Fallback
     setItems([newItem, ...items]);
     logActivity(`Added "${item.name}" to packing list`, 'hsl(var(--success))');
     return { data: [newItem], error: null };
@@ -312,22 +357,17 @@ export function AppProvider({ children }) {
         return { data, error };
       }
     } catch (e) {}
-    
     setItems(items.map(i => i.id === id ? { ...i, ...updates } : i));
     return { data: null, error: null };
   };
 
   const deleteItem = async (id) => {
-    try {
-      await supabase.from('checklist_items').delete().eq('id', id);
-    } catch (e) {}
+    try { await supabase.from('checklist_items').delete().eq('id', id); } catch (e) {}
     setItems(items.filter(i => i.id !== id));
   };
 
   const updateItemStatus = async (id, status) => {
-    try {
-      await supabase.from('checklist_items').update({ status }).eq('id', id);
-    } catch (e) {}
+    try { await supabase.from('checklist_items').update({ status }).eq('id', id); } catch (e) {}
     setItems(items.map(i => i.id === id ? { ...i, status } : i));
     if (status === 'packed') logActivity(`Packed an item`, 'hsl(var(--p))');
   };
@@ -339,12 +379,11 @@ export function AppProvider({ children }) {
       id: Math.random().toString(36).substr(2, 9),
       created_at: new Date().toISOString()
     };
-    
     try {
       const { data, error } = await supabase.from('expenses').insert([{
         description: exp.description,
         amount: parseFloat(exp.amount),
-        paid_by: exp.payer || currentUser.username,
+        paid_by: exp.payer || currentUser?.username,
         category: exp.category || 'general'
       }]).select();
       if (!error && data) {
@@ -353,16 +392,13 @@ export function AppProvider({ children }) {
         return { data, error };
       }
     } catch (e) {}
-    
     setExpenses([newExp, ...expenses]);
     logActivity(`Logged expense: ₹${exp.amount} for ${exp.description}`, 'hsl(var(--warning))');
     return { data: [newExp], error: null };
   };
 
   const deleteExpense = async (id) => {
-    try {
-      await supabase.from('expenses').delete().eq('id', id);
-    } catch (e) {}
+    try { await supabase.from('expenses').delete().eq('id', id); } catch (e) {}
     setExpenses(expenses.filter(e => e.id !== id));
   };
 
@@ -384,10 +420,9 @@ export function AppProvider({ children }) {
       id: Math.random().toString(36).substr(2, 9),
       created_at: new Date().toISOString()
     };
-    
     try {
       const { data, error } = await supabase.from('vault_docs').insert([{
-        title: doc.name, // Mapping UI name to DB title
+        title: doc.name,
         description: doc.type
       }]).select();
       if (!error && data) {
@@ -401,16 +436,13 @@ export function AppProvider({ children }) {
         return { data: [savedDoc], error };
       }
     } catch (e) {}
-    
     setVaultDocs([newDoc, ...vaultDocs]);
     logActivity(`Uploaded document to Vault: ${doc.name}`, 'hsl(var(--danger))');
     return { data: [newDoc], error: null };
   };
 
   const deleteVaultDoc = async (id) => {
-    try {
-      await supabase.from('vault_docs').delete().eq('id', id);
-    } catch (e) {}
+    try { await supabase.from('vault_docs').delete().eq('id', id); } catch (e) {}
     setVaultDocs(vaultDocs.filter(d => d.id !== id));
   };
 
@@ -420,7 +452,8 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      currentUser, login, register, logout,
+      currentUser, login, register, logout, loginWithGoogle,
+      authLoading,
       items, setItems, addItem, deleteItem, updateItem, updateItemStatus,
       expenses, setExpenses, addExpense, deleteExpense,
       vaultDocs, setVaultDocs, addVaultDoc, deleteVaultDoc,
@@ -431,7 +464,7 @@ export function AppProvider({ children }) {
       isLoading,
       activityLog, logActivity,
       refreshData: loadData,
-      permissions: ROLE_PERMISSIONS[currentUser?.role] || ROLE_PERMISSIONS.viewer
+      permissions: ROLE_PERMISSIONS[currentUser?.role] || ROLE_PERMISSIONS.member
     }}>
       {children}
     </AppContext.Provider>

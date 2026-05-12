@@ -1,277 +1,467 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useApp, LOGIN_ROLES } from '../contexts/AppContext';
-import { motion } from 'framer-motion';
-import { Map, Lock, User, ChevronRight, Sparkles, Globe, Shield, Zap } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Mail, Lock, ChevronRight, Shield, Zap, Sparkles,
+  Globe, Eye, EyeOff, AlertCircle, Loader2
+} from 'lucide-react';
+
+/* ─── Floating particle background ──────────────────────────── */
+const Particles = () => (
+  <div className="pp-particles" aria-hidden="true">
+    {Array.from({ length: 18 }).map((_, i) => (
+      <div key={i} className="pp-particle" style={{
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDelay: `${Math.random() * 6}s`,
+        animationDuration: `${6 + Math.random() * 8}s`,
+        width: `${2 + Math.random() * 4}px`,
+        height: `${2 + Math.random() * 4}px`,
+        opacity: 0.15 + Math.random() * 0.3,
+      }} />
+    ))}
+  </div>
+);
+
+const FEATURES = [
+  { icon: <Shield size={20} />, title: 'Military-Grade Security', desc: 'End-to-end encryption for all your documents' },
+  { icon: <Zap size={20} />, title: 'Real-time Sync', desc: 'Instant updates across your entire team' },
+  { icon: <Sparkles size={20} />, title: 'AI-Powered Logistics', desc: 'Smart suggestions for every mission' },
+];
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState(LOGIN_ROLES[1] || 'owner'); // Default to owner
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  
-  const { login } = useApp();
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const { login, loginWithGoogle, authLoading, currentUser } = useApp();
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (currentUser) navigate(`/${currentUser.role}/dashboard`, { replace: true });
+  }, [currentUser]);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    
-    if (!username || !password) {
-      setError('Please enter both username and password.');
-      return;
-    }
+    if (!email || !password) { setError('Please enter your email and password.'); return; }
+    const result = await login(email, password);
+    if (!result.success) setError(result.message || 'Authentication failed.');
+    // On success, onAuthStateChange fires → currentUser updates → useEffect above redirects
+  };
 
-    const success = login(username, password, role);
-    if (success) {
-      navigate(`/${role}/dashboard`);
-    } else {
-      setError(`Authentication failed. Please verify credentials for the "${role}" role.`);
-    }
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    setError('');
+    const result = await loginWithGoogle('member');
+    if (!result.success) { setError(result.message || 'Google sign-in failed.'); setGoogleLoading(false); }
+    // On success Supabase redirects to the OAuth consent screen → comes back to /
   };
 
   return (
-    <div className="auth-container v3-theme">
-      {/* Visual Side */}
-      <div className="auth-visual glass-morph">
-        <div className="visual-content">
-          <motion.div 
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="brand-icon"
-          >
-            <Globe size={48} />
+    <div className="auth-root">
+      {/* ── Left panel ─────────────────────────────────────────── */}
+      <div className="auth-left">
+        <Particles />
+        <div className="auth-left-inner">
+          <motion.div className="auth-brand" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="auth-logo"><Globe size={26} /></div>
+            <span className="auth-logo-text">PackPal</span>
           </motion.div>
-          
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Welcome to <span className="text-gradient">PackPal</span>
-          </motion.h1>
-          
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="visual-text"
-          >
-            Access your mission-critical travel assets and collaborate with your elite team in real-time.
-          </motion.p>
 
-          <div className="visual-perks">
-            {[
-              { icon: <Shield size={18} />, text: 'Military-Grade Security' },
-              { icon: <Zap size={18} />, text: 'Zero-Latency Sync' },
-              { icon: <Sparkles size={18} />, text: 'AI-Driven Logistics' }
-            ].map((perk, i) => (
-              <motion.div 
-                key={i}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.4 + (i * 0.1) }}
-                className="perk-item glass"
-              >
-                {perk.icon} <span>{perk.text}</span>
+          <motion.div className="auth-hero-text" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+            <h1>
+              Your Mission.<br />
+              <span className="auth-gradient-text">One Platform.</span>
+            </h1>
+            <p>Access your mission-critical travel assets and collaborate with your elite team in real time.</p>
+          </motion.div>
+
+          <div className="auth-features">
+            {FEATURES.map((f, i) => (
+              <motion.div key={i} className="auth-feature-row"
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}>
+                <div className="auth-feature-icon">{f.icon}</div>
+                <div>
+                  <strong>{f.title}</strong>
+                  <p>{f.desc}</p>
+                </div>
               </motion.div>
             ))}
           </div>
+
+          <motion.div className="auth-left-footer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+            <div className="auth-avatars">
+              {['A', 'S', 'M', 'K', 'R'].map((l, i) => (
+                <div key={i} className="auth-avatar-pill" style={{ zIndex: 5 - i, marginLeft: i > 0 ? '-10px' : '0' }}>{l}</div>
+              ))}
+            </div>
+            <span>Join <strong>12,000+</strong> operators worldwide</span>
+          </motion.div>
         </div>
-        <div className="visual-background" />
       </div>
 
-      {/* Form Side */}
-      <div className="auth-form-area">
-        <motion.div 
-          className="auth-card glass"
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-        >
-          <div className="auth-header">
-            <h2>Command Access</h2>
-            <p>Enter your authorization credentials below</p>
+      {/* ── Right panel ────────────────────────────────────────── */}
+      <div className="auth-right">
+        <motion.div className="auth-card"
+          initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+
+          <div className="auth-card-header">
+            <h2>Welcome back</h2>
+            <p>Sign in to your PackPal account</p>
           </div>
 
-          <form onSubmit={handleLogin} className="auth-form">
-            {error && <div className="error-msg">{error}</div>}
+          {/* Google Sign-In */}
+          <motion.button
+            className="auth-google-btn"
+            onClick={handleGoogle}
+            disabled={googleLoading || authLoading}
+            whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+            id="login-google-btn"
+          >
+            {googleLoading
+              ? <Loader2 size={18} className="auth-spin" />
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+            }
+            <span>Continue with Google</span>
+          </motion.button>
 
-            <div className="v3-input-group">
-              <label>OPERATIONAL ROLE</label>
-              <div className="v3-select-box">
-                <Shield size={18} className="box-icon" />
-                <select value={role} onChange={e => setRole(e.target.value)}>
-                  {LOGIN_ROLES.map(r => (
-                    <option key={r} value={r}>{r.toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+          <div className="auth-divider"><span>or continue with email</span></div>
 
-            <div className="v3-input-group">
-              <label>IDENTIFIER</label>
-              <div className="v3-input-box">
-                <User size={18} className="box-icon" />
-                <input 
-                  type="text" 
-                  placeholder="Username" 
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
+          {/* Error message */}
+          <AnimatePresence>
+            {error && (
+              <motion.div className="auth-error" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <AlertCircle size={15} />
+                <span>{error}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <form onSubmit={handleLogin} className="auth-form" id="login-form">
+            {/* Email */}
+            <div className="auth-field">
+              <label htmlFor="login-email">Email address</label>
+              <div className="auth-input-wrap">
+                <Mail size={16} className="auth-field-icon" />
+                <input
+                  id="login-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  autoComplete="email"
                 />
               </div>
             </div>
 
-            <div className="v3-input-group">
-              <label>ACCESS CODE</label>
-              <div className="v3-input-box">
-                <Lock size={18} className="box-icon" />
-                <input 
-                  type="password" 
-                  placeholder="••••••••" 
+            {/* Password */}
+            <div className="auth-field">
+              <div className="auth-field-label-row">
+                <label htmlFor="login-password">Password</label>
+                <a href="#" className="auth-forgot" tabIndex={-1}>Forgot password?</a>
+              </div>
+              <div className="auth-input-wrap">
+                <Lock size={16} className="auth-field-icon" />
+                <input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  autoComplete="current-password"
                 />
+                <button type="button" className="auth-eye" onClick={() => setShowPassword(v => !v)} tabIndex={-1}>
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
               </div>
             </div>
 
-            <button type="submit" className="v3-submit-btn">
-              AUTHORIZE ACCESS <ChevronRight size={18} />
-            </button>
+            <motion.button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={authLoading}
+              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+              id="login-submit-btn"
+            >
+              {authLoading
+                ? <Loader2 size={18} className="auth-spin" />
+                : <><span>Sign In</span><ChevronRight size={18} /></>
+              }
+            </motion.button>
           </form>
 
-          <div className="auth-footer">
-            <p>Unauthorized personnel? <Link to="/register">Create Credentials</Link></p>
-            <div className="demo-hint">
-              <strong>DEMO:</strong> admin123, owner123, member123
-            </div>
-          </div>
+          <p className="auth-switch-link">
+            New to PackPal? <Link to="/register">Create an account</Link>
+          </p>
         </motion.div>
       </div>
 
       <style>{`
-        .auth-container {
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        .auth-root {
           display: flex;
-          height: 100vh;
+          min-height: 100vh;
           width: 100vw;
-          background: hsl(var(--bg));
-          overflow: hidden;
           font-family: 'Inter', system-ui, sans-serif;
+          background: #0a0a0f;
+          color: #fff;
+          overflow: hidden;
         }
 
-        .auth-visual {
-          flex: 1.2;
-          background: linear-gradient(135deg, hsl(var(--p-dark)) 0%, hsl(var(--p)) 100%);
+        /* ── Left Panel ─────────────────────────────────────────── */
+        .auth-left {
+          flex: 1.1;
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 4rem;
-          color: white;
+          background: linear-gradient(135deg, #0d0d1a 0%, #0f1629 40%, #0a0f1e 100%);
+          overflow: hidden;
+          padding: 3rem;
         }
-
-        .visual-background {
+        .auth-left::before {
+          content: '';
           position: absolute;
-          inset: 0;
-          background-image: radial-gradient(white 1px, transparent 1px);
-          background-size: 30px 30px;
-          opacity: 0.1;
+          top: -30%;
+          left: -20%;
+          width: 80%;
+          height: 80%;
+          background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+          pointer-events: none;
+        }
+        .auth-left::after {
+          content: '';
+          position: absolute;
+          bottom: -20%;
+          right: -10%;
+          width: 60%;
+          height: 60%;
+          background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+          pointer-events: none;
         }
 
-        .visual-content {
-          z-index: 1;
-          max-width: 480px;
+        /* Particles */
+        .pp-particles { position: absolute; inset: 0; pointer-events: none; }
+        .pp-particle {
+          position: absolute;
+          border-radius: 50%;
+          background: rgba(99,102,241,0.7);
+          animation: pp-float linear infinite;
+        }
+        @keyframes pp-float {
+          0% { transform: translateY(0px) scale(1); opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 0.5; }
+          100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
         }
 
-        .brand-icon {
-          width: 80px;
-          height: 80px;
-          background: white;
-          color: hsl(var(--p));
-          border-radius: 20px;
+        .auth-left-inner { position: relative; z-index: 1; max-width: 480px; width: 100%; display: flex; flex-direction: column; gap: 2.5rem; }
+
+        .auth-brand { display: flex; align-items: center; gap: 0.75rem; }
+        .auth-logo {
+          width: 44px; height: 44px;
+          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 8px 24px rgba(99,102,241,0.4);
+        }
+        .auth-logo-text { font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+
+        .auth-hero-text h1 {
+          font-size: 3rem; font-weight: 900; line-height: 1.1;
+          letter-spacing: -0.03em; color: #fff; margin: 0 0 1rem 0;
+        }
+        .auth-gradient-text {
+          background: linear-gradient(90deg, #6366f1, #a78bfa, #ec4899);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .auth-hero-text p { color: rgba(255,255,255,0.55); font-size: 1.05rem; line-height: 1.6; margin: 0; }
+
+        .auth-features { display: flex; flex-direction: column; gap: 1.25rem; }
+        .auth-feature-row {
+          display: flex; align-items: flex-start; gap: 1rem;
+          padding: 1rem 1.25rem;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 14px;
+          transition: 0.2s;
+        }
+        .auth-feature-row:hover { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.2); }
+        .auth-feature-icon {
+          width: 38px; height: 38px; flex-shrink: 0;
+          background: rgba(99,102,241,0.15);
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          color: #818cf8;
+        }
+        .auth-feature-row strong { font-size: 0.9rem; font-weight: 700; color: #fff; display: block; margin-bottom: 2px; }
+        .auth-feature-row p { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin: 0; }
+
+        .auth-left-footer { display: flex; align-items: center; gap: 1rem; color: rgba(255,255,255,0.45); font-size: 0.85rem; }
+        .auth-left-footer strong { color: rgba(255,255,255,0.7); }
+        .auth-avatars { display: flex; }
+        .auth-avatar-pill {
+          width: 32px; height: 32px; border-radius: 50%;
+          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          border: 2px solid #0d0d1a;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 0.7rem; font-weight: 700; color: #fff;
+        }
+
+        /* ── Right Panel ────────────────────────────────────────── */
+        .auth-right {
+          flex: 0 0 480px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 2rem;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-        .visual-content h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 1.5rem; line-height: 1; }
-        .text-gradient { background: linear-gradient(to right, #fff, #ffffffaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .visual-text { font-size: 1.25rem; opacity: 0.8; margin-bottom: 3rem; line-height: 1.6; }
-
-        .visual-perks { display: flex; flex-direction: column; gap: 1rem; }
-        .perk-item { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border-radius: 16px; font-weight: 600; }
-
-        .auth-form-area {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: radial-gradient(circle at center, hsla(var(--p) / 0.05) 0%, transparent 70%);
+          background: #0e0e16;
+          padding: 2rem;
+          border-left: 1px solid rgba(255,255,255,0.06);
         }
 
         .auth-card {
           width: 100%;
-          max-width: 480px;
-          padding: 3.5rem;
-          border-radius: 32px;
+          max-width: 400px;
         }
 
-        .auth-header { margin-bottom: 2.5rem; }
-        .auth-header h2 { font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; }
-        .auth-header p { color: hsl(var(--text-muted)); font-weight: 500; }
+        .auth-card-header { margin-bottom: 2rem; }
+        .auth-card-header h2 { font-size: 1.75rem; font-weight: 800; color: #fff; margin: 0 0 0.4rem 0; letter-spacing: -0.02em; }
+        .auth-card-header p { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0; }
 
-        .v3-input-group { margin-bottom: 1.5rem; }
-        .v3-input-group label { font-size: 0.7rem; font-weight: 900; color: hsl(var(--text-muted)); letter-spacing: 0.15em; margin-bottom: 0.75rem; display: block; }
-        
-        .v3-input-box, .v3-select-box { position: relative; }
-        .box-icon { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: hsl(var(--text-muted)); pointer-events: none; }
-        
-        .v3-input-box input, .v3-select-box select {
+        /* Google btn */
+        .auth-google-btn {
           width: 100%;
-          padding: 1.125rem 1.125rem 1.125rem 3.5rem;
-          border-radius: 16px;
-          border: 1px solid hsla(var(--text) / 0.1);
-          background: hsla(var(--text) / 0.03);
-          font-size: 1rem;
+          height: 48px;
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.05);
+          color: #fff;
+          font-size: 0.9rem;
           font-weight: 600;
-          outline: none;
-          transition: 0.2s;
-          color: hsl(var(--text));
-          appearance: none;
-        }
-        .v3-input-box input:focus, .v3-select-box select:focus { border-color: hsl(var(--p)); box-shadow: 0 0 0 5px hsla(var(--p) / 0.1); background: white; }
-
-        .v3-submit-btn {
-          width: 100%;
-          height: 60px;
-          border-radius: 18px;
-          background: hsl(var(--p));
-          color: white;
-          border: none;
-          font-weight: 900;
-          font-size: 1.125rem;
+          font-family: 'Inter', system-ui, sans-serif;
+          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 0.75rem;
-          cursor: pointer;
-          box-shadow: 0 10px 30px hsla(var(--p) / 0.3);
-          transition: all 0.3s;
-          margin-top: 1rem;
+          transition: all 0.2s;
         }
-        .v3-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 40px hsla(var(--p) / 0.4); }
+        .auth-google-btn:hover:not(:disabled) { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); }
+        .auth-google-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .auth-footer { margin-top: 2rem; text-align: center; }
-        .auth-footer p { font-size: 0.95rem; color: hsl(var(--text-muted)); font-weight: 600; }
-        .auth-footer a { color: hsl(var(--p)); text-decoration: none; font-weight: 800; margin-left: 0.25rem; }
-        
-        .demo-hint { margin-top: 1.5rem; font-size: 0.75rem; color: hsl(var(--text-muted)); opacity: 0.7; }
-        .error-msg { padding: 1rem; background: hsla(var(--danger) / 0.1); color: hsl(var(--danger)); border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 600; border: 1px solid hsla(var(--danger) / 0.1); }
+        /* Divider */
+        .auth-divider {
+          display: flex; align-items: center; gap: 1rem;
+          margin: 1.5rem 0;
+          color: rgba(255,255,255,0.25); font-size: 0.8rem;
+        }
+        .auth-divider::before, .auth-divider::after {
+          content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08);
+        }
 
+        /* Error */
+        .auth-error {
+          display: flex; align-items: center; gap: 0.6rem;
+          padding: 0.875rem 1rem;
+          background: rgba(239,68,68,0.12);
+          border: 1px solid rgba(239,68,68,0.25);
+          border-radius: 10px;
+          color: #f87171;
+          font-size: 0.85rem;
+          font-weight: 500;
+          margin-bottom: 1.25rem;
+        }
+
+        /* Form fields */
+        .auth-form { display: flex; flex-direction: column; gap: 1.25rem; }
+        .auth-field { display: flex; flex-direction: column; gap: 0.5rem; }
+        .auth-field label { font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.55); }
+        .auth-field-label-row { display: flex; justify-content: space-between; align-items: center; }
+        .auth-forgot { font-size: 0.8rem; color: #818cf8; text-decoration: none; font-weight: 500; transition: 0.15s; }
+        .auth-forgot:hover { color: #a5b4fc; }
+
+        .auth-input-wrap { position: relative; }
+        .auth-field-icon {
+          position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+          color: rgba(255,255,255,0.3); pointer-events: none;
+        }
+        .auth-input-wrap input {
+          width: 100%;
+          height: 48px;
+          padding: 0 1rem 0 2.75rem;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          color: #fff;
+          font-size: 0.9rem;
+          font-family: 'Inter', system-ui, sans-serif;
+          outline: none;
+          transition: 0.2s;
+          box-sizing: border-box;
+        }
+        .auth-input-wrap input::placeholder { color: rgba(255,255,255,0.2); }
+        .auth-input-wrap input:focus { border-color: rgba(99,102,241,0.6); background: rgba(99,102,241,0.06); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+
+        .auth-eye {
+          position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+          background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer;
+          display: flex; align-items: center; padding: 4px;
+          transition: color 0.15s;
+        }
+        .auth-eye:hover { color: rgba(255,255,255,0.6); }
+
+        /* Submit */
+        .auth-submit-btn {
+          width: 100%;
+          height: 50px;
+          border-radius: 12px;
+          border: none;
+          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          color: #fff;
+          font-size: 0.95rem;
+          font-weight: 700;
+          font-family: 'Inter', system-ui, sans-serif;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+          transition: all 0.2s;
+          margin-top: 0.5rem;
+        }
+        .auth-submit-btn:hover:not(:disabled) { box-shadow: 0 12px 32px rgba(99,102,241,0.5); transform: translateY(-1px); }
+        .auth-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Footer link */
+        .auth-switch-link { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: rgba(255,255,255,0.35); }
+        .auth-switch-link a { color: #818cf8; font-weight: 600; text-decoration: none; margin-left: 0.25rem; transition: 0.15s; }
+        .auth-switch-link a:hover { color: #a5b4fc; }
+
+        /* Spinner */
+        .auth-spin { animation: auth-rotate 0.8s linear infinite; }
+        @keyframes auth-rotate { to { transform: rotate(360deg); } }
+
+        /* Responsive */
         @media (max-width: 1024px) {
-          .auth-visual { display: none; }
-          .auth-form-area { flex: 1; padding: 2rem; }
+          .auth-left { display: none; }
+          .auth-right { flex: 1; border-left: none; background: #0a0a0f; }
+        }
+        @media (max-width: 480px) {
+          .auth-right { padding: 1.5rem; }
         }
       `}</style>
     </div>
