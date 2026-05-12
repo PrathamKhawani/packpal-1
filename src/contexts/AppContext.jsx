@@ -373,6 +373,48 @@ export function AppProvider({ children }) {
     }
   };
 
+  const deleteExpense = async (id) => {
+    setExpenses(expenses.filter(e => e.id !== id));
+    logActivity('Deleted an expense', 'hsl(var(--danger))');
+    if (currentUser) {
+      try { await supabase.from('expenses').delete().eq('id', id); } catch (e) {}
+    }
+  };
+
+  const addVaultDoc = async (doc) => {
+    const newDoc = { ...doc, id: Math.random().toString(36).substr(2, 9), created_at: new Date().toISOString() };
+    setVaultDocs([newDoc, ...vaultDocs]);
+    logActivity(`Added document: ${doc.name}`, 'hsl(var(--p))');
+    if (currentUser) {
+      try {
+        await supabase.from('vault_docs').insert([{
+          name: doc.name,
+          type: doc.type,
+          user_id: currentUser.id
+        }]);
+      } catch (e) {}
+    }
+  };
+
+  const deleteVaultDoc = async (id) => {
+    setVaultDocs(vaultDocs.filter(d => d.id !== id));
+    logActivity('Deleted a document from vault', 'hsl(var(--danger))');
+    if (currentUser) {
+      try { await supabase.from('vault_docs').delete().eq('id', id); } catch (e) {}
+    }
+  };
+
+  const addMember = async (member) => {
+    const newMember = { ...member, id: Math.random().toString(36).substr(2, 9) };
+    setMembers([...members, newMember]);
+    logActivity(`Added team member: ${member.name}`, 'hsl(var(--success))');
+  };
+
+  const deleteMember = async (id) => {
+    setMembers(members.filter(m => m.id !== id));
+    logActivity('Removed a team member', 'hsl(var(--danger))');
+  };
+
   useEffect(() => {
     if (currentUser) loadData();
   }, [currentUser]);
@@ -382,7 +424,7 @@ export function AppProvider({ children }) {
       currentUser, login, register, logout,
       authLoading,
       items, setItems, addItem, updateItemStatus,
-      expenses, setExpenses, addExpense,
+      expenses, setExpenses, addExpense, deleteExpense,
       vaultDocs, setVaultDocs, addVaultDoc, deleteVaultDoc,
       members, setMembers, addMember, deleteMember,
       tripConfig, setTripConfig: updateTripConfig, resetTrip,
