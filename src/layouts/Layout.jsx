@@ -257,27 +257,6 @@ export default function Layout() {
         )}
       </AnimatePresence>
       <style>{`
-        .layout-root { display: flex; min-height: 100vh; background: hsl(var(--bg)); color: hsl(var(--text)); transition: background-color 0.2s ease; }
-        
-        /* Clean SaaS Sidebar */
-        .sidebar-premium { 
-          background: hsl(var(--bg-card));
-          border-right: 1px solid hsl(var(--border)); 
-          display: flex; 
-          flex-direction: column; 
-          height: 100vh; 
-          position: sticky; 
-          top: 0; 
-          z-index: 100;
-        }
-        
-        .sidebar-header { padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-        .logo-box { display: flex; align-items: center; gap: 0.75rem; }
-        .logo-icon { 
-          width: 32px; 
-          height: 32px; 
-          background: hsl(var(--p)); 
-          border-radius: var(--radius-sm); 
           display: flex; 
           align-items: center; 
           justify-content: center; 

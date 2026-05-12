@@ -99,246 +99,131 @@ export default function Dashboard() {
   const daysRemaining = Math.ceil((new Date(tripConfig.startDate) - new Date()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="dash-container">
-      {/* Hero Section - HIDDEN FOR ADMIN */}
-      {currentUser?.role !== 'admin' && (
-        <motion.section 
-          className="hero-section"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-        <div className="hero-card glass">
-          <div className="hero-img-box" style={{ backgroundImage: `url(${heroImg})` }}>
-            <div className="hero-gradient-overlay" />
-            <div className="hero-content">
-                <div className="hero-top-row">
-                    <span className="hero-badge"><Globe size={10} /> {daysRemaining} DAYS TO DEPARTURE</span>
-                    <div className="hero-time"><Clock size={12} /> {localTime} (Local)</div>
-                </div>
-                <div className="hero-title-area">
-                    <h1>{tripConfig.destination}</h1>
-                    <button className="edit-dest-btn" onClick={() => setIsEditing(true)}><Edit3 size={16} /></button>
-                </div>
-                <div className="hero-stats-row">
-                    <div className="h-stat"><span>PACKING</span><strong>{packedPct}%</strong></div>
-                    <div className="h-stat"><span>MEMBERS</span><strong>{members.length}</strong></div>
-                    <div className="h-stat"><span>BUDGET</span><strong>₹{(spent/1000).toFixed(1)}K</strong></div>
-                </div>
-            </div>
+    <div className="member-dashboard">
+      <header className="member-hero glass">
+        <div className="hero-content">
+          <div className="hero-badge">TEAM MEMBER STATUS: ACTIVE</div>
+          <h1 className="hero-dest">{tripConfig.destination || 'Mission Pending'}</h1>
+          <p className="hero-trip-name">{tripConfig.tripName}</p>
+          <div className="hero-stats">
+            <div className="h-stat"><span>PACKED</span><strong>{packedPct}%</strong></div>
+            <div className="h-stat"><span>DAYS TO GO</span><strong>{daysRemaining > 0 ? daysRemaining : '0'}</strong></div>
+            <div className="h-stat"><span>TEAM SIZE</span><strong>{members.length}</strong></div>
           </div>
         </div>
-      </motion.section>
-      )}
+      </header>
 
-      {/* Bento Grid */}
-      <div className="dash-bento">
-        {/* Admin Business Intel - EXCLUSIVE TO ADMIN */}
-        {currentUser?.role === 'admin' && (
-          <motion.div 
-            className="bento-card glass admin-intel-card" 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ gridColumn: 'span 4', background: 'linear-gradient(135deg, hsla(var(--p) / 0.1) 0%, transparent 100%)', border: '1px solid hsla(var(--p) / 0.2)' }}
-          >
-            <div className="card-head">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <ShieldCheck size={18} className="text-p" />
-                <h3>COMMAND CENTER ANALYTICS</h3>
-              </div>
-              <span className="live-tag">LIVE PLATFORM DATA</span>
-            </div>
-            
-            <div className="admin-grid">
-              <div className="admin-stat-item">
-                <Users className="admin-icon" />
-                <div className="admin-info">
-                  <span className="admin-label">TOTAL OPERATORS</span>
-                  <strong className="admin-value">{members.length * 42}</strong>
-                  <span className="admin-growth"><Growth size={12} /> +12% this week</span>
-                </div>
-              </div>
-              <div className="admin-stat-item">
-                <Globe className="admin-icon" />
-                <div className="admin-info">
-                  <span className="admin-label">ACTIVE MISSIONS</span>
-                  <strong className="admin-value">1,284</strong>
-                  <span className="admin-growth"><Growth size={12} /> +5.4%</span>
-                </div>
-              </div>
-              <div className="admin-stat-item">
-                <Database className="admin-icon" />
-                <div className="admin-info">
-                  <span className="admin-label">DATA THROUGHPUT</span>
-                  <strong className="admin-value">84.2 GB</strong>
-                  <span className="admin-growth text-success">Optimal</span>
-                </div>
-              </div>
-              <div className="admin-stat-item">
-                <IndianRupee className="admin-icon" />
-                <div className="admin-info">
-                  <span className="admin-label">PLATFORM REVENUE</span>
-                  <strong className="admin-value">₹4.2M</strong>
-                  <span className="admin-growth"><Growth size={12} /> +22.1%</span>
-                </div>
+      <div className="member-grid">
+        {/* Weather Card */}
+        <motion.div className="bento-card glass"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="card-head"><h3>LOCAL WEATHER</h3></div>
+          <div className="w-body">
+            <div className="w-main">
+              <div className="w-icon">{weather.icon}</div>
+              <div className="w-info">
+                <h2>{weather.temp}°</h2>
+                <p>{weather.desc}</p>
               </div>
             </div>
-          </motion.div>
-        )}
-        {/* Mission Control - EXCLUSIVE TO OWNER */}
-        {currentUser?.role === 'owner' && (
-          <motion.div
-            className="bento-card mc-owner-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ gridColumn: 'span 4' }}
-          >
-            <div className="mc-top-bar">
-              <div className="mc-top-left">
-                <div className="mc-live-badge"><span className="mc-live-dot" />LIVE — MISSION ACTIVE</div>
-                <h3 className="mc-heading">MISSION CONTROL</h3>
-              </div>
-              <div className="mc-readiness"><strong>84%</strong><span>READINESS</span></div>
+            <div className="w-strip">
+              {weather.forecast.map((f, i) => (
+                <div key={i} className="wf-item">
+                  <span>{f.day}</span>
+                  <strong>{f.temp}°</strong>
+                </div>
+              ))}
             </div>
-            <div className="mc-stats-grid">
-              <div className="mc-stat">
-                <div className="mc-stat-icon"><Flag size={16} /></div>
-                <div className="mc-stat-body">
-                  <span className="mc-stat-label">OBJECTIVES</span>
-                  <strong className="mc-stat-val">8 / 12</strong>
-                  <div className="mc-mini-bar"><motion.div className="mc-mini-fill" style={{background:'hsl(var(--success))'}} initial={{width:0}} animate={{width:'66%'}} transition={{delay:0.4,duration:0.7}} /></div>
-                </div>
-              </div>
-              <div className="mc-stat">
-                <div className="mc-stat-icon ready"><Users size={16} /></div>
-                <div className="mc-stat-body">
-                  <span className="mc-stat-label">TEAM READINESS</span>
-                  <strong className="mc-stat-val">OPTIMAL</strong>
-                  <span className="mc-stat-sub success">All members online</span>
-                </div>
-              </div>
-              <div className="mc-stat">
-                <div className="mc-stat-icon ready"><ShieldCheck size={16} /></div>
-                <div className="mc-stat-body">
-                  <span className="mc-stat-label">SECURITY</span>
-                  <strong className="mc-stat-val">VERIFIED</strong>
-                  <span className="mc-stat-sub success">Vault Secured</span>
-                </div>
-              </div>
-              <div className="mc-stat">
-                <div className="mc-stat-icon"><Zap size={16} /></div>
-                <div className="mc-stat-body">
-                  <span className="mc-stat-label">DEPLOYMENT</span>
-                  <strong className="mc-stat-val">T‑4 DAYS</strong>
-                  <span className="mc-stat-sub">On Schedule</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-        {/* Weather Card - HIDDEN FOR ADMIN */}
-        {currentUser?.role !== 'admin' && (
-          <motion.div className="bento-card glass weather-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
-            <div className="card-head"><h3>WEATHER</h3></div>
-            <div className="w-body">
-                <div className="w-main">
-                    <div className="w-icon-large">{weather.icon}</div>
-                    <div className="w-temp">
-                        <h2>{weather.temp}°</h2>
-                        <p>{weather.desc}</p>
-                    </div>
-                </div>
-                <div className="w-strip">
-                    {weather.forecast.map((f, i) => (
-                        <div key={i} className="wf-item">
-                            <span>{f.day}</span>
-                            <strong>{f.temp}°</strong>
-                        </div>
-                    ))}
-                </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Analytics/DNA Card - HIDDEN FOR ADMIN */}
-        {currentUser?.role !== 'admin' && (
-          <motion.div className="bento-card glass dna-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
-            <div className="card-head"><h3>TRIP VIBE</h3></div>
-            <div className="dna-body">
-                <RadarChart theme={theme} data={[
-                  { label: 'Adventure', value: 80 },
-                  { label: 'Relax', value: 30 },
-                  { label: 'Food', value: 90 },
-                  { label: 'Culture', value: 65 },
-                  { label: 'Social', value: 50 }
-                ]} />
-            </div>
-          </motion.div>
-        )}
-
-        {/* Financial Summary - HIDDEN FOR ADMIN */}
-        {currentUser?.role !== 'admin' && (
-          <motion.div className="bento-card glass budget-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
-            <div className="card-head"><h3>FINANCES</h3><span className="b-total">₹{tripConfig.budget.toLocaleString()}</span></div>
-            <div className="b-body">
-                <div className="b-spent">
-                    <h2>₹{spent.toLocaleString()}</h2>
-                    <p>Total Spent</p>
-                </div>
-                <div className="b-progress">
-                    <div className="b-track"><motion.div initial={{ width: 0 }} animate={{ width: `${(spent/tripConfig.budget)*100}%` }} className="b-fill" /></div>
-                    <div className="b-markers">
-                        <span>Spent: {Math.round((spent/tripConfig.budget)*100)}%</span>
-                        <span>Left: ₹{(tripConfig.budget - spent).toLocaleString()}</span>
-                    </div>
-                </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Intelligence Feed */}
-        <motion.div className="bento-card glass intel-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
-            <div className="card-head"><h3>INTEL FEED</h3></div>
-            <div className="intel-list">
-                {activityLog.slice(0, 5).map((intel) => {
-                    // Helper to format time relative to now
-                    const diffMins = Math.floor((new Date() - new Date(intel.time)) / 60000);
-                    let timeStr = 'Just now';
-                    if (diffMins >= 1440) timeStr = `${Math.floor(diffMins / 1440)}d`;
-                    else if (diffMins >= 60) timeStr = `${Math.floor(diffMins / 60)}h`;
-                    else if (diffMins > 0) timeStr = `${diffMins}m`;
-
-                    return (
-                        <div key={intel.id} className="intel-row">
-                            <div className="intel-avatar" style={{ background: intel.color }}>{intel.user}</div>
-                            <div className="intel-info">
-                                <p>{intel.text}</p>
-                                <span>{timeStr} ago</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+          </div>
         </motion.div>
 
-        {/* Activity Quick Access */}
-        <div className="quick-access-grid">
-            {currentUser?.role === 'admin' ? (
-              <>
-                <button className="qa-item glass" onClick={() => navigate(`/admin/analytics`)}><BarChart3 /> <span>Analytics</span></button>
-                <button className="qa-item glass" onClick={() => navigate(`/admin/members`)}><Users /> <span>Operators</span></button>
-                <button className="qa-item glass" onClick={() => navigate(`/admin/dashboard`)}><ShieldCheck /> <span>Security</span></button>
-                <button className="qa-item glass" onClick={() => navigate(`/admin/dashboard`)}><Database /> <span>System Logs</span></button>
-              </>
-            ) : (
-              <>
-                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/mission-brief`)}><Target /> <span>Briefing</span></button>
-                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/itinerary`)}><Compass /> <span>Explore</span></button>
-                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/expenses`)}><IndianRupee /> <span>Wallet</span></button>
-                <button className="qa-item glass" onClick={() => navigate(`/${currentUser?.role}/vault`)}><Briefcase /> <span>Vault</span></button>
-              </>
-            )}
+        {/* Intelligence Feed */}
+        <motion.div className="bento-card glass"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="card-head"><h3>MISSION INTEL</h3></div>
+          <div className="intel-list">
+            {activityLog.slice(0, 5).map(log => (
+              <div key={log.id} className="intel-row">
+                <div className="intel-avatar" style={{ background: log.color }}>{log.user}</div>
+                <div className="intel-info">
+                  <p>{log.text}</p>
+                  <span>{new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Quick Links */}
+        <div className="quick-links">
+          <button className="qa-card glass" onClick={() => navigate('/member/mission-brief')}>
+            <Target />
+            <span>Mission Brief</span>
+          </button>
+          <button className="qa-card glass" onClick={() => navigate('/member/itinerary')}>
+            <Compass />
+            <span>Itinerary</span>
+          </button>
+          <button className="qa-card glass" onClick={() => navigate('/member/checklists')}>
+            <Briefcase />
+            <span>Packing List</span>
+          </button>
         </div>
       </div>
+
+      <style>{`
+        .member-dashboard { display: flex; flex-direction: column; gap: 2rem; max-width: 1200px; margin: 0 auto; }
+        
+        .member-hero { 
+          padding: 3rem; border-radius: 24px; 
+          background: linear-gradient(135deg, hsla(var(--p)/.1) 0%, transparent 50%), url('${heroImg}');
+          background-size: cover; background-position: center; position: relative; overflow: hidden;
+          color: #fff;
+        }
+        .member-hero::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 0; }
+        .hero-content { position: relative; z-index: 1; }
+        .hero-dest { font-size: 3rem; font-weight: 900; margin: 0.5rem 0; letter-spacing: -0.04em; }
+        .hero-trip-name { font-size: 1rem; font-weight: 600; opacity: 0.8; margin-bottom: 2rem; }
+        .hero-stats { display: flex; gap: 4rem; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1.5rem; }
+        .hero-badge { font-size: 0.6rem; font-weight: 800; background: hsla(0,0%,100%,0.1); padding: 4px 12px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.2); width: fit-content; }
+
+        .member-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .bento-card { padding: 1.75rem; border-radius: 20px; }
+        .card-head h3 { font-size: 0.75rem; font-weight: 800; color: hsl(var(--text-muted)); letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+
+        .w-main { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .w-info h2 { font-size: 2.5rem; font-weight: 900; margin: 0; }
+        .w-strip { display: flex; justify-content: space-between; border-top: 1px solid hsla(var(--border), 0.5); padding-top: 1.25rem; }
+        .wf-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .wf-item span { font-size: 0.65rem; font-weight: 700; color: hsl(var(--text-muted)); }
+
+        .intel-list { display: flex; flex-direction: column; gap: 1rem; }
+        .intel-row { display: flex; gap: 1rem; align-items: center; padding: 0.75rem; background: hsla(var(--bg), 0.5); border-radius: 12px; border: 1px solid hsla(var(--border), 0.3); }
+        .intel-avatar { width: 32px; height: 32px; border-radius: 8px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+        .intel-info p { font-size: 0.85rem; font-weight: 600; margin: 0; }
+        .intel-info span { font-size: 0.7rem; opacity: 0.6; }
+
+        .quick-links { grid-column: span 2; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .qa-card { 
+          display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 2rem; border-radius: 20px;
+          cursor: pointer; transition: 0.2s; color: hsl(var(--text-muted)); border: 1px solid hsla(var(--border), 0.5);
+        }
+        .qa-card:hover { border-color: hsl(var(--p)); color: hsl(var(--p)); background: hsla(var(--p)/.05); transform: translateY(-4px); }
+        .qa-card span { font-size: 0.85rem; font-weight: 700; }
+
+        @media (max-width: 768px) {
+          .member-grid { grid-template-columns: 1fr; }
+          .quick-links { grid-template-columns: 1fr; grid-column: span 1; }
+        }
+      `}</style>
+    </div>
+  );
+
 
       {/* Destination Modal */}
       <AnimatePresence>

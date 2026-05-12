@@ -252,173 +252,137 @@ export function AppProvider({ children }) {
   // Helper for role-prefixed API calls (Simulated)
   const roleApiCall = async (table, action, payload = null) => {
     const role = currentUser?.role || 'guest';
-    console.log(`[API Call] ${role}/${table} -> ${action}`);
-    try {
-      if (action === 'select') {
-        const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: false });
-        if (error) throw error;
-        return { data, error: null };
-      }
-    } catch (e) {
-      console.warn(`Supabase ${action} failed for ${table}, using LocalStorage.`, e);
-      return { data: null, error: e, isFallback: true };
-    }
-  };
-
+  // ─── Data Loading (Expanded) ──────────────────────────────────────────────
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const itmsRes = await roleApiCall('checklist_items', 'select');
-      const expsRes = await roleApiCall('expenses', 'select');
-      const vltRes = await roleApiCall('vault_docs', 'select');
+      // 1. Auth check
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setIsLoading(false); return; }
 
-      if (itmsRes.data) {
-        const dbItems = itmsRes.data.map(i => ({ ...i, assignedTo: i.assigned_to }));
-        if (dbItems.length < 15) {
-          setItems(INITIAL_TACTICAL_DATA);
-        } else {
-          setItems(dbItems);
-        }
-      }
+      // 2. Parallel Fetch
+      const [itmsRes, expsRes, vltRes, cfgRes, memRes] = await Promise.all([
+        supabase.from('checklist_items').select('*').order('created_at', { ascending: false }),
+        supabase.from('expenses').select('*').order('created_at', { ascending: false }),
+        supabase.from('vault_docs').select('*').order('created_at', { ascending: false }),
+        supabase.from('trip_config').select('*').single(),
+        supabase.from('profiles').select('*')
+      ]);
+
+      if (itmsRes.data) setItems(itmsRes.data.map(i => ({ ...i, assignedTo: i.assigned_to })));
       if (expsRes.data) setExpenses(expsRes.data.map(e => ({ ...e, payer: e.paid_by })));
-      if (vltRes.data) setVaultDocs(vltRes.data.map(d => ({
-        ...d,
-        name: d.name || d.title,
-        type: d.type || d.description || 'PDF'
-      })));
+      if (vltRes.data) setVaultDocs(vltRes.data.map(d => ({ ...d, name: d.name || d.title, type: d.type || d.description })));
+      
+      if (cfgRes.data) {
+        setTripConfig({ ...cfgRes.data, setupComplete: true });
+      } else {
+        // Fallback for new trips
+        const saved = localStorage.getItem('packpal_tripConfig');
+        if (saved) setTripConfig(JSON.parse(saved));
+      }
+
+      if (memRes.data) {
+        setMembers(memRes.data.map(m => ({ ...m, name: m.full_name || m.username || m.email })));
+      }
     } catch (error) {
-      console.error('Data loading error:', error);
+      console.warn('Supabase fetch failed, using LocalStorage fallbacks.', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // CRUD Operations - Checklists
-  const addItem = async (item) => {
-    const newItem = {
-      ...item,
-      id: Math.random().toString(36).substr(2, 9),
-      status: 'pending',
-      created_at: new Date().toISOString()
-    };
-    try {
-      const { data, error } = await supabase.from('checklist_items').insert([{
-        name: item.name,
-        category: item.category,
-        assigned_to: item.assignedTo || 'me',
-        status: 'pending'
-      }]).select();
-      if (!error && data) {
-        setItems([data[0], ...items]);
-        logActivity(`Added "${item.name}" to packing list`, 'hsl(var(--success))');
-        return { data, error };
+  // ─── CRUD Operations ──────────────────────────────────────────────────────
+
+  // Trip Config Sync
+  const updateTripConfig = async (config) => {
+    const updated = { ...tripConfig, ...config };
+    setTripConfig(updated);
+    localStorage.setItem('packpal_tripConfig', JSON.stringify(updated));
+
+    if (currentUser) {
+      try {
+        const { error } = await supabase.from('trip_config').upsert({
+          id: currentUser.id, // One config per owner
+          ...updated,
+          owner_id: currentUser.id,
+          updated_at: new Date().toISOString()
+        });
+        if (!error) logActivity(`Updated mission parameters: ${config.tripName || 'Global Config'}`, 'hsl(var(--p))');
+      } catch (e) {
+        console.error('Trip config sync failed', e);
       }
-    } catch (e) {}
+    }
+  };
+
+  // Checklist Items
+  const addItem = async (item) => {
+    const newItem = { ...item, id: Math.random().toString(36).substr(2, 9), status: 'pending', created_at: new Date().toISOString() };
     setItems([newItem, ...items]);
     logActivity(`Added "${item.name}" to packing list`, 'hsl(var(--success))');
-    return { data: [newItem], error: null };
-  };
 
-  const updateItem = async (id, updates) => {
-    try {
-      const { data, error } = await supabase.from('checklist_items').update({
-        name: updates.name,
-        category: updates.category,
-        assigned_to: updates.assignedTo,
-        status: updates.status
-      }).eq('id', id).select();
-      if (!error && data) {
-        setItems(items.map(i => i.id === id ? { ...data[0], assignedTo: data[0].assigned_to } : i));
-        return { data, error };
-      }
-    } catch (e) {}
-    setItems(items.map(i => i.id === id ? { ...i, ...updates } : i));
-    return { data: null, error: null };
-  };
-
-  const deleteItem = async (id) => {
-    try { await supabase.from('checklist_items').delete().eq('id', id); } catch (e) {}
-    setItems(items.filter(i => i.id !== id));
+    if (currentUser) {
+      try {
+        const { data, error } = await supabase.from('checklist_items').insert([{
+          name: item.name,
+          category: item.category,
+          assigned_to: item.assignedTo || 'me',
+          status: 'pending',
+          user_id: currentUser.id
+        }]).select();
+        if (!error && data) setItems([data[0], ...items.filter(i => i.id !== newItem.id)]);
+      } catch (e) {}
+    }
   };
 
   const updateItemStatus = async (id, status) => {
-    try { await supabase.from('checklist_items').update({ status }).eq('id', id); } catch (e) {}
     setItems(items.map(i => i.id === id ? { ...i, status } : i));
     if (status === 'packed') logActivity(`Packed an item`, 'hsl(var(--p))');
+
+    if (currentUser) {
+      try { await supabase.from('checklist_items').update({ status }).eq('id', id); } catch (e) {}
+    }
   };
 
-  // CRUD Operations - Expenses
+  // Expenses
   const addExpense = async (exp) => {
-    const newExp = {
-      ...exp,
-      id: Math.random().toString(36).substr(2, 9),
-      created_at: new Date().toISOString()
-    };
-    try {
-      const { data, error } = await supabase.from('expenses').insert([{
-        description: exp.description,
-        amount: parseFloat(exp.amount),
-        paid_by: exp.payer || currentUser?.username,
-        category: exp.category || 'general'
-      }]).select();
-      if (!error && data) {
-        setExpenses([data[0], ...expenses]);
-        logActivity(`Logged expense: ₹${exp.amount} for ${exp.description}`, 'hsl(var(--warning))');
-        return { data, error };
-      }
-    } catch (e) {}
+    const newExp = { ...exp, id: Math.random().toString(36).substr(2, 9), created_at: new Date().toISOString() };
     setExpenses([newExp, ...expenses]);
-    logActivity(`Logged expense: ₹${exp.amount} for ${exp.description}`, 'hsl(var(--warning))');
-    return { data: [newExp], error: null };
+    logActivity(`Logged expense: ₹${exp.amount}`, 'hsl(var(--warning))');
+
+    if (currentUser) {
+      try {
+        const { data, error } = await supabase.from('expenses').insert([{
+          description: exp.description,
+          amount: parseFloat(exp.amount),
+          paid_by: exp.payer || currentUser.username,
+          category: exp.category || 'general',
+          user_id: currentUser.id
+        }]).select();
+        if (!error && data) setExpenses([data[0], ...expenses.filter(e => e.id !== newExp.id)]);
+      } catch (e) {}
+    }
   };
 
-  const deleteExpense = async (id) => {
-    try { await supabase.from('expenses').delete().eq('id', id); } catch (e) {}
-    setExpenses(expenses.filter(e => e.id !== id));
-  };
-
-  // CRUD Operations - Members
-  const addMember = (member) => {
-    const newM = { ...member, id: Math.random().toString(36).substr(2, 9) };
-    setMembers([newM, ...members]);
-    logActivity(`Added team member: ${member.name}`, 'hsl(var(--p-light))');
-  };
-
-  const deleteMember = (id) => {
-    setMembers(members.filter(m => m.id !== id));
-  };
-
-  // CRUD Operations - Vault
-  const addVaultDoc = async (doc) => {
-    const newDoc = {
-      ...doc,
+  // Activity Log
+  const logActivity = (text, color = 'hsl(var(--p))') => {
+    const newLog = {
       id: Math.random().toString(36).substr(2, 9),
-      created_at: new Date().toISOString()
+      user: currentUser?.username?.charAt(0).toUpperCase() || 'SYS',
+      text,
+      time: new Date().toISOString(),
+      color
     };
-    try {
-      const { data, error } = await supabase.from('vault_docs').insert([{
-        title: doc.name,
-        description: doc.type
-      }]).select();
-      if (!error && data) {
-        const savedDoc = {
-          ...data[0],
-          name: data[0].name || data[0].title,
-          type: data[0].type || data[0].description
-        };
-        setVaultDocs([savedDoc, ...vaultDocs]);
-        logActivity(`Uploaded document to Vault: ${doc.name}`, 'hsl(var(--danger))');
-        return { data: [savedDoc], error };
-      }
-    } catch (e) {}
-    setVaultDocs([newDoc, ...vaultDocs]);
-    logActivity(`Uploaded document to Vault: ${doc.name}`, 'hsl(var(--danger))');
-    return { data: [newDoc], error: null };
-  };
+    setActivityLog(prev => [newLog, ...prev].slice(0, 50));
 
-  const deleteVaultDoc = async (id) => {
-    try { await supabase.from('vault_docs').delete().eq('id', id); } catch (e) {}
-    setVaultDocs(vaultDocs.filter(d => d.id !== id));
+    // Optional: Real-time sync to Supabase activity_log table
+    if (currentUser) {
+      supabase.from('activity_log').insert([{
+        user_id: currentUser.id,
+        content: text,
+        color: color,
+        username: currentUser.username
+      }]).then();
+    }
   };
 
   useEffect(() => {
@@ -429,11 +393,11 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       currentUser, login, register, logout,
       authLoading,
-      items, setItems, addItem, deleteItem, updateItem, updateItemStatus,
-      expenses, setExpenses, addExpense, deleteExpense,
+      items, setItems, addItem, updateItemStatus,
+      expenses, setExpenses, addExpense,
       vaultDocs, setVaultDocs, addVaultDoc, deleteVaultDoc,
       members, setMembers, addMember, deleteMember,
-      tripConfig, setTripConfig, resetTrip,
+      tripConfig, setTripConfig: updateTripConfig, resetTrip,
       categories,
       theme, toggleTheme,
       isLoading,
