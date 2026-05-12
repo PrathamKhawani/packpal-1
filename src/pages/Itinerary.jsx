@@ -475,7 +475,7 @@ export default function Itinerary() {
         @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
 
         @media (max-width: 1400px) { .wander-grid { grid-template-columns: 280px 1fr; } .wander-map { display: none; } }
-        @media (max-width: 768px) { .chat-ui-v6 { width: calc(100% - 2rem); right: 1rem; } .wander-hero { padding: 2rem; } .hero-body h1 { font-size: 3rem; } }
+        @media (max-width: 768px) { .wander-grid { grid-template-columns: 1fr; } .chat-ui-v6 { width: calc(100% - 2rem); right: 1rem; } .wander-hero { padding: 1.5rem; } .hero-body h1 { font-size: 2.25rem; } .hero-body p { font-size: 0.85rem; } }
       `}</style>
     </div>
   );

@@ -206,6 +206,18 @@ export default function Vault() {
         .modal-actions-modern { display: flex; gap: 1rem; margin-top: 1rem; }
         .btn-cancel { flex: 1; padding: 0.75rem; border-radius: 12px; border: none; background: none; font-weight: 700; cursor: pointer; }
         .btn-submit { flex: 2; padding: 0.75rem; border-radius: 12px; border: none; background: hsl(var(--p)); color: white; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px hsla(var(--p) / 0.2); }
+
+        @media (max-width: 600px) {
+          .list-head { display: none; }
+          .list-row-modern { flex-wrap: wrap; gap: 0.5rem; position: relative; padding: 1rem; }
+          .col-ico { display: none; }
+          .col-name { width: 100%; }
+          .col-status { justify-content: flex-start; }
+          .col-act { position: absolute; top: 1rem; right: 1rem; width: auto; }
+          .vault-hero { padding: 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+          .vh-left h1 { font-size: 2rem; }
+          .modal-box-modern { padding: 1.5rem; max-width: 95%; }
+        }
       `}</style>
     </div>
   );

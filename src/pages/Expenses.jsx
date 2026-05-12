@@ -252,6 +252,14 @@ export default function Expenses() {
           .expenses-main { grid-template-columns: 1fr; }
           .hero-metrics { display: none; }
         }
+        @media (max-width: 600px) {
+          .expenses-hero { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; }
+          .hero-left h1 { font-size: 2rem; }
+          .ledger-toolbar { flex-direction: column; gap: 1rem; align-items: stretch; }
+          .search-box { margin-right: 0; }
+          .input-row { grid-template-columns: 1fr; gap: 0.5rem; }
+          .modal-panel { padding: 1.5rem; max-width: 95%; }
+        }
       `}</style>
     </div>
   );

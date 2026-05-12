@@ -272,6 +272,13 @@ export default function OwnerDashboard() {
           .od-readiness, .od-finance { grid-column: span 6; }
           .action-grid { grid-template-columns: 1fr 1fr; }
         }
+        @media (max-width: 600px) {
+          .action-grid { grid-template-columns: 1fr; }
+          .od-hero-dest { font-size: 2.25rem; }
+          .od-hero-meta { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+          .readiness-body { flex-direction: column; gap: 1.5rem; }
+          .od-hero { padding: 1.5rem; }
+        }
       `}</style>
     </div>
   );

@@ -564,6 +564,12 @@ export default function Checklists() {
           .form-row { grid-template-columns: 1fr; }
           .group-cards { grid-template-columns: 1fr; }
         }
+        @media (max-width: 600px) {
+          .mission-title { font-size: 2.25rem; }
+          .mission-subtitle { font-size: 0.85rem; }
+          .manifest-hero { padding: 1.5rem; }
+          .modal-panel-v3 { padding: 1.5rem; max-width: 95%; }
+        }
       `}</style>
     </div>
   );

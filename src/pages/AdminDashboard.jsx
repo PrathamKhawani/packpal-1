@@ -179,6 +179,11 @@ export default function AdminDashboard() {
           .metrics-grid { grid-template-columns: repeat(2, 1fr); }
           .map-card, .logs-card { grid-column: span 6; }
         }
+        @media (max-width: 600px) {
+          .metrics-grid { grid-template-columns: 1fr; }
+          .hero-body h1 { font-size: 2.25rem; }
+          .admin-hero { padding: 1.5rem; }
+        }
       `}</style>
     </div>
   );

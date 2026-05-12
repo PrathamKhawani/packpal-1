@@ -51,6 +51,12 @@ export default function Layout() {
 
   return (
     <div className="layout-root" data-role={currentUser?.role}>
+      {/* Mobile Backdrop */}
+      <div 
+        className={`mobile-backdrop ${isCollapsed ? 'show' : ''}`} 
+        onClick={() => setIsCollapsed(false)} 
+      />
+
       {/* Sidebar */}
       <motion.aside 
         className={`sidebar-premium ${isCollapsed ? 'collapsed' : ''}`}
@@ -70,6 +76,9 @@ export default function Layout() {
               key={item.id} 
               to={item.path} 
               className={`nav-item ${location.pathname.includes(item.id) ? 'active' : ''}`}
+              onClick={() => {
+                if (window.innerWidth <= 1024) setIsCollapsed(false);
+              }}
             >
               <div className="nav-icon">{item.icon}</div>
               {!isCollapsed && <span className="nav-label">{item.label}</span>}
@@ -379,8 +388,9 @@ export default function Layout() {
         @media (max-width: 1024px) {
           .mobile-toggle { display: block; }
           .search-pill { display: none; }
-          .sidebar-premium { position: fixed; left: -260px; transition: left 0.3s ease; width: 260px !important; }
+          .sidebar-premium { position: fixed; left: -260px; transition: left 0.3s ease; width: 260px !important; z-index: 999; }
           .sidebar-premium.collapsed { left: 0; }
+          .mobile-backdrop.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 998; }
           .page-view { padding: 1.25rem; }
           .main-header { padding: 0 1rem; }
         }

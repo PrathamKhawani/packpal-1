@@ -219,6 +219,10 @@ export default function Dashboard() {
         @media (max-width: 768px) {
           .member-grid { grid-template-columns: 1fr; }
           .quick-links { grid-template-columns: 1fr; grid-column: span 1; }
+          .hero-dest { font-size: 2rem; }
+          .hero-stats { flex-direction: column; gap: 1rem; border-top: none; }
+          .member-hero { padding: 1.5rem; }
+          .w-strip { flex-wrap: wrap; gap: 1rem; }
         }
       `}</style>
       {/* Destination Modal */}
