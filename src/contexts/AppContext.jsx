@@ -235,31 +235,6 @@ export function AppProvider({ children }) {
   };
 
   /**
-   * Sign in with Google OAuth.
-   * Supabase handles the redirect; onAuthStateChange will fire on return.
-   */
-  const loginWithGoogle = async (role = 'member') => {
-    setAuthLoading(true);
-    try {
-      // Store chosen role temporarily so we can write it to user_metadata on callback
-      localStorage.setItem('packpal_pending_role', role);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-          queryParams: { access_type: 'offline', prompt: 'consent' }
-        }
-      });
-      if (error) return { success: false, message: error.message };
-      return { success: true };
-    } catch (e) {
-      return { success: false, message: e.message };
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  /**
    * Sign out the current user.
    */
   const logout = async () => {
@@ -452,7 +427,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      currentUser, login, register, logout, loginWithGoogle,
+      currentUser, login, register, logout,
       authLoading,
       items, setItems, addItem, deleteItem, updateItem, updateItemStatus,
       expenses, setExpenses, addExpense, deleteExpense,
