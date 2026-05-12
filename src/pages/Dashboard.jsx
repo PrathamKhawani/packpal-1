@@ -221,10 +221,6 @@ export default function Dashboard() {
           .quick-links { grid-template-columns: 1fr; grid-column: span 1; }
         }
       `}</style>
-    </div>
-  );
-
-
       {/* Destination Modal */}
       <AnimatePresence>
         {isEditing && (

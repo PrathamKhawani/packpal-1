@@ -255,6 +255,4 @@ export default function Expenses() {
       `}</style>
     </div>
   );
-
-  );
 }

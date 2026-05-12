@@ -170,16 +170,6 @@ export function AppProvider({ children }) {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
-  const logActivity = (text, color = 'hsl(var(--p))') => {
-    const newLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      user: currentUser?.username?.charAt(0).toUpperCase() || 'SYS',
-      text,
-      time: new Date().toISOString(),
-      color
-    };
-    setActivityLog(prev => [newLog, ...prev].slice(0, 50));
-  };
 
   // ─── Auth Actions (Real Supabase) ──────────────────────────────────────────
 
@@ -249,9 +239,7 @@ export function AppProvider({ children }) {
     localStorage.setItem('packpal_tripConfig', JSON.stringify(fresh));
   };
 
-  // Helper for role-prefixed API calls (Simulated)
-  const roleApiCall = async (table, action, payload = null) => {
-    const role = currentUser?.role || 'guest';
+
   // ─── Data Loading (Expanded) ──────────────────────────────────────────────
   const loadData = async () => {
     setIsLoading(true);

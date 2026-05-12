@@ -38,7 +38,9 @@ export default function OwnerDashboard() {
     : '—';
   const endFmt = tripConfig.endDate
     ? new Date(tripConfig.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-    : '—  return (
+    : '—';
+
+  return (
     <div className="od-container">
       {/* ── MISSION HERO ── */}
       <motion.header className="od-hero glass" 
@@ -270,10 +272,6 @@ export default function OwnerDashboard() {
           .od-readiness, .od-finance { grid-column: span 6; }
           .action-grid { grid-template-columns: 1fr 1fr; }
         }
-      `}</style>
-    </div>
-  );
-gap: 1rem; } }
       `}</style>
     </div>
   );
