@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 import { AppProvider, useApp } from './contexts/AppContext';
 
 // Lazy load all page components to reduce build chunk sizes and memory footprint
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -72,9 +73,9 @@ function AppRoutes() {
         <Route path="/login" element={currentUser ? <Navigate to={`/${currentUser.role}/dashboard`} replace /> : <Login />} />
         <Route path="/register" element={currentUser ? <Navigate to={`/${currentUser.role}/dashboard`} replace /> : <Register />} />
         
-        {/* Redirect base / to the user's role dashboard */}
+        {/* Public landing page for unauthenticated visitors */}
         <Route path="/" element={
-          currentUser ? <Navigate to={`/${currentUser.role}/dashboard`} replace /> : <Navigate to="/login" replace />
+          currentUser ? <Navigate to={`/${currentUser.role}/dashboard`} replace /> : <LandingPage />
         } />
 
         <Route path="/:role" element={
