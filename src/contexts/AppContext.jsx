@@ -219,7 +219,8 @@ export function AppProvider({ children }) {
         email,
         password,
         options: {
-          data: { role, full_name: fullName || email.split('@')[0] }
+          data: { role, full_name: fullName || email.split('@')[0] },
+          emailRedirectTo: 'https://packpal-1.vercel.app/'
         }
       });
       if (error) return { success: false, message: error.message };
