@@ -13,28 +13,17 @@ export const ROLE_PERMISSIONS = {
   member: ['view', 'edit']
 };
 
-// Default Tactical Database (20 items)
-const INITIAL_TACTICAL_DATA = [
-  { id: 'def1', name: 'Tactical GPS Unit', category: 'tech', status: 'packed', assignedTo: 'You', created_at: new Date().toISOString() },
-  { id: 'def2', name: 'Waterproof Hard Shell', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
-  { id: 'def3', name: 'Solar Power Bank 20k', category: 'tech', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() },
-  { id: 'def4', name: 'Emergency Rations (72h)', category: 'food', status: 'pending', assignedTo: 'Sarah', created_at: new Date().toISOString() },
-  { id: 'def5', name: 'First Aid Trauma Kit', category: 'hygiene', status: 'packed', assignedTo: 'Admin', created_at: new Date().toISOString() },
-  { id: 'def6', name: 'Noise-Cancelling Comms', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
-  { id: 'def7', name: 'Leatherman Multi-tool', category: 'tech', status: 'packed', assignedTo: 'Mike', created_at: new Date().toISOString() },
-  { id: 'def8', name: 'Tactical Recon Boots', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
-  { id: 'def9', name: 'Water Purification Tabs', category: 'hygiene', status: 'pending', assignedTo: 'Sarah', created_at: new Date().toISOString() },
-  { id: 'def10', name: 'Night Vision Monocular', category: 'tech', status: 'pending', assignedTo: 'Admin', created_at: new Date().toISOString() },
-  { id: 'def11', name: 'High-Calorie Energy Gels', category: 'food', status: 'packed', assignedTo: 'Mike', created_at: new Date().toISOString() },
-  { id: 'def12', name: '550 Paracord (50ft)', category: 'tech', status: 'pending', assignedTo: 'Sarah', created_at: new Date().toISOString() },
-  { id: 'def13', name: 'Thermal Base Layers', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
-  { id: 'def14', name: 'Ferrocerium Fire Starter', category: 'tech', status: 'packed', assignedTo: 'Admin', created_at: new Date().toISOString() },
-  { id: 'def15', name: 'Signal Mirror & Whistle', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
-  { id: 'def16', name: 'Tactical Hard-Knuckle Gloves', category: 'clothing', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() },
-  { id: 'def17', name: 'Bio-Degradable Wet Wipes', category: 'hygiene', status: 'packed', assignedTo: 'Sarah', created_at: new Date().toISOString() },
-  { id: 'def18', name: 'Topographic Mission Map', category: 'tech', status: 'pending', assignedTo: 'Admin', created_at: new Date().toISOString() },
-  { id: 'def19', name: 'Tactical LED Flashlight', category: 'tech', status: 'packed', assignedTo: 'You', created_at: new Date().toISOString() },
-  { id: 'def20', name: 'Hydration Bladder 3L', category: 'hygiene', status: 'pending', assignedTo: 'Mike', created_at: new Date().toISOString() }
+const DEFAULT_ESSENTIAL_ITEMS = [
+  { id: 'def_1', name: 'Mobile Phone & Charger', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_2', name: 'Powerbank', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_3', name: 'Laptop & Charger', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_4', name: 'Toothbrush & Paste', category: 'hygiene', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_5', name: 'Sunscreen', category: 'hygiene', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_6', name: 'Undergarments (7 pairs)', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_7', name: 'T-Shirts & Vests', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_8', name: 'Pants/Shorts (3 pairs)', category: 'clothing', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_9', name: 'Snacks & Water', category: 'food', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
+  { id: 'def_10', name: 'Deodorant', category: 'hygiene', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() }
 ];
 
 // Helper — build a normalized user object from a Supabase session user
@@ -83,7 +72,7 @@ export function AppProvider({ children }) {
 
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem('packpal_items');
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : DEFAULT_ESSENTIAL_ITEMS;
   });
 
   const [expenses, setExpenses] = useState(() => {
@@ -227,7 +216,7 @@ export function AppProvider({ children }) {
     await supabase.auth.signOut();
     setCurrentUser(null);
     setTripConfig(DEFAULT_TRIP_CONFIG);
-    setItems([]);
+    setItems(DEFAULT_ESSENTIAL_ITEMS);
     setExpenses([]);
     setVaultDocs([]);
     setMembers([]);

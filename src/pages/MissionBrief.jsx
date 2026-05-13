@@ -9,22 +9,16 @@ import {
 import { useApp } from '../contexts/AppContext';
 
 export default function MissionBrief() {
-  const { items, members, tripConfig } = useApp();
+  const { items, members, tripConfig, activityLog } = useApp();
   const [openObj, setOpenObj] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   // Dynamic Readiness calculation based on Checklist items
   const totalItems = items?.length || 0;
   const packedItems = items?.filter(i => i.status === 'packed').length || 0;
   const readinessPct = totalItems === 0 ? 0 : Math.round((packedItems / totalItems) * 100);
 
-  // Derive Team from Context
-  const teamList = members?.slice(0, 5).map((m, i) => ({
-    name: m.name,
-    role: m.role.toUpperCase(),
-    status: 'ONLINE',
-    color: i === 0 ? 'p' : i === 1 ? 'success' : 'warning',
-    avatar: m.name.substring(0, 2).toUpperCase()
-  })) || [];
+  // Removed derived teamList since we map all members directly
 
   // Derive Objectives from Checklist (Top 4 pending/recent)
   const objList = items?.slice(0, 4).map(item => ({
@@ -71,7 +65,7 @@ export default function MissionBrief() {
           </div>
           <div className="header-stats">
             <div className="hs-item"><TrendingUp size={13}/><div><strong>{packedItems}/{totalItems}</strong><span>Packed</span></div></div>
-            <div className="hs-item"><Activity size={13}/><div><strong>{teamList.length}</strong><span>Members</span></div></div>
+            <div className="hs-item"><Activity size={13}/><div><strong>{members?.length || 0}</strong><span>Members</span></div></div>
             <div className="hs-item"><Clock size={13}/><div><strong>{tripConfig?.days || 3} Days</strong><span>Duration</span></div></div>
           </div>
         </div>
@@ -113,18 +107,23 @@ export default function MissionBrief() {
             </div>
           </motion.section>
 
-          {/* Strategic Map */}
+          {/* Deployment Overview */}
           <motion.section className="mb-card map-card" initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.1 }}>
-            <div className="mc-label"><Map size={13}/> STRATEGIC MAP</div>
-            <div className="map-scene">
-              <div className="map-grid-bg" />
-              <div className="map-content">
-                <div className="map-node base"><div className="node-dot" /><span>BASE</span></div>
-                <div className="map-connector"><div className="connector-line"><div className="connector-pulse" /></div></div>
-                <div className="map-node dest"><div className="node-dot green" /><span>DEST</span></div>
+            <div className="mc-label"><Map size={13}/> DEPLOYMENT OVERVIEW</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'hsl(var(--bg))', padding: '1.25rem', borderRadius: '10px', border: '1px solid hsl(var(--border))' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 800 }}>DESTINATION</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'hsl(var(--text))' }}>{tripConfig?.destination ? tripConfig.destination.toUpperCase() : 'PENDING'}</span>
               </div>
-              <div className="map-badge"><div className="live-dot" />{tripConfig?.destination ? `DEST: ${tripConfig.destination.toUpperCase()}` : 'SECTOR 7G — PENDING DEPLOYMENT'}</div>
-              <div className="map-coords">SAT-LINK SECURE</div>
+              <div style={{ width: '100%', height: '1px', background: 'hsl(var(--border))' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 800 }}>START DATE</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'hsl(var(--text))' }}>{tripConfig?.startDate ? new Date(tripConfig.startDate).toLocaleDateString() : 'TBD'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 800 }}>END DATE</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'hsl(var(--text))' }}>{tripConfig?.endDate ? new Date(tripConfig.endDate).toLocaleDateString() : 'TBD'}</span>
+              </div>
             </div>
           </motion.section>
 
@@ -151,18 +150,34 @@ export default function MissionBrief() {
           <motion.section className="mb-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.1 }}>
             <div className="mc-label"><Users size={13}/> TEAM STATUS</div>
             <div className="team-list">
-              {teamList.length > 0 ? teamList.map((m, i) => (
-                <div key={i} className="team-row">
-                  <div className={`team-avatar ${m.color}`}>{m.avatar}</div>
-                  <div className="team-info"><strong>{m.name}</strong><span>{m.role}</span></div>
-                  <span className={`team-badge ${m.color}`}>{m.status}</span>
-                </div>
-              )) : (
+              {members?.length > 0 ? members.map((m, i) => {
+                const color = i === 0 ? 'p' : i === 1 ? 'success' : 'warning';
+                return (
+                  <div key={i} className="team-row">
+                    <div className={`team-avatar ${color}`}>{m.name.substring(0, 2).toUpperCase()}</div>
+                    <div className="team-info"><strong>{m.name}</strong><span>{m.role?.toUpperCase() || 'MEMBER'}</span></div>
+                    <span className={`team-badge ${color}`}>ONLINE</span>
+                  </div>
+                );
+              }) : (
                 <div className="team-row">
                   <div className="team-info"><strong>No team members</strong><span>Invite members to see them here.</span></div>
                 </div>
               )}
             </div>
+            <motion.button 
+              className="mb-cta" 
+              style={{ marginTop: '1rem', background: copied ? 'hsl(var(--success))' : 'hsl(var(--p))' }}
+              whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.origin + '/register');
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+            >
+              {copied ? <CheckCircle2 size={15}/> : <Users size={15}/>} 
+              {copied ? 'COPIED INVITE LINK!' : 'INVITE MEMBER'}
+            </motion.button>
           </motion.section>
 
           {/* Risk Panel */}
@@ -185,21 +200,18 @@ export default function MissionBrief() {
             <div className="risk-footer"><Shield size={12}/> Overall: <strong>LOW THREAT — NORMAL OPS</strong></div>
           </motion.section>
 
-          {/* Intel Terminal */}
+          {/* Mission Log */}
           <motion.section className="mb-card terminal-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.2 }}>
-            <div className="mc-label"><Terminal size={13}/> INTEL TERMINAL</div>
+            <div className="mc-label"><Terminal size={13}/> MISSION LOG</div>
             <div className="terminal-body">
-              <div className="t-line-item"><span className="t-green">✓</span> Logistics confirmed [08:42]</div>
-              <div className="t-line-item"><span className="t-yellow">⚡</span> Mike status: pending [09:15]</div>
-              <div className="t-line-item"><span className="t-blue">→</span> Briefing scheduled [10:00]</div>
-              <div className="t-line-item t-cursor"><span className="t-green">_</span> Awaiting further orders...</div>
+              {activityLog?.slice(0, 4).map((log, i) => (
+                <div key={i} className="t-line-item">
+                  <span style={{ color: log.color, marginRight: '4px' }}>→</span> {log.text}
+                </div>
+              ))}
+              <div className="t-line-item t-cursor"><span className="t-green">_</span> Awaiting further actions...</div>
             </div>
           </motion.section>
-
-          {/* CTA */}
-          <motion.button className="mb-cta" whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}>
-            <Zap size={15}/> RE-AUTHORIZE MISSION
-          </motion.button>
         </div>
       </div>
 

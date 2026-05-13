@@ -452,7 +452,7 @@ export default function Checklists() {
           opacity: 0;
           transition: 0.3s;
         }
-        .asset-card:hover { transform: translateY(-4px); border-color: hsla(var(--p) / 0.2); background: white; box-shadow: 0 20px 40px hsla(0, 0%, 0%, 0.05); }
+        .asset-card:hover { transform: translateY(-4px); border-color: hsla(var(--p) / 0.2); background: hsl(var(--bg-card)); box-shadow: 0 20px 40px hsla(0, 0%, 0%, 0.1); }
         .asset-card:hover::after { opacity: 1; }
 
         .check-box {

@@ -32,6 +32,12 @@ export default function GlobalChatbot() {
     setLoading(true);
 
     try {
+      if (!API_KEY) {
+        setMessages(prev => [...prev, { role: 'bot', text: "⚠️ **API Key Missing**\n\nPlease add `VITE_GEMINI_API_KEY` to your `.env` file to enable the AI." }]);
+        setLoading(false);
+        return;
+      }
+
       const history = messages.map(m => ({
         role: m.role === 'bot' ? 'model' : 'user',
         parts: [{ text: m.text }]
@@ -49,11 +55,17 @@ export default function GlobalChatbot() {
           })
         }
       );
+      
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error?.message || "API connection failed");
+      }
+      
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having trouble responding right now. Please try again.";
       setMessages(prev => [...prev, { role: 'bot', text: reply }]);
-    } catch {
-      setMessages(prev => [...prev, { role: 'bot', text: "Connection error. Please check your internet and try again." }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'bot', text: `Connection error: ${err.message}` }]);
     } finally {
       setLoading(false);
     }

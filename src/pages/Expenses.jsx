@@ -136,7 +136,7 @@ export default function Expenses() {
       <AnimatePresence>
         {showAddModal && (
           <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-            <motion.div className="modal-panel glass" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={e => e.stopPropagation()}>
+            <motion.div className="modal-panel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={e => e.stopPropagation()}>
               <div className="m-head">
                 <h2>New Transaction</h2>
                 <button onClick={() => setShowAddModal(false)}><X size={18} /></button>
@@ -238,7 +238,7 @@ export default function Expenses() {
 
         /* Modal Overrides */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-        .modal-panel { width: 100%; max-width: 480px; padding: 3rem; border-radius: 32px; }
+        .modal-panel { width: 100%; max-width: 480px; padding: 3rem; border-radius: 32px; background: hsl(var(--bg-card)); border: 1px solid hsl(var(--border)); box-shadow: 0 24px 50px rgba(0,0,0,0.2); }
         .m-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
         .m-head h2 { font-size: 1.5rem; font-weight: 900; margin: 0; }
         .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
