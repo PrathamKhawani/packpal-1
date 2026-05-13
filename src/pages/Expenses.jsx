@@ -241,11 +241,12 @@ export default function Expenses() {
         .modal-panel { width: 100%; max-width: 480px; padding: 3rem; border-radius: 32px; background: hsl(var(--bg-card)); border: 1px solid hsl(var(--border)); box-shadow: 0 24px 50px rgba(0,0,0,0.2); }
         .m-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
         .m-head h2 { font-size: 1.5rem; font-weight: 900; margin: 0; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; width: 100%; box-sizing: border-box; }
         .input-group label { font-size: 0.65rem; font-weight: 800; color: hsl(var(--text-muted)); letter-spacing: 0.05em; }
-        .input-group input, .input-group select { padding: 1rem; border: 1px solid hsla(var(--border), 0.5); border-radius: 12px; background: hsla(var(--bg), 0.5); color: inherit; font-size: 1rem; outline: none; }
-        .input-group input:focus { border-color: hsl(var(--p)); }
-        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .input-group input, .input-group select { width: 100%; box-sizing: border-box; padding: 1rem; border: 1px solid hsla(var(--border), 0.5); border-radius: 12px; background: hsl(var(--bg-card)); color: hsl(var(--text)); font-size: 1rem; outline: none; transition: 0.2s; }
+        .input-group input:focus, .input-group select:focus { border-color: hsl(var(--p)); box-shadow: 0 0 0 4px hsla(var(--p)/0.1); }
+        .input-group select option { background: hsl(var(--bg-card)); color: hsl(var(--text)); padding: 0.5rem; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; }
         .m-submit-btn { width: 100%; padding: 1.25rem; background: hsl(var(--p)); color: white; border: none; border-radius: 16px; font-weight: 900; font-size: 0.9rem; cursor: pointer; margin-top: 1rem; }
 
         @media (max-width: 900px) {

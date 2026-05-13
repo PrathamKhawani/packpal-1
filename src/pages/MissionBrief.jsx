@@ -9,9 +9,12 @@ import {
 import { useApp } from '../contexts/AppContext';
 
 export default function MissionBrief() {
-  const { items, members, tripConfig, activityLog } = useApp();
+  const { items, members, tripConfig, activityLog, deleteMember } = useApp();
   const [openObj, setOpenObj] = useState(null);
   const [copied, setCopied] = useState(false);
+  
+  const maxMembers = tripConfig?.totalMembers || 2;
+  const isFull = members?.length >= maxMembers;
 
   // Dynamic Readiness calculation based on Checklist items
   const totalItems = items?.length || 0;
@@ -150,13 +153,22 @@ export default function MissionBrief() {
           <motion.section className="mb-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.1 }}>
             <div className="mc-label"><Users size={13}/> TEAM STATUS</div>
             <div className="team-list">
-              {members?.length > 0 ? members.map((m, i) => {
+              {members?.length > 0 ? members.slice(0, maxMembers).map((m, i) => {
                 const color = i === 0 ? 'p' : i === 1 ? 'success' : 'warning';
                 return (
                   <div key={i} className="team-row">
                     <div className={`team-avatar ${color}`}>{m.name.substring(0, 2).toUpperCase()}</div>
                     <div className="team-info"><strong>{m.name}</strong><span>{m.role?.toUpperCase() || 'MEMBER'}</span></div>
-                    <span className={`team-badge ${color}`}>ONLINE</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className={`team-badge ${color}`}>ONLINE</span>
+                      <button 
+                        onClick={() => deleteMember(m.id)}
+                        style={{ background: 'none', border: 'none', color: 'hsl(var(--danger))', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                        title="Remove Member"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
                   </div>
                 );
               }) : (
@@ -165,19 +177,21 @@ export default function MissionBrief() {
                 </div>
               )}
             </div>
-            <motion.button 
-              className="mb-cta" 
-              style={{ marginTop: '1rem', background: copied ? 'hsl(var(--success))' : 'hsl(var(--p))' }}
-              whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.origin + '/register');
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-            >
-              {copied ? <CheckCircle2 size={15}/> : <Users size={15}/>} 
-              {copied ? 'COPIED INVITE LINK!' : 'INVITE MEMBER'}
-            </motion.button>
+            {!isFull && (
+              <motion.button 
+                className="mb-cta" 
+                style={{ marginTop: '1rem', background: copied ? 'hsl(var(--success))' : 'hsl(var(--p))' }}
+                whileHover={{ scale:1.02 }} whileTap={{ scale:0.98 }}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.origin + '/register');
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <CheckCircle2 size={15}/> : <Users size={15}/>} 
+                {copied ? 'COPIED INVITE LINK!' : `INVITE MEMBER (${members.length}/${maxMembers})`}
+              </motion.button>
+            )}
           </motion.section>
 
           {/* Risk Panel */}
