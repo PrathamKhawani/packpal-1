@@ -8,13 +8,20 @@
 
 ## 🌟 Key Features
 
+### 🎬 Cinematic 3D Authentication & Landing
+- **Landing Page**: Apple-style scroll-driven 3D photo frames that tilt and animate as you scroll, showcasing features.
+- **Login ("The Passport")**: A massive 3D passport rotates open on scroll, travel stamps burst out, and the login form elegantly rises.
+- **Register ("The Globe")**: A 3D globe splits in half on scroll, real destination photos burst out, revealing the registration form.
+- **SEO Optimized**: Fully structured JSON-LD schema, Open Graph tags, Twitter cards, and semantic HTML for #1 search ranking.
+
 ### 🚀 Ultra-Modern Bento Dashboard
 - **Dynamic Hero**: High-resolution destination imagery that adapts to your trip.
 - **Live Intelligence Feed**: Real-time updates on team activities, checklist progress, and weather alerts.
 - **Trip DNA**: Visual radar charts analyzing your trip's vibe (Adventure vs. Relaxing).
 - **Financial Health**: Real-time burn-rate tracking against your global budget.
 
-### 🗺️ AI-Powered Itinerary Planner
+### 🤖 Global AI Chatbot & Itinerary Planner
+- **PackPal AI Assistant**: A persistent, context-aware AI chatbot available on every page, ready to answer travel and logistics questions instantly.
 - **Gemini AI Integration**: Generate multi-day, cost-aware itineraries in seconds.
 - **Interactive Route Map**: Powered by Leaflet, visualizing every activity and landmark on a live map.
 - **Professional PDF Export**: One-click "Print Mode" for high-quality physical itinerary documents.
@@ -26,7 +33,6 @@
 - **Admin (Command Center)**: Supreme system overseer. Has exclusive access to Platform Analytics, System Logs, Secure Vault, and Risk Analysis, alongside all tactical planning modules.
 - **Owner (Mission Control)**: Mid-level tactical leader. Focused purely on mission execution with access to Itinerary, Checklists, Expenses, and Tactical Briefs, without system-governance clutter.
 - **Member**: Standard operator. Access to core collaboration tools (Dashboard, Itinerary, Checklists) for personal tracking.
-- **Viewer**: Read-only access for family or guests.
 
 ### 💼 Smart Modules
 - **Checklists**: Category-based packing lists with progress tracking.
@@ -73,7 +79,7 @@
    ```env
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   GEMINI_API_KEY=your_gemini_key
+   VITE_GEMINI_API_KEY=your_gemini_key
    ```
 
 4. **Start the development server**:
@@ -92,7 +98,7 @@ PackPal utilizes a **Hybrid Sync Engine**. Data is primarily persisted in **Supa
 Access is managed via the `AppContext`. The UI dynamically renders sidebars and routes based on the `currentUser.role` property, ensuring that sensitive modules like the **Vault** and **Member Management** are strictly protected.
 
 ### 📡 AI Itinerary Generation
-The application uses **Gemini 1.5 Pro** with **JSON Response Mode**. The backend processes natural language prompts into structured JSON containing activities, times, estimated costs, and geocoordinates (latitude/longitude) for map plotting.
+The application uses **Gemini 1.5 Flash/Pro** with **JSON Response Mode**. The backend processes natural language prompts into structured JSON containing activities, times, estimated costs, and geocoordinates (latitude/longitude) for map plotting.
 
 ### 🎨 Design System
 The project follows a **Bento Grid** design philosophy, emphasizing modularity and information density without clutter. It uses a curated **HSL Color Palette** to support both sleek light and dark modes with high-contrast readability.

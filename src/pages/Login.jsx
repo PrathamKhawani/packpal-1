@@ -340,11 +340,17 @@ export default function Login() {
         .pp-progress { position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#6366f1,#ec4899,#f59e0b); transform-origin:left; z-index:9999; }
 
         @media(max-width:680px) {
-          .pp-book { width:340px; height:240px; }
+          .pp-hero h1 { font-size: clamp(2rem, 8vw, 3rem); }
+          .pp-book { width: 90vw; max-width: 340px; height: 60vw; max-height: 240px; }
+          .pp-photo-avatar { width:60px; height:72px; font-size:1.8rem; }
+          .pp-photo-slot { width: 70px; }
+          .pp-id-value { font-size: 0.65rem; }
+          .pp-mrz { font-size: 0.4rem; }
           .pp-cover-emblem { font-size:2rem; }
-          .pp-cover-title { font-size:0.9rem; }
+          .pp-cover-title { font-size:0.8rem; }
+          .pp-cover-subtitle { font-size:0.45rem; }
           .pp-stamp { display:none; }
-          .pp-form-card { padding:2rem 1.25rem; }
+          .pp-form-card { padding:1.5rem 1rem; margin: 0 1rem; }
         }
       `}</style>
     </div>

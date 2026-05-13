@@ -274,12 +274,13 @@ export default function Register() {
         .gp-success p  { color:#6b7280; font-size:0.875rem; margin:0 0 1.5rem; }
 
         @media(max-width:640px) {
-          .gp-globe-scene { width:260px; height:260px; }
-          .gp-half-sphere { width:260px; height:260px; }
+          .gp-hero h1 { font-size: clamp(2rem, 8vw, 3rem); }
+          .gp-globe-scene { width:75vw; max-width:260px; height:75vw; max-height:260px; }
+          .gp-half-sphere { width:100%; height:100%; }
           .gp-top-sphere { border-radius:130px 130px 0 0; }
           .gp-bot-sphere { border-radius:0 0 130px 130px; }
           .gp-photo-burst { display:none; }
-          .gp-form-card { padding:1.75rem 1.25rem; }
+          .gp-form-card { padding:1.5rem 1rem; margin: 0 1rem; }
         }
       `}</style>
     </div>
