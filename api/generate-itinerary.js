@@ -59,7 +59,7 @@ Rules:
 
   try {
     // 1. Explicitly hardcode stable models to avoid API 'not found' or 'deprecated' errors.
-    const selectedModel = 'models/gemini-1.5-flash';
+    const selectedModel = 'models/gemini-pro';
 
     // 2. Execute text generation with the dynamically discovered model
     const response = await fetch(
