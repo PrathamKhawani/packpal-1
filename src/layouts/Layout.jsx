@@ -52,10 +52,17 @@ export default function Layout() {
   return (
     <div className="layout-root" data-role={currentUser?.role}>
       {/* Mobile Backdrop */}
-      <div 
-        className={`mobile-backdrop ${isCollapsed ? 'show' : ''}`} 
-        onClick={() => setIsCollapsed(false)} 
-      />
+      <AnimatePresence>
+        {isCollapsed && window.innerWidth <= 1024 && (
+          <motion.div 
+            className="mobile-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsCollapsed(false)} 
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
       <motion.aside 
@@ -266,6 +273,33 @@ export default function Layout() {
         )}
       </AnimatePresence>
       <style>{`
+        .layout-root { display: flex; height: 100vh; width: 100vw; overflow: hidden; background: hsl(var(--bg)); }
+        
+        .sidebar-premium { 
+          height: 100vh; 
+          background: hsl(var(--bg-card)); 
+          border-right: 1px solid hsl(var(--border)); 
+          display: flex; 
+          flex-direction: column; 
+          z-index: 1000;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+
+        .sidebar-header { 
+          height: var(--header-height); 
+          padding: 0 1.5rem; 
+          display: flex; 
+          align-items: center; 
+          border-bottom: 1px solid hsl(var(--border)); 
+        }
+        
+        .logo-box { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon { 
+          width: 32px; 
+          height: 32px; 
+          border-radius: var(--radius-sm); 
+          background: hsl(var(--p)); 
           display: flex; 
           align-items: center; 
           justify-content: center; 
@@ -386,13 +420,32 @@ export default function Layout() {
         .chevron { color: hsl(var(--text-muted)); }
 
         @media (max-width: 1024px) {
-          .mobile-toggle { display: block; }
+          .mobile-toggle { display: flex; align-items: center; justify-content: center; }
           .search-pill { display: none; }
-          .sidebar-premium { position: fixed; left: -260px; transition: left 0.3s ease; width: 260px !important; z-index: 999; }
-          .sidebar-premium.collapsed { left: 0; }
-          .mobile-backdrop.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 998; }
-          .page-view { padding: 1.25rem; }
+          .sidebar-premium { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            bottom: 0; 
+            transform: translateX(-100%);
+            width: 280px !important; 
+            z-index: 2000;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.2);
+          }
+          .sidebar-premium.collapsed { transform: translateX(0); }
+          .mobile-backdrop { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1999; }
+          .page-view { padding: 1rem; padding-bottom: 5rem; }
           .main-header { padding: 0 1rem; }
+          .header-right { gap: 0.5rem; }
+          .user-meta { display: none; }
+          .nav-label { display: block !important; opacity: 1 !important; }
+          .main-viewport { width: 100vw; }
+        }
+
+        @media (max-width: 640px) {
+          .header-right .sep, .header-right .header-btn:not([title="Notifications"]), .profile-btn .chevron { display: none; }
+          .avatar-sm { width: 30px; height: 30px; }
+          .logo-box span { font-size: 1.1rem; }
         }
         
         /* Dropdown Styles */

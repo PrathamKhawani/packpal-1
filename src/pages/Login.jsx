@@ -427,10 +427,13 @@ export default function Login() {
         /* Responsive */
         @media (max-width: 1024px) {
           .auth-left { display: none; }
-          .auth-right { flex: 1; border-left: none; background: #0a0a0f; }
+          .auth-right { flex: 1; border-left: none; background: #0a0a0f; padding: 2rem; }
         }
         @media (max-width: 480px) {
-          .auth-right { padding: 1.5rem; }
+          .auth-right { padding: 1.25rem; }
+          .auth-card-header h2 { font-size: 1.5rem; }
+          .auth-submit-btn { height: 46px; }
+          .auth-input-wrap input { height: 44px; }
         }
       `}</style>
     </div>

@@ -270,14 +270,17 @@ export default function OwnerDashboard() {
         @media (max-width: 900px) {
           .od-bento { grid-template-columns: 1fr; }
           .od-readiness, .od-finance { grid-column: span 6; }
-          .action-grid { grid-template-columns: 1fr 1fr; }
+          .action-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 600px) {
+          .od-hero { height: auto; min-height: 240px; padding: 1.5rem; border-radius: 16px; }
+          .od-hero-dest { font-size: 1.75rem; }
+          .od-hero-subtitle { font-size: 0.9rem; margin-bottom: 1rem; }
+          .od-hero-meta { flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; }
+          .od-hero-footer { flex-direction: column; gap: 0.75rem; padding-top: 1rem; }
+          .readiness-body { flex-direction: column; gap: 1.5rem; align-items: center; }
           .action-grid { grid-template-columns: 1fr; }
-          .od-hero-dest { font-size: 2.25rem; }
-          .od-hero-meta { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-          .readiness-body { flex-direction: column; gap: 1.5rem; }
-          .od-hero { padding: 1.5rem; }
+          .fin-value { font-size: 1.75rem; }
         }
       `}</style>
     </div>

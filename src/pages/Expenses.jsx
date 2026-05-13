@@ -250,15 +250,18 @@ export default function Expenses() {
 
         @media (max-width: 900px) {
           .expenses-main { grid-template-columns: 1fr; }
-          .hero-metrics { display: none; }
+          .hero-metrics { gap: 2rem; }
         }
-        @media (max-width: 600px) {
-          .expenses-hero { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; }
+        @media (max-width: 640px) {
+          .expenses-hero { flex-direction: column; align-items: flex-start; gap: 1.5rem; padding: 2rem 1.5rem; }
           .hero-left h1 { font-size: 2rem; }
-          .ledger-toolbar { flex-direction: column; gap: 1rem; align-items: stretch; }
-          .search-box { margin-right: 0; }
-          .input-row { grid-template-columns: 1fr; gap: 0.5rem; }
-          .modal-panel { padding: 1.5rem; max-width: 95%; }
+          .hero-metrics { width: 100%; justify-content: space-between; gap: 1rem; }
+          .h-stat strong { font-size: 1.25rem; }
+          .ledger-toolbar { flex-direction: column; gap: 1rem; align-items: stretch; padding: 0.75rem; }
+          .search-box { margin-right: 0; padding: 0.6rem 1rem; }
+          .expense-grid { grid-template-columns: 1fr; }
+          .input-row { grid-template-columns: 1fr; gap: 0; }
+          .modal-panel { padding: 2rem 1.5rem; border-radius: 20px; }
         }
       `}</style>
     </div>

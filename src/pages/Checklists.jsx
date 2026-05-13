@@ -554,21 +554,26 @@ export default function Checklists() {
         .v3-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 40px hsla(var(--p) / 0.3); }
 
         @media (max-width: 1024px) {
-          .header-main-grid { grid-template-columns: 1fr; gap: 2rem; }
-          .mission-stats-hub { width: 100%; justify-content: space-around; }
-          .mission-title { font-size: 3rem; }
+          .header-main-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+          .mission-stats-hub { width: 100%; justify-content: space-around; padding: 1rem; }
+          .mission-title { font-size: 2.5rem; }
         }
         @media (max-width: 768px) {
-          .console-filters { flex-direction: column; align-items: stretch; }
-          .console-actions { justify-content: space-between; }
-          .form-row { grid-template-columns: 1fr; }
+          .console-filters { flex-direction: column; align-items: stretch; gap: 1.25rem; }
+          .console-actions { justify-content: space-between; gap: 1rem; }
+          .filter-pills { padding-bottom: 0.5rem; }
+          .form-row { grid-template-columns: 1fr; gap: 1rem; }
           .group-cards { grid-template-columns: 1fr; }
+          .v3-modal { padding: 2rem 1.5rem; border-radius: 24px; }
+          .modal-header h2 { font-size: 1.5rem; }
+          .title-icon { width: 44px; height: 44px; }
         }
-        @media (max-width: 600px) {
-          .mission-title { font-size: 2.25rem; }
-          .mission-subtitle { font-size: 0.85rem; }
-          .manifest-hero { padding: 1.5rem; }
-          .modal-panel-v3 { padding: 1.5rem; max-width: 95%; }
+        @media (max-width: 480px) {
+          .mission-title { font-size: 1.8rem; }
+          .hub-divider { height: 40px; }
+          .hub-stat { min-width: 80px; }
+          .deploy-btn span { display: none; }
+          .deploy-btn { padding: 0.6rem; width: 44px; height: 44px; justify-content: center; }
         }
       `}</style>
     </div>

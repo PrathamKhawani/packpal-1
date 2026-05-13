@@ -217,12 +217,22 @@ export default function Dashboard() {
         .qa-card span { font-size: 0.85rem; font-weight: 700; }
 
         @media (max-width: 768px) {
-          .member-grid { grid-template-columns: 1fr; }
-          .quick-links { grid-template-columns: 1fr; grid-column: span 1; }
-          .hero-dest { font-size: 2rem; }
-          .hero-stats { flex-direction: column; gap: 1rem; border-top: none; }
-          .member-hero { padding: 1.5rem; }
-          .w-strip { flex-wrap: wrap; gap: 1rem; }
+          .member-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .quick-links { grid-template-columns: repeat(2, 1fr); grid-column: span 1; }
+          .hero-dest { font-size: 1.75rem; }
+          .hero-stats { flex-direction: row; flex-wrap: wrap; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+          .h-stat { flex: 1; min-width: 100px; }
+          .h-stat strong { font-size: 1.1rem; }
+          .member-hero { padding: 1.5rem; border-radius: 16px; margin: 0; }
+          .w-strip { flex-wrap: wrap; gap: 0.75rem; }
+          .qa-card { padding: 1.25rem; }
+        }
+        @media (max-width: 480px) {
+          .hero-dest { font-size: 1.5rem; }
+          .quick-links { grid-template-columns: 1fr; }
+          .hero-stats { gap: 0.75rem; }
+          .h-stat { min-width: 80px; }
+          .h-stat strong { font-size: 1rem; }
         }
       `}</style>
       {/* Destination Modal */}

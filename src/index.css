@@ -98,9 +98,27 @@ h1, h2, h3, h4, h5, h6 {
 .col-span-3 { grid-column: span 3; }
 .row-span-2 { grid-row: span 2; }
 
-@media (max-width: 1024px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .bento-grid { grid-template-columns: 1fr; } .col-span-2, .col-span-3 { grid-column: span 1; } }
+@media (max-width: 1024px) { 
+  .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } 
+}
+@media (max-width: 768px) {
+  .bento-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .col-span-2, .col-span-3 { grid-column: span 1; }
+  .row-span-2 { grid-row: span 1; }
+  .card { padding: 1.25rem; }
+}
+@media (max-width: 480px) {
+  :root { --header-height: 56px; }
+  body { font-size: 14px; }
+  .mobile-hide { display: none !important; }
+}
+@media (min-width: 481px) {
+  .desktop-hide { display: none !important; }
+}
 
+.text-danger { color: hsl(var(--danger)); }
+.text-success { color: hsl(var(--success)); }
+.text-warning { color: hsl(var(--warning)); }
 /* Ultra-Premium Buttons */
 button, input, select, textarea { font-family: inherit; }
 

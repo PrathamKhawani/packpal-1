@@ -140,19 +140,36 @@ export function AppProvider({ children }) {
 
   // ─── Supabase Auth Listener ────────────────────────────────────────────────
   useEffect(() => {
+    // Safety Timeout: Prevent infinite spinner if Supabase fails to respond
+    const safetyTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn('Auth check timed out, falling back to local state.');
+        setIsLoading(false);
+      }
+    }, 5000);
+
     // Get current session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setCurrentUser(buildUser(session?.user ?? null));
       setIsLoading(false);
+      clearTimeout(safetyTimeout);
+    }).catch(err => {
+      console.error('Session check failed:', err);
+      setIsLoading(false);
+      clearTimeout(safetyTimeout);
     });
 
-    // Subscribe to auth state changes (login, logout, token refresh, OAuth callback)
+    // Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setCurrentUser(buildUser(session?.user ?? null));
       setIsLoading(false);
+      clearTimeout(safetyTimeout);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   useEffect(() => {

@@ -336,8 +336,18 @@ export default function Register() {
         .auth-spin { animation:auth-rotate .8s linear infinite; }
         @keyframes auth-rotate { to { transform:rotate(360deg); } }
 
-        @media (max-width:1024px) { .auth-left { display:none; } .auth-right { flex:1; border-left:none; background:#0a0a0f; } }
-        @media (max-width:480px) { .auth-right { padding:1.5rem; } .auth-two-col { grid-template-columns:1fr; } .auth-role-grid { grid-template-columns:1fr; } }
+        @media (max-width: 1024px) { 
+          .auth-left { display: none; } 
+          .auth-right { flex: 1; border-left: none; background: #0a0a0f; padding: 2rem; } 
+        }
+        @media (max-width: 480px) { 
+          .auth-right { padding: 1.25rem; } 
+          .auth-two-col { grid-template-columns: 1fr; gap: 1rem; } 
+          .auth-role-grid { grid-template-columns: 1fr; } 
+          .auth-card-header h2 { font-size: 1.5rem; }
+          .auth-submit-btn { height: 46px; }
+          .auth-input-wrap input { height: 44px; }
+        }
       `}</style>
     </div>
   );
