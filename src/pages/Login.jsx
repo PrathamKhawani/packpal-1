@@ -1,17 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, ChevronRight, Shield, Zap, Globe2, Users, BarChart3, Map } from 'lucide-react';
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, ChevronRight, Map, Shield, Wallet, BarChart3, Users, Zap } from 'lucide-react';
 
-const CARDS = [
-  { icon: <Map size={22}/>, label: 'AI Itinerary', color: '#6366f1', rotate: '-12deg', x: '-55%', y: '-30%' },
-  { icon: <Shield size={22}/>, label: 'Secure Vault', color: '#0ea5e9', rotate: '8deg', x: '45%', y: '-40%' },
-  { icon: <BarChart3 size={22}/>, label: 'Expense Ops', color: '#10b981', rotate: '-6deg', x: '-60%', y: '20%' },
-  { icon: <Users size={22}/>, label: 'Team Control', color: '#f59e0b', rotate: '14deg', x: '50%', y: '15%' },
-  { icon: <Zap size={22}/>, label: 'Risk Analysis', color: '#ef4444', rotate: '-3deg', x: '-20%', y: '55%' },
-  { icon: <Globe2 size={22}/>, label: 'Mission Brief', color: '#8b5cf6', rotate: '10deg', x: '25%', y: '50%' },
+const FEATURES = [
+  { icon: <Map size={20}/>,       label: 'AI Itinerary',  color: '#6366f1', x: -260, y: -180 },
+  { icon: <Shield size={20}/>,    label: 'Secure Vault',  color: '#0ea5e9', x:  240, y: -200 },
+  { icon: <Wallet size={20}/>,    label: 'Finance Ops',   color: '#10b981', x: -300, y:   20 },
+  { icon: <BarChart3 size={20}/>, label: 'Analytics',     color: '#f59e0b', x:  280, y:   10 },
+  { icon: <Users size={20}/>,     label: 'Team Control',  color: '#ec4899', x: -200, y:  200 },
+  { icon: <Zap size={20}/>,       label: 'Risk Intel',    color: '#8b5cf6', x:  200, y:  190 },
 ];
+
+// Latch component
+const Latch = ({ side }) => (
+  <div style={{
+    position:'absolute', top:'50%', [side]: -14,
+    transform:'translateY(-50%)',
+    width:14, height:28, borderRadius:4,
+    background:'linear-gradient(180deg,#c8a96e,#a07840)',
+    boxShadow:'0 2px 6px rgba(0,0,0,0.25)',
+    display:'flex', alignItems:'center', justifyContent:'center'
+  }}>
+    <div style={{ width:6, height:6, borderRadius:'50%', background:'#7a5a2a' }}/>
+  </div>
+);
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -23,13 +37,24 @@ export default function Login() {
   const containerRef = useRef(null);
 
   const { scrollYProgress } = useScroll({ container: containerRef });
-  const heroY = useTransform(scrollYProgress, [0, 0.5], ['0%', '-30%']);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
-  const card0Rot = useTransform(scrollYProgress, [0, 0.5], [0, -25]);
-  const card1Rot = useTransform(scrollYProgress, [0, 0.5], [0, 20]);
-  const card2Scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.7]);
-  const formY = useTransform(scrollYProgress, [0.3, 0.7], ['60px', '0px']);
-  const formOpacity = useTransform(scrollYProgress, [0.3, 0.65], [0, 1]);
+  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 20 });
+
+  // Lid opens
+  const lidRotate  = useTransform(smooth, [0.05, 0.42], [0, -112]);
+  const lidShadow  = useTransform(smooth, [0.05, 0.42], [0, 0.5]);
+  // Case scales down + moves up when form appears
+  const caseScale  = useTransform(smooth, [0.58, 0.82], [1, 0.55]);
+  const caseY      = useTransform(smooth, [0.58, 0.82], [0, -160]);
+  const caseOpacity= useTransform(smooth, [0.70, 0.88], [1, 0]);
+  // Feature cards fly out
+  const featureScale  = useTransform(smooth, [0.38, 0.58], [0, 1]);
+  const featureOpacity= useTransform(smooth, [0.38, 0.56], [0, 1]);
+  // Form rises
+  const formY      = useTransform(smooth, [0.70, 0.94], [80, 0]);
+  const formOpacity= useTransform(smooth, [0.68, 0.92], [0, 1]);
+  // Hero text
+  const heroOpacity= useTransform(smooth, [0, 0.15], [1, 0]);
+  const heroY      = useTransform(smooth, [0, 0.20], [0, -40]);
 
   useEffect(() => {
     if (currentUser) navigate(`/${currentUser.role}/dashboard`, { replace: true });
@@ -39,220 +64,328 @@ export default function Login() {
     e.preventDefault();
     setError('');
     if (!email || !password) { setError('Please fill in all fields.'); return; }
-    const result = await login(email, password);
-    if (!result.success) setError(result.message || 'Authentication failed.');
+    const r = await login(email, password);
+    if (!r.success) setError(r.message || 'Authentication failed.');
   };
 
   return (
-    <div className="lp-root">
-      <div ref={containerRef} className="lp-scroll">
+    <div className="lx-root">
+      <div ref={containerRef} className="lx-scroller">
 
-        {/* ── SECTION 1: Hero ── */}
-        <section className="lp-hero">
-          <motion.div className="lp-hero-inner" style={{ y: heroY, opacity: heroOpacity }}>
-            <div className="lp-badge">
-              <span className="lp-badge-dot" />
-              Enterprise Travel Platform
-            </div>
-            <h1 className="lp-headline">
-              Mission Control.<br />
-              <span className="lp-grad">Reimagined.</span>
-            </h1>
-            <p className="lp-sub">Plan, execute, and analyse every expedition — all in one intelligent workspace.</p>
-            <div className="lp-scroll-hint">
-              <span>Scroll to continue</span>
-              <motion.div className="lp-arrow" animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.4 }}>↓</motion.div>
-            </div>
-          </motion.div>
+        {/* ═══ TALL SCROLL CANVAS ═══ */}
+        <div className="lx-canvas">
 
-          {/* 3D floating module cards */}
-          <div className="lp-cards-scene">
-            {CARDS.map((c, i) => (
-              <motion.div
-                key={i}
-                className="lp-float-card"
-                style={{
-                  '--card-color': c.color,
-                  left: `calc(50% + ${c.x})`,
-                  top: `calc(50% + ${c.y})`,
-                  rotate: c.rotate,
-                  rotateX: i % 2 === 0 ? card0Rot : card1Rot,
-                  scale: card2Scale,
-                }}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                whileHover={{ scale: 1.08, rotate: '0deg', zIndex: 10 }}
-              >
-                <div className="lp-float-icon">{c.icon}</div>
-                <span>{c.label}</span>
-              </motion.div>
-            ))}
-            {/* Central orb */}
-            <motion.div
-              className="lp-orb"
-              animate={{ scale: [1, 1.06, 1], opacity: [0.6, 0.9, 0.6] }}
-              transition={{ repeat: Infinity, duration: 3 }}
-            />
+          {/* Sticky 3D Stage */}
+          <div className="lx-sticky">
+
+            {/* Background grid */}
+            <div className="lx-grid-bg" aria-hidden="true"/>
+
+            {/* Hero headline */}
+            <motion.div className="lx-hero-text" style={{ opacity: heroOpacity, y: heroY }}>
+              <div className="lx-pill">✦ Enterprise Travel Platform</div>
+              <h1>Your Mission.<br/><em>Perfectly Packed.</em></h1>
+              <p>Scroll to open the briefcase ↓</p>
+            </motion.div>
+
+            {/* 3D Briefcase + Flying cards */}
+            <motion.div className="lx-case-wrapper" style={{ scale: caseScale, y: caseY, opacity: caseOpacity }}>
+              <div className="lx-case-scene">
+
+                {/* Feature cards orbiting out */}
+                {FEATURES.map((f, i) => (
+                  <motion.div
+                    key={i}
+                    className="lx-feat-chip"
+                    style={{
+                      '--chip-color': f.color,
+                      opacity: featureOpacity,
+                      scale: featureScale,
+                      x: useTransform(smooth, [0.38, 0.58], [0, f.x]),
+                      y: useTransform(smooth, [0.38, 0.58], [0, f.y]),
+                      rotate: useTransform(smooth, [0.38, 0.58], [0, (i % 2 === 0 ? -8 : 8)]),
+                      transitionDelay: `${i * 0.04}s`,
+                    }}
+                  >
+                    <div className="lx-chip-icon">{f.icon}</div>
+                    <span>{f.label}</span>
+                  </motion.div>
+                ))}
+
+                {/* === BRIEFCASE === */}
+                <div className="lx-case-body">
+                  <Latch side="left"/>
+                  <Latch side="right"/>
+
+                  {/* Handle */}
+                  <div className="lx-handle"/>
+
+                  {/* Lid (rotates open) */}
+                  <motion.div className="lx-case-lid" style={{ rotateX: lidRotate }}>
+                    <div className="lx-lid-face">
+                      <div className="lx-lid-brand">PackPal</div>
+                      <div className="lx-lid-tag"/>
+                    </div>
+                    <div className="lx-lid-inner"/>
+                  </motion.div>
+
+                  {/* Base */}
+                  <div className="lx-case-base">
+                    <div className="lx-base-inner">
+                      <div className="lx-base-text">Mission Essentials</div>
+                      <div className="lx-base-dots">
+                        {Array.from({length:12}).map((_,i) => <div key={i} className="lx-dot"/>)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Case shadow */}
+                <motion.div className="lx-case-shadow" style={{ opacity: lidShadow }}/>
+              </div>
+            </motion.div>
+
+            {/* Login Form (rises as case fades) */}
+            <motion.div className="lx-form-wrap" style={{ opacity: formOpacity, y: formY }}>
+              <div className="lx-form-card">
+                <div className="lx-form-badge">
+                  <div className="lx-form-logo">P</div>
+                  <div>
+                    <div className="lx-form-title">PackPal</div>
+                    <div className="lx-form-sub">Mission Control Platform</div>
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.div className="lx-error" initial={{opacity:0,y:-6}} animate={{opacity:1,y:0}} exit={{opacity:0}}>
+                      <AlertCircle size={14}/>{error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <form onSubmit={handleLogin} className="lx-form">
+                  <div className="lx-field">
+                    <label>Work Email</label>
+                    <div className="lx-iw">
+                      <Mail size={16} className="lx-ico"/>
+                      <input type="email" placeholder="name@company.com" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/>
+                    </div>
+                  </div>
+                  <div className="lx-field">
+                    <div className="lx-flabel">
+                      <label>Password</label>
+                      <a href="#" className="lx-forgot">Forgot?</a>
+                    </div>
+                    <div className="lx-iw">
+                      <Lock size={16} className="lx-ico"/>
+                      <input type={show?'text':'password'} placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/>
+                      <button type="button" className="lx-eye" onClick={()=>setShow(!show)}>{show?<EyeOff size={15}/>:<Eye size={15}/>}</button>
+                    </div>
+                  </div>
+                  <motion.button type="submit" className="lx-submit" disabled={authLoading} whileHover={{scale:1.02}} whileTap={{scale:0.97}}>
+                    {authLoading ? <Loader2 size={18} className="lx-spin"/> : <><span>Open Mission Control</span><ChevronRight size={18}/></>}
+                  </motion.button>
+                </form>
+
+                <p className="lx-switch">No account? <Link to="/register">Create one →</Link></p>
+              </div>
+            </motion.div>
+
+            {/* Scroll progress bar */}
+            <motion.div className="lx-progress" style={{ scaleX: scrollYProgress }}/>
           </div>
-        </section>
-
-        {/* ── SECTION 2: Stats ── */}
-        <section className="lp-stats-section">
-          <motion.div
-            className="lp-stats-grid"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.4 }}
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
-          >
-            {[['12,400+','Operators Worldwide'],['4.9★','Avg. Rating'],['99.9%','Uptime SLA'],['140+','Countries']]
-              .map(([val, label], i) => (
-                <motion.div key={i} className="lp-stat" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-                  <strong>{val}</strong>
-                  <span>{label}</span>
-                </motion.div>
-              ))}
-          </motion.div>
-        </section>
-
-        {/* ── SECTION 3: Login Form ── */}
-        <section className="lp-form-section">
-          <motion.div className="lp-card" style={{ y: formY, opacity: formOpacity }}>
-            <div className="lp-card-header">
-              <div className="lp-logo"><Globe2 size={22} /></div>
-              <h2>Sign In to PackPal</h2>
-              <p>Access your mission command centre</p>
-            </div>
-
-            <AnimatePresence>
-              {error && (
-                <motion.div className="lp-error" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                  <AlertCircle size={15} />{error}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <form onSubmit={handleLogin} className="lp-form">
-              <div className="lp-field">
-                <label>Email Address</label>
-                <div className="lp-input-wrap">
-                  <Mail size={16} className="lp-ico" />
-                  <input type="email" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
-                </div>
-              </div>
-
-              <div className="lp-field">
-                <div className="lp-field-top">
-                  <label>Password</label>
-                  <a href="#" className="lp-forgot">Forgot?</a>
-                </div>
-                <div className="lp-input-wrap">
-                  <Lock size={16} className="lp-ico" />
-                  <input type={show ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" />
-                  <button type="button" className="lp-eye" onClick={() => setShow(!show)}>{show ? <EyeOff size={15}/> : <Eye size={15}/>}</button>
-                </div>
-              </div>
-
-              <motion.button type="submit" className="lp-submit" disabled={authLoading} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                {authLoading ? <Loader2 size={18} className="lp-spin" /> : <><span>Access Command Centre</span><ChevronRight size={18}/></>}
-              </motion.button>
-            </form>
-
-            <div className="lp-divider"><span>New here?</span></div>
-            <Link to="/register" className="lp-register-link">Create your operator account →</Link>
-
-            <div className="lp-trust">
-              <Shield size={13}/> 256-bit AES encrypted &nbsp;·&nbsp; SOC 2 compliant
-            </div>
-          </motion.div>
-        </section>
-
+        </div>
       </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        .lp-root { width:100vw; height:100vh; overflow:hidden; background:#080810; font-family:'Inter',system-ui,sans-serif; }
-        .lp-scroll { height:100%; overflow-y:scroll; scroll-snap-type:y mandatory; scroll-behavior:smooth; }
-        .lp-scroll::-webkit-scrollbar { width:4px; }
-        .lp-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
 
-        /* Hero */
-        .lp-hero { height:100vh; scroll-snap-align:start; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%), #080810; }
-        .lp-hero-inner { position:relative; z-index:2; text-align:center; max-width:680px; padding:0 2rem; }
-        .lp-badge { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:100px; border:1px solid rgba(99,102,241,0.3); background:rgba(99,102,241,0.08); color:rgba(255,255,255,0.7); font-size:0.78rem; font-weight:600; letter-spacing:0.04em; margin-bottom:2rem; }
-        .lp-badge-dot { width:7px; height:7px; border-radius:50%; background:#6366f1; box-shadow:0 0 8px #6366f1; animation:lp-pulse 2s infinite; }
-        @keyframes lp-pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-        .lp-headline { font-size:clamp(2.5rem,6vw,4.5rem); font-weight:900; letter-spacing:-0.04em; color:#fff; line-height:1.05; margin:0 0 1.25rem; }
-        .lp-grad { background:linear-gradient(135deg,#6366f1,#a78bfa,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-        .lp-sub { color:rgba(255,255,255,0.45); font-size:1.1rem; line-height:1.6; max-width:480px; margin:0 auto 2.5rem; }
-        .lp-scroll-hint { display:flex; flex-direction:column; align-items:center; gap:0.5rem; color:rgba(255,255,255,0.3); font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase; }
-        .lp-arrow { font-size:1.2rem; color:rgba(255,255,255,0.3); }
+        .lx-root { width:100vw; height:100vh; overflow:hidden; font-family:'Inter',system-ui,sans-serif; background:#f0f2f7; }
+        .lx-scroller { width:100%; height:100%; overflow-y:scroll; }
+        .lx-scroller::-webkit-scrollbar { width:0; }
 
-        /* 3D Cards */
-        .lp-cards-scene { position:absolute; inset:0; perspective:1200px; pointer-events:none; z-index:1; }
-        .lp-float-card {
-          position:absolute; transform-origin:center center;
-          background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
-          backdrop-filter:blur(12px); border-radius:18px; padding:1rem 1.25rem;
-          display:flex; align-items:center; gap:0.6rem;
-          color:#fff; font-size:0.8rem; font-weight:700;
-          white-space:nowrap; pointer-events:auto; cursor:default;
-          transform-style:preserve-3d;
-          box-shadow:0 8px 32px rgba(0,0,0,0.3);
+        /* Tall canvas to give scroll room */
+        .lx-canvas { height:550vh; position:relative; }
+
+        /* Sticky stage fills viewport */
+        .lx-sticky {
+          position:sticky; top:0; height:100vh;
+          display:flex; align-items:center; justify-content:center;
+          overflow:hidden;
+          background: radial-gradient(ellipse 100% 80% at 50% -10%, rgba(99,102,241,0.08) 0%, transparent 70%), #f0f2f7;
         }
-        .lp-float-card:hover { background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.25); transition:all 0.3s; }
-        .lp-float-icon { width:36px; height:36px; border-radius:10px; background:color-mix(in srgb,var(--card-color) 20%,transparent); border:1px solid color-mix(in srgb,var(--card-color) 40%,transparent); display:flex; align-items:center; justify-content:center; color:var(--card-color); }
-        .lp-orb { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:240px; height:240px; border-radius:50%; background:radial-gradient(circle,rgba(99,102,241,0.2),transparent 70%); border:1px solid rgba(99,102,241,0.15); pointer-events:none; }
 
-        /* Stats */
-        .lp-stats-section { height:100vh; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#080810,#0d0d1a); }
-        .lp-stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; max-width:900px; width:100%; padding:0 2rem; }
-        .lp-stat { text-align:center; padding:2.5rem 1.5rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:24px; }
-        .lp-stat strong { display:block; font-size:2.5rem; font-weight:900; color:#fff; letter-spacing:-0.03em; margin-bottom:0.5rem; }
-        .lp-stat span { font-size:0.85rem; color:rgba(255,255,255,0.4); font-weight:500; }
-
-        /* Form Section */
-        .lp-form-section { min-height:100vh; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; padding:4rem 2rem; background:linear-gradient(180deg,#0d0d1a,#080810); }
-        .lp-card { width:100%; max-width:440px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:28px; padding:2.5rem; backdrop-filter:blur(20px); box-shadow:0 40px 80px rgba(0,0,0,0.4); }
-        .lp-card-header { text-align:center; margin-bottom:2rem; }
-        .lp-logo { width:52px; height:52px; margin:0 auto 1rem; border-radius:16px; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 12px 24px rgba(99,102,241,0.4); }
-        .lp-card-header h2 { font-size:1.6rem; font-weight:800; color:#fff; margin:0 0 0.4rem; letter-spacing:-0.02em; }
-        .lp-card-header p { color:rgba(255,255,255,0.4); font-size:0.9rem; }
-        .lp-error { display:flex; align-items:center; gap:0.5rem; padding:0.75rem 1rem; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25); border-radius:12px; color:#f87171; font-size:0.83rem; font-weight:500; margin-bottom:1.25rem; }
-        .lp-form { display:flex; flex-direction:column; gap:1.1rem; }
-        .lp-field { display:flex; flex-direction:column; gap:0.45rem; }
-        .lp-field-top { display:flex; justify-content:space-between; align-items:center; }
-        .lp-field label { font-size:0.78rem; font-weight:600; color:rgba(255,255,255,0.5); }
-        .lp-forgot { font-size:0.78rem; color:#818cf8; text-decoration:none; font-weight:500; }
-        .lp-forgot:hover { color:#a5b4fc; }
-        .lp-input-wrap { position:relative; }
-        .lp-ico { position:absolute; left:0.9rem; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.25); pointer-events:none; }
-        .lp-input-wrap input { width:100%; height:48px; padding:0 1rem 0 2.75rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; color:#fff; font-size:0.9rem; outline:none; transition:0.2s; box-sizing:border-box; font-family:inherit; }
-        .lp-input-wrap input::placeholder { color:rgba(255,255,255,0.2); }
-        .lp-input-wrap input:focus { border-color:rgba(99,102,241,0.7); background:rgba(99,102,241,0.08); box-shadow:0 0 0 4px rgba(99,102,241,0.12); }
-        .lp-eye { position:absolute; right:0.9rem; top:50%; transform:translateY(-50%); background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; display:flex; padding:4px; }
-        .lp-eye:hover { color:rgba(255,255,255,0.6); }
-        .lp-submit { width:100%; height:52px; margin-top:0.5rem; border-radius:14px; border:none; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; font-weight:800; font-size:0.95rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; cursor:pointer; box-shadow:0 12px 32px rgba(99,102,241,0.4); font-family:inherit; }
-        .lp-submit:disabled { opacity:0.7; cursor:not-allowed; }
-        .lp-divider { text-align:center; margin:1.5rem 0 0.75rem; color:rgba(255,255,255,0.2); font-size:0.8rem; position:relative; }
-        .lp-register-link { display:block; text-align:center; color:#818cf8; font-size:0.875rem; font-weight:600; text-decoration:none; transition:color 0.2s; }
-        .lp-register-link:hover { color:#a5b4fc; }
-        .lp-trust { text-align:center; margin-top:1.5rem; color:rgba(255,255,255,0.2); font-size:0.72rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; }
-        .lp-spin { animation:lp-rotate 0.8s linear infinite; }
-        @keyframes lp-rotate { to{transform:rotate(360deg);} }
-
-        @media(max-width:900px) {
-          .lp-stats-grid { grid-template-columns:repeat(2,1fr); }
-          .lp-float-card { display:none; }
-          .lp-float-card:nth-child(-n+2) { display:flex; }
+        /* Subtle grid */
+        .lx-grid-bg {
+          position:absolute; inset:0; pointer-events:none;
+          background-image: linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px);
+          background-size: 48px 48px;
+          mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
         }
+
+        /* Hero text */
+        .lx-hero-text {
+          position:absolute; top:12%; left:50%; transform:translateX(-50%);
+          text-align:center; z-index:2; white-space:nowrap;
+        }
+        .lx-pill {
+          display:inline-block; padding:6px 18px; border-radius:100px;
+          background:#fff; border:1px solid #e5e7eb;
+          font-size:0.75rem; font-weight:700; color:#6366f1; letter-spacing:0.04em;
+          margin-bottom:1.25rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);
+        }
+        .lx-hero-text h1 {
+          font-size:clamp(2.2rem,5vw,4rem); font-weight:900;
+          color:#111827; letter-spacing:-0.04em; line-height:1.1; margin:0 0 1rem;
+        }
+        .lx-hero-text h1 em { font-style:normal; color:#6366f1; }
+        .lx-hero-text p { color:#9ca3af; font-size:0.95rem; margin:0; }
+
+        /* ── 3D BRIEFCASE ─────────────────────────────── */
+        .lx-case-wrapper { position:absolute; z-index:3; display:flex; align-items:center; justify-content:center; }
+        .lx-case-scene { position:relative; perspective:1000px; width:320px; height:240px; }
+
+        .lx-case-body { position:relative; width:320px; height:240px; filter:drop-shadow(0 30px 50px rgba(0,0,0,0.18)); }
+
+        /* Handle */
+        .lx-handle {
+          position:absolute; top:-24px; left:50%; transform:translateX(-50%);
+          width:80px; height:22px;
+          border:3px solid #b08040; border-bottom:none; border-radius:12px 12px 0 0;
+          background:transparent;
+        }
+
+        /* Lid */
+        .lx-case-lid {
+          position:absolute; top:0; left:0; right:0;
+          height:115px; transform-origin:bottom center;
+          transform-style:preserve-3d; z-index:2;
+        }
+        .lx-lid-face {
+          position:absolute; inset:0;
+          background:linear-gradient(160deg,#c8964a 0%,#a0722a 60%,#8a5e1e 100%);
+          border-radius:12px 12px 4px 4px;
+          border:2px solid #7a5018;
+          display:flex; align-items:center; justify-content:center;
+          box-shadow:inset 0 2px 8px rgba(255,255,255,0.15), inset 0 -4px 12px rgba(0,0,0,0.2);
+        }
+        .lx-lid-brand {
+          font-size:1.5rem; font-weight:900; color:rgba(255,255,255,0.85);
+          letter-spacing:0.08em; text-transform:uppercase;
+          text-shadow:0 1px 4px rgba(0,0,0,0.4);
+        }
+        .lx-lid-tag {
+          position:absolute; bottom:12px; right:16px;
+          width:32px; height:20px; border-radius:4px;
+          background:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.4);
+        }
+        .lx-lid-inner {
+          position:absolute; inset:0; transform:rotateX(180deg);
+          background:linear-gradient(180deg,#f8e8c8,#f0d8a0);
+          border-radius:12px 12px 4px 4px;
+          border:2px solid #d4aa60;
+        }
+
+        /* Base */
+        .lx-case-base {
+          position:absolute; bottom:0; left:0; right:0;
+          height:130px;
+          background:linear-gradient(160deg,#b07830 0%,#8a5e1e 100%);
+          border-radius:4px 4px 14px 14px;
+          border:2px solid #7a5018; border-top:none;
+          box-shadow:inset 0 4px 12px rgba(0,0,0,0.2);
+          overflow:hidden;
+        }
+        .lx-base-inner { padding:1rem; }
+        .lx-base-text { font-size:0.65rem; font-weight:800; color:rgba(255,255,255,0.5); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.5rem; }
+        .lx-base-dots { display:flex; flex-wrap:wrap; gap:6px; }
+        .lx-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.2); }
+
+        .lx-case-shadow { position:absolute; bottom:-20px; left:10%; right:10%; height:20px; background:radial-gradient(ellipse,rgba(0,0,0,0.25),transparent 70%); border-radius:50%; }
+
+        /* Feature chips */
+        .lx-feat-chip {
+          position:absolute; top:50%; left:50%;
+          transform:translate(-50%,-50%);
+          background:#fff; border:1px solid #e5e7eb;
+          border-radius:14px; padding:0.6rem 1rem;
+          display:flex; align-items:center; gap:0.5rem;
+          font-size:0.8rem; font-weight:700; color:#111827;
+          box-shadow:0 8px 24px rgba(0,0,0,0.1);
+          white-space:nowrap; pointer-events:none; z-index:4;
+        }
+        .lx-chip-icon {
+          width:34px; height:34px; border-radius:10px;
+          background:color-mix(in srgb,var(--chip-color) 12%,#fff);
+          border:1px solid color-mix(in srgb,var(--chip-color) 25%,transparent);
+          display:flex; align-items:center; justify-content:center;
+          color:var(--chip-color);
+        }
+
+        /* ── FORM ─────────────────────────────────────── */
+        .lx-form-wrap { position:absolute; z-index:5; width:100%; display:flex; justify-content:center; padding:0 1.5rem; pointer-events:none; }
+        .lx-form-card {
+          width:100%; max-width:420px; background:#fff;
+          border:1px solid #e5e7eb; border-radius:24px; padding:2.25rem;
+          box-shadow:0 24px 48px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.04);
+          pointer-events:auto;
+        }
+        .lx-form-badge { display:flex; align-items:center; gap:0.875rem; margin-bottom:1.75rem; }
+        .lx-form-logo {
+          width:44px; height:44px; border-radius:14px;
+          background:linear-gradient(135deg,#6366f1,#8b5cf6);
+          display:flex; align-items:center; justify-content:center;
+          color:#fff; font-size:1.2rem; font-weight:900;
+          box-shadow:0 8px 20px rgba(99,102,241,0.35); flex-shrink:0;
+        }
+        .lx-form-title { font-size:1.1rem; font-weight:800; color:#111827; }
+        .lx-form-sub { font-size:0.75rem; color:#9ca3af; font-weight:500; }
+
+        .lx-error { display:flex; align-items:center; gap:0.5rem; padding:0.625rem 0.875rem; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; color:#dc2626; font-size:0.82rem; margin-bottom:1rem; }
+        .lx-form { display:flex; flex-direction:column; gap:1rem; }
+        .lx-field { display:flex; flex-direction:column; gap:0.4rem; }
+        .lx-field label, .lx-flabel label { font-size:0.78rem; font-weight:600; color:#374151; }
+        .lx-flabel { display:flex; justify-content:space-between; align-items:center; }
+        .lx-forgot { font-size:0.78rem; color:#6366f1; text-decoration:none; font-weight:500; }
+        .lx-iw { position:relative; }
+        .lx-ico { position:absolute; left:0.9rem; top:50%; transform:translateY(-50%); color:#d1d5db; pointer-events:none; }
+        .lx-iw input {
+          width:100%; height:46px; padding:0 1rem 0 2.75rem;
+          background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;
+          color:#111827; font-size:0.875rem; outline:none; transition:0.2s;
+          box-sizing:border-box; font-family:inherit;
+        }
+        .lx-iw input::placeholder { color:#d1d5db; }
+        .lx-iw input:focus { border-color:#6366f1; background:#fff; box-shadow:0 0 0 4px rgba(99,102,241,0.1); }
+        .lx-eye { position:absolute; right:0.875rem; top:50%; transform:translateY(-50%); background:none; border:none; color:#9ca3af; cursor:pointer; display:flex; padding:4px; }
+        .lx-submit {
+          width:100%; height:50px; margin-top:0.25rem; border-radius:13px; border:none;
+          background:linear-gradient(135deg,#4f46e5,#6366f1);
+          color:#fff; font-weight:800; font-size:0.9rem; font-family:inherit;
+          display:flex; align-items:center; justify-content:center; gap:0.5rem;
+          cursor:pointer; box-shadow:0 10px 28px rgba(99,102,241,0.35);
+          transition:box-shadow 0.2s;
+        }
+        .lx-submit:hover { box-shadow:0 16px 36px rgba(99,102,241,0.45); }
+        .lx-submit:disabled { opacity:0.65; cursor:not-allowed; }
+        .lx-switch { text-align:center; margin-top:1.25rem; font-size:0.85rem; color:#9ca3af; }
+        .lx-switch a { color:#6366f1; font-weight:700; text-decoration:none; }
+        .lx-switch a:hover { text-decoration:underline; }
+
+        .lx-spin { animation:lx-rot 0.8s linear infinite; }
+        @keyframes lx-rot { to{transform:rotate(360deg);} }
+
+        /* Progress bar */
+        .lx-progress {
+          position:fixed; bottom:0; left:0; right:0; height:3px;
+          background:linear-gradient(90deg,#6366f1,#ec4899);
+          transform-origin:left; z-index:99;
+        }
+
         @media(max-width:640px) {
-          .lp-stats-section { height:auto; min-height:100vh; padding:4rem 1.5rem; }
-          .lp-stats-grid { grid-template-columns:1fr 1fr; gap:1rem; }
-          .lp-stat strong { font-size:2rem; }
-          .lp-card { padding:2rem 1.5rem; }
-          .lp-headline { font-size:2.4rem; }
+          .lx-case-scene { transform:scale(0.75); }
+          .lx-form-card { padding:1.75rem 1.25rem; }
         }
       `}</style>
     </div>
