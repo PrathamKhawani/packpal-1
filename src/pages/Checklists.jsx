@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useApp } from '../contexts/AppContext';
+import { useApp, DEFAULT_ESSENTIAL_ITEMS } from '../contexts/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Trash2, Check, Search, Tag, 
@@ -13,7 +13,7 @@ import {
 export default function Checklists() {
   const { 
     items, categories, members, addItem, 
-    deleteItem, updateItemStatus, currentUser 
+    deleteItem, updateItemStatus, currentUser, setItems 
   } = useApp();
   
   const [showAddModal, setShowAddModal] = useState(false);
@@ -178,9 +178,21 @@ export default function Checklists() {
               exit={{ opacity: 0, scale: 0.95 }}
             >
               <Layers size={64} className="empty-icon" />
-              <h3>No Assets Detected</h3>
-              <p>Your tactical scan returned zero results for the current parameters.</p>
-              <button className="v3-btn-outline" onClick={() => { setSearchTerm(''); setFilterCat('all'); }}>RESET SCAN</button>
+              {items.length === 0 ? (
+                <>
+                  <h3>No Assets Detected</h3>
+                  <p>Your inventory is completely empty. Initialize default essentials?</p>
+                  <button className="v3-btn-outline" onClick={() => {
+                    setItems(DEFAULT_ESSENTIAL_ITEMS);
+                  }}>INITIALIZE ESSENTIALS</button>
+                </>
+              ) : (
+                <>
+                  <h3>No Match Found</h3>
+                  <p>Your tactical scan returned zero results for the current parameters.</p>
+                  <button className="v3-btn-outline" onClick={() => { setSearchTerm(''); setFilterCat('all'); }}>RESET SCAN</button>
+                </>
+              )}
             </motion.div>
           ) : (
             <motion.div 

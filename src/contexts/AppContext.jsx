@@ -13,7 +13,7 @@ export const ROLE_PERMISSIONS = {
   member: ['view', 'edit']
 };
 
-const DEFAULT_ESSENTIAL_ITEMS = [
+export const DEFAULT_ESSENTIAL_ITEMS = [
   { id: 'def_1', name: 'Mobile Phone & Charger', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
   { id: 'def_2', name: 'Powerbank', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },
   { id: 'def_3', name: 'Laptop & Charger', category: 'tech', status: 'pending', assignedTo: 'You', created_at: new Date().toISOString() },

@@ -4,7 +4,7 @@ import {
   Target, Shield, Flag, Map, Users, Zap, 
   ChevronRight, AlertCircle, CheckCircle2,
   Clock, Activity, TrendingUp, Radio, Lock,
-  Crosshair, BarChart2, GitBranch, Terminal
+  Crosshair, BarChart2, GitBranch, Terminal, X
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
