@@ -18,14 +18,7 @@ export default function Itinerary() {
   const [loading, setLoading] = useState(false);
   const [itinerary, setItinerary] = useState(null);
   const [expandedDay, setExpandedDay] = useState(0);
-  const [showChat, setShowChat] = useState(false);
-  const [chatLoading, setChatLoading] = useState(false);
   const [errorDetails, setErrorDetails] = useState(null);
-  const [messages, setMessages] = useState([
-    { role: 'bot', content: "I'm your AI Concierge. I can help you find booking links, swap places, or answer questions about your stay. How can I help?" }
-  ]);
-  const [inputValue, setInputValue] = useState('');
-  const chatEndRef = useRef(null);
 
   const tripDaysFromConfig = tripConfig.startDate && tripConfig.endDate
     ? Math.max(1, Math.ceil((new Date(tripConfig.endDate) - new Date(tripConfig.startDate)) / 86400000))
@@ -46,11 +39,15 @@ export default function Itinerary() {
     }
   }, [itinerary]);
 
+  // Auto-generate itinerary if setup is complete and no itinerary exists yet
   useEffect(() => {
-    if (showChat) {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (tripConfig.setupComplete && tripConfig.destination && !itinerary && !loading && !errorDetails) {
+      const timer = setTimeout(() => {
+        generateAI();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [messages, showChat]);
+  }, [tripConfig.setupComplete, tripConfig.destination, itinerary]);
 
   const generateAI = async () => {
     setLoading(true);
@@ -152,44 +149,7 @@ export default function Itinerary() {
     return JSON.parse(match[0]);
   };
 
-  const handleChat = async () => {
-    if (!inputValue.trim() || chatLoading) return;
-    const userMsg = inputValue;
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
-    setInputValue('');
-    setChatLoading(true);
 
-    try {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-        const prompt = `Context Itinerary: ${JSON.stringify(itinerary)}. User: "${userMsg}". Reply as Concierge. If changing, wrap FULL JSON in <json>...</json>.`;
-        
-        const activeModel = localStorage.getItem('working_gemini_model') || 'gemini-pro';
-        
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const data = await response.json();
-        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process that.";
-
-        const jsonMatch = raw.match(/<json>([\s\S]*?)<\/json>/);
-        let textResponse = raw.replace(/<json>[\s\S]*?<\/json>/g, '').trim();
-
-        if (jsonMatch) {
-            try {
-                const updated = JSON.parse(jsonMatch[1]);
-                setItinerary(updated);
-                textResponse = textResponse || "Itinerary updated!";
-            } catch(e) { console.error("Chat JSON error", e); }
-        }
-        setMessages(prev => [...prev, { role: 'bot', content: textResponse }]);
-    } catch (err) {
-        setMessages(prev => [...prev, { role: 'bot', content: "Connection error. Please check your API key." }]);
-    } finally {
-        setChatLoading(false);
-    }
-  };
 
   return (
     <div className="wander-root">
@@ -330,47 +290,7 @@ export default function Itinerary() {
         </aside>
       </div>
 
-      {/* Floating Concierge Chat */}
-      <div className="concierge-box no-print">
-         <button className="concierge-trigger-v6" onClick={() => setShowChat(!showChat)} title="AI Concierge">
-            <Bot size={22} className="bot-ico-v6" />
-            <div className="bot-status-v6" />
-         </button>
-      </div>
 
-      <AnimatePresence>
-        {showChat && (
-            <motion.div className="chat-ui-v6 glass" initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}>
-                <div className="chat-head-v6">
-                    <div className="h-bot">
-                        <div className="bot-min"><Bot size={16} /></div>
-                        <div><h4>Travel Concierge</h4><span>Always Active</span></div>
-                    </div>
-                    <button onClick={() => setShowChat(false)}><X size={20} /></button>
-                </div>
-                
-                <div className="chat-body-v6">
-                    {messages.map((m, i) => (
-                        <div key={i} className={`msg-v6 ${m.role}`}>
-                            <div className="msg-content-v6">{m.content}</div>
-                        </div>
-                    ))}
-                    {chatLoading && <div className="msg-v6 bot"><div className="typing-v6">...</div></div>}
-                    <div ref={chatEndRef} />
-                </div>
-
-                <div className="chat-foot-v6">
-                    <input 
-                        placeholder="Ask for booking links..." 
-                        value={inputValue}
-                        onChange={e => setInputValue(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleChat()}
-                    />
-                    <button onClick={handleChat} disabled={chatLoading}><Send size={18} /></button>
-                </div>
-            </motion.div>
-        )}
-      </AnimatePresence>
 
       <style>{`
         .wander-root { display: flex; flex-direction: column; gap: 2rem; padding-bottom: 5rem; }

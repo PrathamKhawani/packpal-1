@@ -6,34 +6,51 @@ import {
   Clock, Activity, TrendingUp, Radio, Lock,
   Crosshair, BarChart2, GitBranch, Terminal
 } from 'lucide-react';
-
-const OBJ = [
-  { status: 'complete', text: 'Secure logistics & transportation assets', detail: 'All booking confirmations received and verified. Transport locked in.', tag: 'LOGISTICS' },
-  { status: 'active',   text: 'Verify team deployment readiness',         detail: '2 of 3 members confirmed. Awaiting Mike\'s status update.',        tag: 'PERSONNEL' },
-  { status: 'pending',  text: 'Coordinate final arrival protocols',        detail: 'Arrival briefing scheduled 24h before departure.',                 tag: 'OPS' },
-];
-
-const TEAM = [
-  { name: 'Sarah K.',  role: 'Field Lead',     status: 'READY',   color: 'success', avatar: 'SK' },
-  { name: 'Mike D.',   role: 'Operator',       status: 'STANDBY', color: 'warning', avatar: 'MD' },
-  { name: 'Admin',     role: 'Command',        status: 'ONLINE',  color: 'p',       avatar: 'AD' },
-];
-
-const TIMELINE = [
-  { label: 'Briefing',  date: 'Day 0', done: true  },
-  { label: 'Departure', date: 'Day 1', done: true  },
-  { label: 'Arrival',   date: 'Day 2', done: false },
-  { label: 'Debrief',   date: 'Day 4', done: false },
-];
-
-const RISKS = [
-  { label: 'Weather',   pct: 30, level: 'LOW',    colorVar: 'var(--success)' },
-  { label: 'Budget',    pct: 75, level: 'HIGH',   colorVar: 'var(--danger)'  },
-  { label: 'Logistics', pct: 15, level: 'CLEAR',  colorVar: 'var(--p)'       },
-];
+import { useApp } from '../contexts/AppContext';
 
 export default function MissionBrief() {
+  const { items, members, tripConfig } = useApp();
   const [openObj, setOpenObj] = useState(null);
+
+  // Dynamic Readiness calculation based on Checklist items
+  const totalItems = items?.length || 0;
+  const packedItems = items?.filter(i => i.status === 'packed').length || 0;
+  const readinessPct = totalItems === 0 ? 0 : Math.round((packedItems / totalItems) * 100);
+
+  // Derive Team from Context
+  const teamList = members?.slice(0, 5).map((m, i) => ({
+    name: m.name,
+    role: m.role.toUpperCase(),
+    status: 'ONLINE',
+    color: i === 0 ? 'p' : i === 1 ? 'success' : 'warning',
+    avatar: m.name.substring(0, 2).toUpperCase()
+  })) || [];
+
+  // Derive Objectives from Checklist (Top 4 pending/recent)
+  const objList = items?.slice(0, 4).map(item => ({
+    status: item.status === 'packed' ? 'complete' : 'pending',
+    text: item.name,
+    detail: `Category: ${item.category} | Assigned to: ${item.assignedTo}`,
+    tag: item.category.toUpperCase()
+  })) || [];
+
+  // Timeline (Dynamic based on trip dates)
+  const startDate = tripConfig?.startDate ? new Date(tripConfig.startDate) : new Date();
+  const endDate = tripConfig?.endDate ? new Date(tripConfig.endDate) : new Date(startDate.getTime() + 86400000 * 3);
+  const now = new Date();
+  
+  const timelineList = [
+    { label: 'Briefing', date: 'T-2 Days', done: now >= new Date(startDate.getTime() - 86400000 * 2) },
+    { label: 'Departure', date: startDate.toLocaleDateString(), done: now >= startDate },
+    { label: 'Arrival', date: startDate.toLocaleDateString(), done: now >= startDate },
+    { label: 'Debrief', date: endDate.toLocaleDateString(), done: now >= endDate },
+  ];
+
+  const risksList = [
+    { label: 'Packing', pct: 100 - readinessPct, level: readinessPct > 70 ? 'LOW' : 'HIGH', colorVar: readinessPct > 70 ? 'var(--success)' : 'var(--danger)' },
+    { label: 'Budget', pct: 30, level: 'CLEAR', colorVar: 'var(--p)' },
+    { label: 'Logistics', pct: tripConfig?.setupComplete ? 10 : 80, level: tripConfig?.setupComplete ? 'LOW' : 'HIGH', colorVar: tripConfig?.setupComplete ? 'var(--success)' : 'var(--danger)' },
+  ];
 
   return (
     <div className="mb-root">
@@ -48,14 +65,14 @@ export default function MissionBrief() {
           <div className="readiness-ring">
             <svg viewBox="0 0 80 80">
               <circle cx="40" cy="40" r="32" className="ring-track" />
-              <circle cx="40" cy="40" r="32" className="ring-fill" strokeDasharray="169 200" strokeDashoffset="42" />
+              <circle cx="40" cy="40" r="32" className="ring-fill" strokeDasharray={`${Math.round(readinessPct * 2)} 200`} strokeDashoffset="42" />
             </svg>
-            <div className="ring-label"><strong>84%</strong><span>READINESS</span></div>
+            <div className="ring-label"><strong>{readinessPct}%</strong><span>READINESS</span></div>
           </div>
           <div className="header-stats">
-            <div className="hs-item"><TrendingUp size={13}/><div><strong>3/5</strong><span>Objectives</span></div></div>
-            <div className="hs-item"><Activity size={13}/><div><strong>Online</strong><span>Status</span></div></div>
-            <div className="hs-item"><Clock size={13}/><div><strong>T‑4d</strong><span>Departure</span></div></div>
+            <div className="hs-item"><TrendingUp size={13}/><div><strong>{packedItems}/{totalItems}</strong><span>Packed</span></div></div>
+            <div className="hs-item"><Activity size={13}/><div><strong>{teamList.length}</strong><span>Members</span></div></div>
+            <div className="hs-item"><Clock size={13}/><div><strong>{tripConfig?.days || 3} Days</strong><span>Duration</span></div></div>
           </div>
         </div>
       </motion.header>
@@ -70,7 +87,7 @@ export default function MissionBrief() {
           <motion.section className="mb-card" initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.05 }}>
             <div className="mc-label"><Flag size={13}/> PRIMARY OBJECTIVES</div>
             <div className="obj-list">
-              {OBJ.map((o, i) => (
+              {objList.map((o, i) => (
                 <div key={i} className={`obj-item ${o.status} ${openObj===i ? 'open' : ''}`} onClick={() => setOpenObj(openObj===i ? null : i)}>
                   <div className="obj-main-row">
                     <div className="obj-icon-wrap">
@@ -106,8 +123,8 @@ export default function MissionBrief() {
                 <div className="map-connector"><div className="connector-line"><div className="connector-pulse" /></div></div>
                 <div className="map-node dest"><div className="node-dot green" /><span>DEST</span></div>
               </div>
-              <div className="map-badge"><div className="live-dot" />SECTOR 7G — DEPLOYMENT READY</div>
-              <div className="map-coords">28.6139° N, 77.2090° E</div>
+              <div className="map-badge"><div className="live-dot" />{tripConfig?.destination ? `DEST: ${tripConfig.destination.toUpperCase()}` : 'SECTOR 7G — PENDING DEPLOYMENT'}</div>
+              <div className="map-coords">SAT-LINK SECURE</div>
             </div>
           </motion.section>
 
@@ -115,10 +132,10 @@ export default function MissionBrief() {
           <motion.section className="mb-card" initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
             <div className="mc-label"><GitBranch size={13}/> MISSION TIMELINE</div>
             <div className="tl-strip">
-              {TIMELINE.map((s, i) => (
+              {timelineList.map((s, i) => (
                 <div key={i} className={`tl-step ${s.done ? 'done' : ''}`}>
                   <div className="tl-node">{s.done ? <CheckCircle2 size={13}/> : <div className="tl-dot" />}</div>
-                  {i < TIMELINE.length-1 && <div className={`tl-line ${s.done ? 'done' : ''}`} />}
+                  {i < timelineList.length-1 && <div className={`tl-line ${s.done ? 'done' : ''}`} />}
                   <span className="tl-label">{s.label}</span>
                   <span className="tl-date">{s.date}</span>
                 </div>
@@ -134,13 +151,17 @@ export default function MissionBrief() {
           <motion.section className="mb-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.1 }}>
             <div className="mc-label"><Users size={13}/> TEAM STATUS</div>
             <div className="team-list">
-              {TEAM.map((m, i) => (
+              {teamList.length > 0 ? teamList.map((m, i) => (
                 <div key={i} className="team-row">
                   <div className={`team-avatar ${m.color}`}>{m.avatar}</div>
                   <div className="team-info"><strong>{m.name}</strong><span>{m.role}</span></div>
                   <span className={`team-badge ${m.color}`}>{m.status}</span>
                 </div>
-              ))}
+              )) : (
+                <div className="team-row">
+                  <div className="team-info"><strong>No team members</strong><span>Invite members to see them here.</span></div>
+                </div>
+              )}
             </div>
           </motion.section>
 
@@ -148,7 +169,7 @@ export default function MissionBrief() {
           <motion.section className="mb-card" initial={{ opacity:0, x:16 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.15 }}>
             <div className="mc-label"><AlertCircle size={13}/> RISK ASSESSMENT</div>
             <div className="risk-list">
-              {RISKS.map((r, i) => (
+              {risksList.map((r, i) => (
                 <div key={i} className="risk-row">
                   <div className="risk-meta">
                     <span className="risk-label">{r.label}</span>

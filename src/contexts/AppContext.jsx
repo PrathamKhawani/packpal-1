@@ -83,44 +83,22 @@ export function AppProvider({ children }) {
 
   const [items, setItems] = useState(() => {
     const saved = localStorage.getItem('packpal_items');
-    const parsed = saved ? JSON.parse(saved) : [];
-    return parsed.length >= 15 ? parsed : INITIAL_TACTICAL_DATA;
+    return saved ? JSON.parse(saved) : [];
   });
-
-  // Forced Data Sync Effect
-  useEffect(() => {
-    if (items.length < 15) {
-      setItems(INITIAL_TACTICAL_DATA);
-      localStorage.setItem('packpal_items', JSON.stringify(INITIAL_TACTICAL_DATA));
-    }
-  }, [items.length]);
 
   const [expenses, setExpenses] = useState(() => {
     const e = localStorage.getItem('packpal_expenses');
-    return e ? JSON.parse(e) : [
-      { id: '1', description: 'Flight Tickets', amount: 45000, payer: 'You', category: 'transport', created_at: new Date().toISOString() },
-      { id: '2', description: 'Hotel Deposit', amount: 12000, payer: 'Sarah', category: 'accommodation', created_at: new Date().toISOString() },
-      { id: '3', description: 'Dinner @ Le Meurice', amount: 8500, payer: 'Mike', category: 'food', created_at: new Date().toISOString() }
-    ];
+    return e ? JSON.parse(e) : [];
   });
 
   const [vaultDocs, setVaultDocs] = useState(() => {
     const v = localStorage.getItem('packpal_vault');
-    return v ? JSON.parse(v) : [
-      { id: 'v1', name: 'Passport Copy', type: 'PDF', created_at: new Date().toISOString() },
-      { id: 'v2', name: 'Travel Insurance', type: 'PDF', created_at: new Date().toISOString() },
-      { id: 'v3', name: 'Hotel Booking Confirmation', type: 'PDF', created_at: new Date().toISOString() }
-    ];
+    return v ? JSON.parse(v) : [];
   });
 
   const [members, setMembers] = useState(() => {
     const m = localStorage.getItem('packpal_members');
-    return m ? JSON.parse(m) : [
-      { id: 'admin', name: 'Admin Boss', role: 'admin', email: 'admin@packpal.com' },
-      { id: 'me', name: 'You', role: 'owner', email: 'owner@example.com' },
-      { id: 'sarah', name: 'Sarah', role: 'member', email: 'sarah@example.com' },
-      { id: 'mike', name: 'Mike', role: 'member', email: 'mike@example.com' }
-    ];
+    return m ? JSON.parse(m) : [];
   });
 
   const [activityLog, setActivityLog] = useState(() => {
@@ -248,7 +226,17 @@ export function AppProvider({ children }) {
   const logout = async () => {
     await supabase.auth.signOut();
     setCurrentUser(null);
+    setTripConfig(DEFAULT_TRIP_CONFIG);
+    setItems([]);
+    setExpenses([]);
+    setVaultDocs([]);
+    setMembers([]);
     localStorage.removeItem('packpal_tripConfig');
+    localStorage.removeItem('packpal_items');
+    localStorage.removeItem('packpal_expenses');
+    localStorage.removeItem('packpal_vault');
+    localStorage.removeItem('packpal_members');
+    localStorage.removeItem('packpal_activityLog');
   };
 
   const resetTrip = () => {

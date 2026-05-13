@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Minimize2 } from 'lucide-react';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
 const SYSTEM_PROMPT = `You are PackPal AI — a brilliant, concise travel logistics assistant embedded in the PackPal platform. PackPal is an enterprise trip-planning SaaS with modules for Itinerary, Checklists, Expenses, Risk Assessment, Members, and Vault. 
 Answer questions about travel planning, packing, budgeting, destinations, logistics, or any PackPal feature. Be sharp, professional, and helpful. Keep responses concise and well-formatted. Use bullet points or short paragraphs. Never break character.`;
 
