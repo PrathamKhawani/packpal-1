@@ -8,6 +8,7 @@ import {
   ChevronLeft, Menu, Search, Bell, Command, ChevronDown,
   User as UserIcon, Settings as SettingsIcon, Lock, CheckSquare, Activity, Zap, AlertTriangle
 } from 'lucide-react';
+import GlobalChatbot from '../components/GlobalChatbot';
 
 export default function Layout() {
   const { currentUser, logout, theme, toggleTheme } = useApp();
@@ -216,6 +217,9 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Global AI Chatbot — available on every page */}
+      <GlobalChatbot />
 
       {/* Settings Modal */}
       <AnimatePresence>
